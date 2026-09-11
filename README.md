@@ -864,8 +864,16 @@ number should not be presented as more than it is:
 - [`docs/api/README.md`](docs/api/README.md) — API authentication, pagination, deprecation policy
 - [`docs/model-cards/`](docs/model-cards/) — stage 1, stage 4 ML, stage 7
 - [`docs/adr/`](docs/adr/) — CI and offline gates; field encryption and rotation; typography and theming
+- [`docs/oss-ip-compliance.md`](docs/oss-ip-compliance.md) — the OSS and IP compliance register: every component, its licence, and where the obligation is discharged
 - [`CONTRIBUTING.md`](CONTRIBUTING.md), [`CHANGELOG.md`](CHANGELOG.md)
 
 ## License
 
-See [`LICENSE`](LICENSE).
+Covenant Radar is released under the MIT licence — see [`LICENSE`](LICENSE).
+
+Third-party components remain under their own licences.
+[`THIRD_PARTY_NOTICES.md`](THIRD_PARTY_NOTICES.md) carries their attribution
+notices; [`docs/oss-ip-compliance.md`](docs/oss-ip-compliance.md) records the
+licence of every shipped and build-only component, the obligation each
+creates, the licence policy a new dependency is reviewed against, and the
+position on data and model IP.

@@ -1,0 +1,9 @@
+[      87ms] [ERROR] Failed to load resource: the server responded with a status of 500 (Internal Server Error) @ http://127.0.0.1:8000/borrowers/B-000008:0
+[   60152ms] [ERROR] htmx:afterRequest @ http://127.0.0.1:8000/static/vendor/htmx/htmx.min.js:0
+[   60152ms] [ERROR] htmx:sendError @ http://127.0.0.1:8000/static/vendor/htmx/htmx.min.js:0
+[   60152ms] [ERROR] Failed to load resource: net::ERR_CONNECTION_REFUSED @ http://127.0.0.1:8000/notifications/unread-count:0
+[   60177ms] [ERROR] Failed to load resource: net::ERR_CONNECTION_REFUSED @ http://127.0.0.1:8000/live/updates?cursor=eyJ1IjoiMDFhMGVlYTYtNDAzZC03YjViLWFlZmQtZGUxMGRlYjg3NmRlIiwidCI6IjIwMjYtMDktMjlUMjA6MDE6MDEuNzI5MTMzKzAwOjAwIn0u_YEjQRPYgZ1r749wB9MNoLwg5hy_wIr_s4Ha7_Me7RY&context=%2Fborrowers%2FB-000008:0
+[  120152ms] [ERROR] htmx:afterRequest @ http://127.0.0.1:8000/static/vendor/htmx/htmx.min.js:0
+[  120153ms] [ERROR] htmx:sendError @ http://127.0.0.1:8000/static/vendor/htmx/htmx.min.js:0
+[  120153ms] [ERROR] Failed to load resource: net::ERR_CONNECTION_REFUSED @ http://127.0.0.1:8000/notifications/unread-count:0
+[  120179ms] [ERROR] Failed to load resource: net::ERR_CONNECTION_REFUSED @ http://127.0.0.1:8000/live/updates?cursor=eyJ1IjoiMDFhMGVlYTYtNDAzZC03YjViLWFlZmQtZGUxMGRlYjg3NmRlIiwidCI6IjIwMjYtMDktMjlUMjA6MDE6MDEuNzI5MTMzKzAwOjAwIn0u_YEjQRPYgZ1r749wB9MNoLwg5hy_wIr_s4Ha7_Me7RY&context=%2Fborrowers%2FB-000008:0

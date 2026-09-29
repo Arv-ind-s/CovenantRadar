@@ -1,0 +1,28 @@
+- generic [active] [ref=f9e1]:
+  - link "Skip to content" [ref=f9e2] [cursor=pointer]:
+    - /url: "#main-content"
+  - banner [ref=f9e3]:
+    - link "Covenant Radar" [ref=f9e4] [cursor=pointer]:
+      - /url: /sign-in
+      - generic [ref=f9e11]:
+        - strong [ref=f9e12]: Covenant
+        - generic [ref=f9e13]: Radar
+  - generic [ref=f9e14]:
+    - complementary "Product introduction" [ref=f9e15]:
+      - paragraph [ref=f9e16]: Evidence-backed early warning
+      - heading "See covenant pressure before it becomes a breach." [level=2] [ref=f9e17]
+      - paragraph [ref=f9e18]: One secure workspace for monitoring, evidence, forecasts, and auditable decisions.
+    - main [ref=f9e19]:
+      - generic [ref=f9e20]:
+        - paragraph [ref=f9e21]: Secure access
+        - heading "Sign in" [level=1] [ref=f9e22]
+        - generic [ref=f9e25]:
+          - generic [ref=f9e26]:
+            - generic [ref=f9e27]: Username *
+            - textbox "Username" [ref=f9e28]
+          - generic [ref=f9e29]:
+            - generic [ref=f9e30]: Password *
+            - generic [ref=f9e31]:
+              - textbox "Password" [ref=f9e32]
+              - button "Show" [ref=f9e33] [cursor=pointer]
+          - button "Sign in" [ref=f9e34] [cursor=pointer]

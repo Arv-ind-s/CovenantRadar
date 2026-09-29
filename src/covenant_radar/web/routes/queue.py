@@ -293,7 +293,7 @@ def create_queue_router(
             case_states=case_state_options(),
             can_update_case=principal.has(Permission.UPDATE_CASE),
             can_export=principal.has(Permission.EXPORT_EVIDENCE),
-            monitoring=monitoring_status(session, source_health=market_snapshot),
+            monitoring=monitoring_status(session, scope, source_health=market_snapshot),
             recent_changes=tuple(
                 {
                     **change,
@@ -306,7 +306,7 @@ def create_queue_router(
                 for change in recent_changes(session, scope)
             ),
             demo_enabled=request.app.state.settings.web.demo_walkthrough_enabled,
-            can_run_demo=True,
+            can_run_demo=principal.has(Permission.APPROVE_MODEL_PROMOTION),
         )
 
     return router

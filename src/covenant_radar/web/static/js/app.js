@@ -259,7 +259,21 @@
       select(tabs[(index + step[event.key] + tabs.length) % tabs.length], { focus: true });
     });
 
-    select(tabs[0]);
+    const tabFromHash = () => {
+      let id;
+      try { id = decodeURIComponent(window.location.hash.slice(1)); }
+      catch (_error) { return null; }
+      const target = id ? document.getElementById(id) : null;
+      return tabs.find((tab) => {
+        const panel = panelFor(tab);
+        return panel && (panel === target || (target && panel.contains(target)));
+      }) || null;
+    };
+    select(tabFromHash() || tabs[0]);
+    window.addEventListener("hashchange", () => {
+      const tab = tabFromHash();
+      if (tab) select(tab);
+    });
   };
 
   // Innermost first, so a nested strip (the covenants inside the case file's

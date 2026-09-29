@@ -1,0 +1,136 @@
+- generic [active] [ref=f20e1]:
+  - link "Skip to content" [ref=f20e2] [cursor=pointer]:
+    - /url: "#main-content"
+  - generic [ref=f20e3]:
+    - complementary "Workspace navigation" [ref=f20e4]:
+      - generic [ref=f20e5]:
+        - link "Covenant Radar" [ref=f20e6] [cursor=pointer]:
+          - /url: /
+          - generic [ref=f20e13]:
+            - strong [ref=f20e14]: Covenant
+            - generic [ref=f20e15]: Radar
+        - button "Close navigation" [ref=f20e16] [cursor=pointer]
+      - navigation "Primary navigation" [ref=f20e19]:
+        - region [ref=f20e20]:
+          - heading "Monitor" [level=2] [ref=f20e21]
+          - link "Portfolio queue" [ref=f20e22] [cursor=pointer]:
+            - /url: /
+          - link "Market intelligence" [ref=f20e26] [cursor=pointer]:
+            - /url: /intelligence
+          - link "Cases" [ref=f20e33] [cursor=pointer]:
+            - /url: /cases
+          - link "0 unread notifications" [ref=f20e37] [cursor=pointer]:
+            - /url: /notifications
+            - generic [ref=f20e40]: Notifications (0)
+            - generic [aria-hidden] [ref=f20e41]: "0"
+          - link "Search" [ref=f20e42] [cursor=pointer]:
+            - /url: /search
+        - region [ref=f20e47]:
+          - heading "Portfolio data" [level=2] [ref=f20e48]
+          - link "Borrowers" [ref=f20e49] [cursor=pointer]:
+            - /url: /borrowers
+          - link "Facilities" [ref=f20e54] [cursor=pointer]:
+            - /url: /facilities
+          - link "Portfolios" [ref=f20e58] [cursor=pointer]:
+            - /url: /portfolios
+          - link "Covenants" [ref=f20e62] [cursor=pointer]:
+            - /url: /covenants
+          - link "Certificates" [ref=f20e66] [cursor=pointer]:
+            - /url: /certificates
+        - region [ref=f20e71]:
+          - heading "Workflows" [level=2] [ref=f20e72]
+          - link "Intake" [ref=f20e73] [cursor=pointer]:
+            - /url: /intake
+          - link "Document review" [ref=f20e77] [cursor=pointer]:
+            - /url: /documents/review
+          - link "Simulator" [ref=f20e81] [cursor=pointer]:
+            - /url: /simulator
+          - link "Governance" [ref=f20e85] [cursor=pointer]:
+            - /url: /governance
+        - region [ref=f20e89]:
+          - heading "Administration" [level=2] [ref=f20e90]
+          - link "Action catalogue" [ref=f20e91] [cursor=pointer]:
+            - /url: /admin/catalogue
+    - button "Close navigation"
+    - generic [ref=f20e96]:
+      - banner [ref=f20e97]:
+        - button "Open navigation" [ref=f20e99] [cursor=pointer]
+        - generic [ref=f20e102]:
+          - button "Live activity" [ref=f20e103]
+          - button "Use dark theme" [ref=f20e106] [cursor=pointer]
+          - button "Switch to Hindi" [ref=f20e110] [cursor=pointer]: हिं
+          - button "Open user menu" [ref=f20e112] [cursor=pointer]
+      - main [ref=f20e116]:
+        - generic [ref=f20e117]:
+          - generic [ref=f20e118]:
+            - paragraph [ref=f20e119]: Decision workspace
+            - heading "Facility details" [level=1] [ref=f20e120]
+          - link "Back to facilities" [ref=f20e122] [cursor=pointer]:
+            - /url: /facilities
+        - generic [ref=f20e123]:
+          - generic [ref=f20e124]:
+            - heading "F-000008-01" [level=2] [ref=f20e125]
+            - generic [ref=f20e126]:
+              - paragraph [ref=f20e127]: Amounts in ₹ crore
+              - table [ref=f20e129]:
+                - caption [ref=f20e130]: Facility record
+                - rowgroup [ref=f20e131]:
+                  - row [ref=f20e132]:
+                    - columnheader "Field" [ref=f20e133]
+                    - columnheader "Value" [ref=f20e134]
+                - rowgroup [ref=f20e135]:
+                  - row [ref=f20e136]:
+                    - rowheader "Borrower" [ref=f20e137]
+                    - cell [ref=f20e138]:
+                      - link "B-000008 — Avenrock Precision Engineering Private Limited" [ref=f20e139] [cursor=pointer]:
+                        - /url: /borrowers/B-000008/master-data
+                  - row [ref=f20e140]:
+                    - rowheader "Facility type" [ref=f20e141]
+                    - cell "Cash credit" [ref=f20e142]
+                  - row [ref=f20e143]:
+                    - rowheader "Currency" [ref=f20e144]
+                    - cell "INR" [ref=f20e145]
+                  - row [ref=f20e146]:
+                    - rowheader "Sanctioned limit" [ref=f20e147]
+                    - cell "216.23" [ref=f20e148]
+                  - row [ref=f20e149]:
+                    - rowheader "Drawing power" [ref=f20e150]
+                    - cell "194.61" [ref=f20e151]
+                  - row [ref=f20e152]:
+                    - rowheader "Outstanding" [ref=f20e153]
+                    - cell "99.25" [ref=f20e154]
+                  - row [ref=f20e155]:
+                    - rowheader "Utilisation" [ref=f20e156]
+                    - cell "45.9%" [ref=f20e157]
+                  - row [ref=f20e159]:
+                    - rowheader "Undrawn" [ref=f20e160]
+                    - cell "116.98" [ref=f20e161]
+                  - row [ref=f20e162]:
+                    - rowheader "Pricing" [ref=f20e163]
+                    - cell "859 bps (8.59%)" [ref=f20e164]
+                  - row [ref=f20e165]:
+                    - rowheader "Security" [ref=f20e166]
+                    - cell "First charge on current assets" [ref=f20e167]
+                  - row [ref=f20e168]:
+                    - rowheader "Sanction date" [ref=f20e169]
+                    - cell "01 Apr 2019" [ref=f20e170]
+                  - row [ref=f20e171]:
+                    - rowheader "Maturity date" [ref=f20e172]
+                    - cell "31 Mar 2025 (matured 548 days ago)" [ref=f20e173]
+                  - row [ref=f20e175]:
+                    - rowheader "Effective from" [ref=f20e176]
+                    - cell "01 Apr 2019" [ref=f20e177]
+                  - row [ref=f20e178]:
+                    - rowheader "Effective to" [ref=f20e179]
+                    - cell "—" [ref=f20e180]
+                  - row [ref=f20e181]:
+                    - rowheader "Status" [ref=f20e182]
+                    - cell "Current" [ref=f20e183]
+                  - row [ref=f20e185]:
+                    - rowheader "Version" [ref=f20e186]
+                    - cell "1" [ref=f20e187]
+          - generic [ref=f20e188]:
+            - heading "Limit history" [level=2] [ref=f20e189]
+            - generic [ref=f20e190]:
+              - paragraph [ref=f20e191]: "A limit change never overwrites a facility: it closes the current version and opens a successor, so every revision stays readable here."
+              - paragraph [ref=f20e192]: This facility has no earlier or later versions.

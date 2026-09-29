@@ -27,6 +27,7 @@ from covenant_radar.db.models import (
     ForecastRun,
     Portfolio,
     RatioDefinition,
+    SignalEvent,
     StatementLineValue,
     TriageEntry,
     UserPortfolioScope,
@@ -247,6 +248,48 @@ def test_header_holds_exactly_four_facts() -> None:
         assert response.text.count('class="case-header__fact"') == 4
         for label in ("Borrower", "Exposure", "Worst covenant", "Dated risk"):
             assert label in response.text
+    finally:
+        fixture.close()
+
+
+def test_monitoring_trace_handles_signal_without_magnitude() -> None:
+    fixture = _Fixture()
+    try:
+        fixture.triage()
+        fixture.session.add(
+            SignalEvent(
+                id=uuid4(), borrower_id=fixture.borrower.id, facility_id=fixture.facility.id,
+                event_date=_AS_OF, family="news", event_type="news_event",
+                magnitude=None, unit="score", payload={"is_adverse": False},
+                content_hash="f" * 64, is_late=False, ingested_at=_NOW,
+                created_at=_NOW, updated_at=_NOW, request_id="rq-qualitative-signal",
+            )
+        )
+        fixture.session.flush()
+        with fixture.client() as client:
+            response = client.get(f"/borrowers/{fixture.borrower.reference}")
+        assert response.status_code == 200
+        assert "qualitative observation" in response.text
+    finally:
+        fixture.close()
+
+
+def test_monitoring_trace_uses_stored_ml_source_over_current_shadow_setting() -> None:
+    fixture = _Fixture()
+    try:
+        fixture.triage()
+        forecast = fixture.forecast()
+        forecast.probability_source = "ml"
+        forecast.formula_inputs = {
+            "predictor_mode": "champion",
+            "ml_prediction": {"model_version": "approved-ml:v3", "probability": "0.5825"},
+        }
+        fixture.session.flush()
+        with fixture.client() as client:
+            response = client.get(f"/borrowers/{fixture.borrower.reference}")
+        assert response.status_code == 200
+        assert "Operational priority: ML forecast approved-ml:v3" in response.text
+        assert "ML challenger: shadow comparison" not in response.text
     finally:
         fixture.close()
 

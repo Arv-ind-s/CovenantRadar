@@ -14,7 +14,7 @@ from sqlalchemy import func, select
 from sqlalchemy.orm import Session
 
 from covenant_radar.db.models.borrower import Borrower
-from covenant_radar.db.models.forecast import ForecastRun, TriageEntry
+from covenant_radar.db.models.forecast import Forecast, ForecastRun, TriageEntry
 from covenant_radar.db.models.operations import JobRun
 from covenant_radar.db.models.portfolio import Portfolio
 from covenant_radar.db.models.signal import SignalEvent
@@ -22,7 +22,9 @@ from covenant_radar.db.models.workflow import Case
 from covenant_radar.db.scoping import Scope
 
 
-def monitoring_status(session: Session, *, source_health: dict | None = None) -> dict[str, object]:
+def monitoring_status(
+    session: Session, scope: Scope, *, source_health: dict | None = None
+) -> dict[str, object]:
     """Describe actual processing health; a browser connection is not a scan."""
     latest = session.scalar(
         select(JobRun).where(JobRun.job_name == "nightly.pipeline")
@@ -38,12 +40,14 @@ def monitoring_status(session: Session, *, source_health: dict | None = None) ->
         )
         .order_by(ForecastRun.finished_at.desc()).limit(1)
     )
-    borrowers_processed = (
-        session.scalar(
+    borrowers_processed = None
+    if latest_run is not None:
+        borrowers_processed = session.scalar(
             select(func.count()).select_from(TriageEntry)
-            .where(TriageEntry.run_id == latest_run.id)
-        ) if latest_run else None
-    )
+            .join(Borrower, Borrower.id == TriageEntry.borrower_id)
+            .join(Portfolio, Portfolio.id == Borrower.portfolio_id)
+            .where(TriageEntry.run_id == latest_run.id, scope.predicate(Portfolio.path))
+        )
     sources = tuple((source_health or {}).get("sources", ()))
     current_sources = sum(1 for source in sources if source.get("status") == "Current")
     return {
@@ -102,7 +106,11 @@ def recent_changes(
             .limit(1)
         ).first()
         triage, run = latest if latest else (None, None)
-        after_signal = bool(run and run.started_at >= event.ingested_at)
+        after_signal = bool(
+            run
+            and run.started_at >= event.ingested_at
+            and run.as_of_date >= event.event_date
+        )
         case = session.scalar(
             select(Case).where(Case.borrower_id == borrower.id)
             .order_by(Case.created_at.desc()).limit(1)
@@ -145,10 +153,31 @@ def borrower_risk_comparison(session: Session, borrower_id: UUID) -> dict[str, o
         if len(rows) <= index:
             return None
         entry, run = rows[index]
+        forecast = (
+            session.scalar(
+                select(Forecast).where(
+                    Forecast.run_id == run.id,
+                    Forecast.covenant_version_id == entry.worst_covenant_version_id,
+                    Forecast.horizon_days == entry.worst_horizon,
+                ).limit(1)
+            )
+            if entry.worst_covenant_version_id is not None and entry.worst_horizon is not None
+            else None
+        )
+        source = forecast.probability_source if forecast is not None else "unknown"
+        formula = forecast.formula_inputs or {} if forecast is not None else {}
+        ml_prediction = formula.get("ml_prediction") if isinstance(formula, dict) else None
+        predictor_mode = formula.get("predictor_mode") if isinstance(formula, dict) else None
+        ml_model_version = (
+            ml_prediction.get("model_version") if isinstance(ml_prediction, dict) else None
+        )
         return {
             "band": entry.band or "Unranked", "score": _percent(entry.probability),
             "at": run.finished_at, "run_id": str(run.id),
             "model_version": run.model_version,
+            "source": source,
+            "predictor_mode": predictor_mode,
+            "ml_model_version": ml_model_version,
         }
     return {"current": snapshot(0), "previous": snapshot(1)}
 

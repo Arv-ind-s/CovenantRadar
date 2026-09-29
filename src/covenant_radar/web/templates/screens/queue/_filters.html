@@ -7,6 +7,7 @@
   a browser without JavaScript and hidden once `shell-init.js` marks the
   document `.js`; the form is a plain GET either way.
 #}
+<div class="queue-toolbar">
 <form method="get"
       action="/"
       class="queue-filters"
@@ -31,15 +32,9 @@
   <fieldset class="queue-filters__fields">
     <legend class="sr-only">{{ labels.filters_legend }}</legend>
 
-    <div class="filter-group">
-      <label for="band-filter">{{ labels.column_band }}</label>
-      <select name="band" id="band-filter">
-        <option value="">Any risk band</option>
-        <option value="act" {% if filters.band == 'act' %}selected{% endif %}>{{ labels.summary_act }}</option>
-        <option value="amber" {% if filters.band == 'amber' %}selected{% endif %}>{{ labels.summary_amber }}</option>
-        <option value="watch" {% if filters.band == 'watch' %}selected{% endif %}>{{ labels.summary_watch }}</option>
-      </select>
-    </div>
+    {# The band tiles above are the band control. The current band rides
+       along here so changing another filter keeps the slice. #}
+    {% if filters.band %}<input type="hidden" name="band" value="{{ filters.band }}">{% endif %}
 
     <div class="filter-group">
       <label for="sma-band-filter">{{ labels.column_sma_band }}</label>
@@ -161,34 +156,34 @@
     </form>
     <p class="queue-save-view__status" role="status" data-save-view-status></p>
   </div>
+  <details class="queue-glossary">
+    <summary>{{ labels.glossary_title }}</summary>
+    <dl class="queue-glossary__terms">
+      <div>
+        <dt>Order</dt>
+        <dd>Row 1 is the borrower to look at first. The order weighs the risk score against the size of the exposure and how complete the data is, so a large loan with rising risk sits above a small one.</dd>
+      </div>
+      <div>
+        <dt>{{ labels.column_band }}</dt>
+        <dd><strong>Act now</strong> means a risk score of 70% or more on the covenant most at risk. <strong>Amber</strong> is 40% to 69%. <strong>Watch</strong> is below 40%: listed so nothing is missed, but not escalated.</dd>
+      </div>
+      <div>
+        <dt>{{ labels.column_dated_risk }}</dt>
+        <dd>When the forecast projects a covenant crossing its limit, and the risk score behind that. The score sets priority; it is not a guarantee that a breach will happen. If there is too little reliable data to project, the row says so instead of showing a number.</dd>
+      </div>
+      <div>
+        <dt>Next 30, 60 and 90 days</dt>
+        <dd>The risk score at each point ahead, shown in a row's detail, so you can see whether risk is building. Where a period has too little reliable data, it is marked as not shown.</dd>
+      </div>
+      <div>
+        <dt>{{ labels.column_sma_band }}</dt>
+        <dd>The RBI Special Mention Account class from the borrower's repayment record: SMA-0 is 1 to 30 days overdue, SMA-1 is 31 to 60 days, SMA-2 is 61 to 90 days. It is tracked separately from the covenant forecast.</dd>
+      </div>
+      <div>
+        <dt>{{ labels.column_what_changed }}</dt>
+        <dd>How the borrower's band has moved since the previous review, for example from Watch to Amber. A borrower's first review has nothing to compare against yet.</dd>
+      </div>
+    </dl>
+  </details>
 </div>
-
-<details class="queue-glossary">
-  <summary>{{ labels.glossary_title }}</summary>
-  <dl class="queue-glossary__terms">
-    <div>
-      <dt>Order</dt>
-      <dd>Row 1 is the borrower to look at first. The order weighs the risk score against the size of the exposure and how complete the data is, so a large loan with rising risk sits above a small one.</dd>
-    </div>
-    <div>
-      <dt>{{ labels.column_band }}</dt>
-      <dd><strong>Act now</strong> means a risk score of 70% or more on the covenant most at risk. <strong>Amber</strong> is 40% to 69%. <strong>Watch</strong> is below 40%: listed so nothing is missed, but not escalated.</dd>
-    </div>
-    <div>
-      <dt>{{ labels.column_dated_risk }}</dt>
-      <dd>When the forecast projects a covenant crossing its limit, and the risk score behind that. The score sets priority; it is not a guarantee that a breach will happen. If there is too little reliable data to project, the row says so instead of showing a number.</dd>
-    </div>
-    <div>
-      <dt>Next 30, 60 and 90 days</dt>
-      <dd>The risk score at each point ahead, shown in a row's detail, so you can see whether risk is building. Where a period has too little reliable data, it is marked as not shown.</dd>
-    </div>
-    <div>
-      <dt>{{ labels.column_sma_band }}</dt>
-      <dd>The RBI Special Mention Account class from the borrower's repayment record: SMA-0 is 1 to 30 days overdue, SMA-1 is 31 to 60 days, SMA-2 is 61 to 90 days. It is tracked separately from the covenant forecast.</dd>
-    </div>
-    <div>
-      <dt>{{ labels.column_what_changed }}</dt>
-      <dd>How the borrower's band has moved since the previous review, for example from Watch to Amber. A borrower's first review has nothing to compare against yet.</dd>
-    </div>
-  </dl>
-</details>
+</div>

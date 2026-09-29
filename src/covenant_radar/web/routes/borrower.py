@@ -367,7 +367,6 @@ def create_borrower_router(
             latest_memo=(build_persisted_memo_block(memos[0]) if memos else None),
             monitoring_comparison=borrower_risk_comparison(session, borrower.id),
             latest_signal=latest_signal,
-            forecast_mode=request.app.state.settings.forecast.ml_mode,
             ai_provider=request.app.state.settings.ai.provider,
             walkthrough_received=request.query_params.get("walkthrough") == "received",
         )

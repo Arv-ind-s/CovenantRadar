@@ -38,6 +38,11 @@ def create_demo_walkthrough_router(
     ) -> RedirectResponse:
         if not request.app.state.settings.web.demo_walkthrough_enabled:
             raise HTTPException(status_code=404)
+        # The demo launcher enables this route only for an isolated synthetic
+        # database. Keep the trigger limited to the risk-head/admin authority
+        # already trusted with model promotion, even inside that demo.
+        if not principal.has(Permission.APPROVE_MODEL_PROMOTION):
+            raise HTTPException(status_code=403)
         form = await request.form()
         reference = str(form.get("borrower_reference", ""))
         if not reference or len(reference) > 20:

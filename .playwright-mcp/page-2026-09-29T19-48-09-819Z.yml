@@ -1,0 +1,416 @@
+- generic [active] [ref=f7e1]:
+  - link "Skip to content" [ref=f7e2] [cursor=pointer]:
+    - /url: "#main-content"
+  - generic [ref=f7e3]:
+    - complementary "Workspace navigation" [ref=f7e4]:
+      - link "Covenant Radar" [ref=f7e6] [cursor=pointer]:
+        - /url: /
+        - generic [ref=f7e13]:
+          - strong [ref=f7e14]: Covenant
+          - generic [ref=f7e15]: Radar
+      - navigation "Primary navigation" [ref=f7e16]:
+        - region [ref=f7e17]:
+          - heading "Monitor" [level=2] [ref=f7e18]
+          - link "Portfolio queue" [ref=f7e19] [cursor=pointer]:
+            - /url: /
+          - link "Market intelligence" [ref=f7e23] [cursor=pointer]:
+            - /url: /intelligence
+          - link "Cases" [ref=f7e30] [cursor=pointer]:
+            - /url: /cases
+          - link "0 unread notifications" [ref=f7e34] [cursor=pointer]:
+            - /url: /notifications
+            - generic [ref=f7e37]: Notifications (0)
+            - generic [aria-hidden] [ref=f7e38]: "0"
+          - link "Search" [ref=f7e39] [cursor=pointer]:
+            - /url: /search
+        - region [ref=f7e44]:
+          - heading "Portfolio data" [level=2] [ref=f7e45]
+          - link "Borrowers" [ref=f7e46] [cursor=pointer]:
+            - /url: /borrowers
+          - link "Facilities" [ref=f7e51] [cursor=pointer]:
+            - /url: /facilities
+          - link "Portfolios" [ref=f7e55] [cursor=pointer]:
+            - /url: /portfolios
+          - link "Covenants" [ref=f7e59] [cursor=pointer]:
+            - /url: /covenants
+          - link "Certificates" [ref=f7e63] [cursor=pointer]:
+            - /url: /certificates
+        - region [ref=f7e68]:
+          - heading "Workflows" [level=2] [ref=f7e69]
+          - link "Intake" [ref=f7e70] [cursor=pointer]:
+            - /url: /intake
+          - link "Document review" [ref=f7e74] [cursor=pointer]:
+            - /url: /documents/review
+          - link "Simulator" [ref=f7e78] [cursor=pointer]:
+            - /url: /simulator
+          - link "Governance" [ref=f7e82] [cursor=pointer]:
+            - /url: /governance
+        - region [ref=f7e86]:
+          - heading "Administration" [level=2] [ref=f7e87]
+          - link "Action catalogue" [ref=f7e88] [cursor=pointer]:
+            - /url: /admin/catalogue
+      - button "Collapse sidebar" [expanded] [ref=f7e93] [cursor=pointer]
+    - generic [ref=f7e97]:
+      - banner [ref=f7e98]:
+        - generic [ref=f7e100]:
+          - generic [ref=f7e101]: Workspace
+          - generic [ref=f7e104]: Current view
+        - search [ref=f7e105]:
+          - generic [ref=f7e106]: Search the workspace
+          - searchbox "Search the workspace" [ref=f7e107]
+          - generic: /
+        - generic [ref=f7e108]:
+          - button "Live activity" [ref=f7e109]:
+            - generic [ref=f7e111]: Updates connected
+          - button "Use dark theme" [ref=f7e113] [cursor=pointer]
+          - button "Switch to Hindi" [ref=f7e117] [cursor=pointer]: हिं
+          - button "Open user menu" [ref=f7e119] [cursor=pointer]
+      - main [ref=f7e123]:
+        - generic [ref=f7e124]:
+          - generic [ref=f7e125]:
+            - paragraph [ref=f7e126]: Decision workspace
+            - heading "Portfolio queue" [level=1] [ref=f7e127]
+            - paragraph [ref=f7e128]: Every borrower in your portfolio, ranked by how soon they need your attention.
+          - generic [ref=f7e129]:
+            - group [ref=f7e130]:
+              - generic "Simulate a signal" [ref=f7e131] [cursor=pointer]
+              - option "Arclume Textile Mills Private Limited" [selected]
+              - option "Brindale Civil Projects Private Limited"
+              - option "Cinderbay Marine Services Private Limited"
+              - option "Ashmere Metalworks Private Limited"
+              - option "Deepwell Urban Estates Private Limited"
+              - option "Ardentia Specialty Chemicals Private Limited"
+              - option "Bellora Mobility Components Private Limited"
+              - option "Amberwick Mineral Resources Private Limited"
+            - link "Market intelligence →" [ref=f7e132] [cursor=pointer]:
+              - /url: /intelligence
+        - generic [ref=f7e134]:
+          - region [ref=f7e135]:
+            - heading "Portfolio snapshot" [level=2] [ref=f7e136]
+            - generic [ref=f7e137]:
+              - paragraph [ref=f7e138]:
+                - strong [ref=f7e139]: Most urgent first
+                - generic [ref=f7e140]: From the review of 29 Sep 2026
+                - generic [ref=f7e141]:
+                  - text: updated
+                  - time [ref=f7e142]: just now
+                - button "Refresh" [ref=f7e143] [cursor=pointer]
+              - paragraph [ref=f7e144]:
+                - generic [ref=f7e145]:
+                  - text: Data checked
+                  - time [ref=f7e146]: 29 Sep, 19:45 UTC
+                - generic [ref=f7e147]: ·23 of 23 market sources current
+                - generic [ref=f7e148]:
+                  - text: ·Next check
+                  - time [ref=f7e149]: 30 Sep, 01:00 UTC
+            - navigation "Risk band" [ref=f7e150]:
+              - link "All borrowers 24 ₹1582.99 crore · no band changes" [ref=f7e151] [cursor=pointer]:
+                - /url: /
+                - generic [ref=f7e152]: All borrowers
+                - strong [ref=f7e153]: "24"
+                - generic [ref=f7e154]: ₹1582.99 crore · no band changes
+              - link "Act now 8 Highest risk. Open these first" [ref=f7e155] [cursor=pointer]:
+                - /url: /?band=act
+                - generic "Act now" [ref=f7e156]
+                - strong [ref=f7e157]: "8"
+                - generic [ref=f7e158]: Highest risk. Open these first
+              - link "Amber 7 Risk is building. Keep close" [ref=f7e162] [cursor=pointer]:
+                - /url: /?band=amber
+                - generic "Amber" [ref=f7e163]
+                - strong [ref=f7e164]: "7"
+                - generic [ref=f7e165]: Risk is building. Keep close
+              - link "Watch 9 Lower risk. Routine monitoring" [ref=f7e169] [cursor=pointer]:
+                - /url: /?band=watch
+                - generic "Watch" [ref=f7e170]
+                - strong [ref=f7e171]: "9"
+                - generic [ref=f7e172]: Lower risk. Routine monitoring
+            - region [ref=f7e176]:
+              - heading "What's new" [level=3] [ref=f7e177]
+              - list [ref=f7e178]:
+                - listitem [ref=f7e179]:
+                  - time [ref=f7e180]: 29 Sep, 19:45
+                  - paragraph [ref=f7e181]:
+                    - strong [ref=f7e182]: Arclume Textile Mills Private Limited
+                    - link "Payment 40 days overdue" [ref=f7e183] [cursor=pointer]:
+                      - /url: /borrowers/B-000004#case-signals
+                    - text: →
+                    - link "now rated Act now" [ref=f7e184] [cursor=pointer]:
+                      - /url: /borrowers/B-000004#case-forecast
+                    - text: →
+                    - link "case open" [ref=f7e185] [cursor=pointer]:
+                      - /url: /cases/C-018C2AE68684
+                    - text: Demo data
+                - listitem [ref=f7e186]:
+                  - time [ref=f7e187]: 29 Sep, 19:31
+                  - paragraph [ref=f7e188]:
+                    - strong [ref=f7e189]: Eastmere Equipment Leasing Private Limited
+                    - link "News alert, risk score 0.56" [ref=f7e190] [cursor=pointer]:
+                      - /url: /borrowers/B-000024#case-signals
+                    - text: →
+                    - link "now rated Amber" [ref=f7e191] [cursor=pointer]:
+                      - /url: /borrowers/B-000024#case-forecast
+                - listitem [ref=f7e192]:
+                  - time [ref=f7e193]: 29 Sep, 19:31
+                  - paragraph [ref=f7e194]:
+                    - strong [ref=f7e195]: Driftwood Advisory Services Private Limited
+                    - link "News alert, risk score 1.5" [ref=f7e196] [cursor=pointer]:
+                      - /url: /borrowers/B-000023#case-signals
+                    - text: →
+                    - link "now rated Watch" [ref=f7e197] [cursor=pointer]:
+                      - /url: /borrowers/B-000023#case-forecast
+          - generic [ref=f7e198]:
+            - group [ref=f7e200]:
+              - text: ▴
+              - group "Filter borrowers" [ref=f7e201]:
+                - generic [ref=f7e203]:
+                  - generic [ref=f7e204]: Repayment status
+                  - combobox "Repayment status" [ref=f7e205]:
+                    - option "Any repayment status" [selected]
+                    - option "No overdues"
+                    - option "SMA-0, 1 to 30 days overdue"
+                    - option "SMA-1, 31 to 60 days overdue"
+                    - option "SMA-2, 61 to 90 days overdue"
+                    - option "Over 90 days overdue"
+                - generic [ref=f7e206]:
+                  - generic [ref=f7e207]: Case status
+                  - combobox "Case status" [ref=f7e208]:
+                    - option "Any case status" [selected]
+                    - option "No case opened"
+                    - option "Open"
+                    - option "In progress"
+                    - option "Monitoring"
+                    - option "Escalated"
+                    - option "Closed"
+                - generic [ref=f7e209]:
+                  - generic [ref=f7e210]: Warning signal
+                  - combobox "Warning signal" [ref=f7e211]:
+                    - option "Any warning signal" [selected]
+                    - option "Account activity"
+                    - option "Payment behaviour"
+                    - option "Facility utilisation"
+                    - option "Treasury flows"
+                    - option "Concentration exposure"
+                    - option "Industry conditions"
+                    - option "Negative news"
+            - generic [ref=f7e212]:
+              - status [ref=f7e213]:
+                - text: Showing
+                - strong [ref=f7e214]: "8"
+                - text: of 24 borrowers
+              - list "Active filters" [ref=f7e215]:
+                - listitem [ref=f7e216]:
+                  - 'link "Remove filter: Risk band Act now" [ref=f7e217] [cursor=pointer]':
+                    - /url: /
+                    - generic [ref=f7e218]: Risk band
+                    - generic [ref=f7e219]: Act now
+                    - generic [aria-hidden] [ref=f7e220]: ×
+                - listitem [ref=f7e221]:
+                  - link "Clear all" [ref=f7e222] [cursor=pointer]:
+                    - /url: /
+              - button "Save this view" [ref=f7e224] [cursor=pointer]
+              - group [ref=f7e225]:
+                - generic "How to read this queue" [ref=f7e226] [cursor=pointer]
+          - region "Portfolio queue results" [ref=f7e227]:
+            - table [ref=f7e229]:
+              - caption [ref=f7e230]: Portfolio queue — Most urgent first, 29 Sep 2026
+              - rowgroup [ref=f7e231]:
+                - row [ref=f7e232]:
+                  - columnheader "Row detail" [ref=f7e233]
+                  - columnheader [ref=f7e235]:
+                    - checkbox "Select all rows" [ref=f7e236]
+                  - columnheader "#" [ref=f7e237]
+                  - columnheader "Borrower" [ref=f7e238]
+                  - columnheader "Exposure" [ref=f7e239]
+                  - columnheader "Risk band" [ref=f7e240]
+                  - columnheader "Trend" [ref=f7e241]
+                  - columnheader "Outlook" [ref=f7e242]
+              - rowgroup [ref=f7e243]:
+                - row [ref=f7e244]:
+                  - cell [ref=f7e245]:
+                    - button "Show detail for Arclume Textile Mills Private Limited" [ref=f7e246] [cursor=pointer]
+                  - cell [ref=f7e249]:
+                    - checkbox "Select Arclume Textile Mills Private Limited" [ref=f7e250]
+                  - cell "1" [ref=f7e251]
+                  - 'cell "Arclume Textile Mills Private Limited B-000004 · SMA-2, 61 to 90 days overdue Market: already below minimum" [ref=f7e252]':
+                    - link "Arclume Textile Mills Private Limited" [ref=f7e253] [cursor=pointer]:
+                      - /url: /borrowers/B-000004
+                    - generic [ref=f7e254]:
+                      - text: B-000004 · SMA-2, 61 to 90 days overdue
+                      - generic "Interest cover 1.08x is already below the 1.50x minimum; cotton +2.2% in the Sep 2026 quarter so far adds pressure." [ref=f7e255]: "Market: already below minimum"
+                  - cell "₹339.2 crore" [ref=f7e256]
+                  - cell "Act" [ref=f7e257]
+                  - cell [ref=f7e259]:
+                    - 'generic "Arclume Textile Mills Private Limited: risk trend over the stored forecast" [ref=f7e260]':
+                      - 'img "Arclume Textile Mills Private Limited: risk trend over the stored forecast" [ref=f7e261]'
+                  - cell "Could cross limit by 02 Oct 2026 3 days away · risk score 99% · Why Arclume Textile Mills Private Limited is ranked here" [ref=f7e264]:
+                    - generic [ref=f7e265]: Could cross limit by 02 Oct 2026
+                    - generic [ref=f7e266]:
+                      - text: 3 days away · risk score 99% ·
+                      - link "Why Arclume Textile Mills Private Limited is ranked here" [ref=f7e267] [cursor=pointer]:
+                        - /url: /why/forecast/01a0eeb3-7b4b-730d-93ca-cbf21e70c536
+                        - text: See why
+                - row [ref=f7e268]:
+                  - cell [ref=f7e269]:
+                    - button "Show detail for Brindale Civil Projects Private Limited" [ref=f7e270] [cursor=pointer]
+                  - cell [ref=f7e273]:
+                    - checkbox "Select Brindale Civil Projects Private Limited" [ref=f7e274]
+                  - cell "2" [ref=f7e275]
+                  - 'cell "Brindale Civil Projects Private Limited B-000012 · SMA-0, 1 to 30 days overdue Market: adverse, within cushion" [ref=f7e276]':
+                    - link "Brindale Civil Projects Private Limited" [ref=f7e277] [cursor=pointer]:
+                      - /url: /borrowers/B-000012
+                    - generic [ref=f7e278]:
+                      - text: B-000012 · SMA-0, 1 to 30 days overdue
+                      - generic "Input basket (iron ore, brent crude) +0.3% at 22 Sep 2026 prices vs a 26.6% breakeven." [ref=f7e279]: "Market: adverse, within cushion"
+                  - cell "₹293.29 crore" [ref=f7e280]
+                  - cell "Act" [ref=f7e281]
+                  - cell [ref=f7e283]:
+                    - 'generic "Brindale Civil Projects Private Limited: risk trend over the stored forecast" [ref=f7e284]':
+                      - 'img "Brindale Civil Projects Private Limited: risk trend over the stored forecast" [ref=f7e285]'
+                  - cell "Could cross limit by 22 Nov 2026 54 days away · risk score 99% · Why Brindale Civil Projects Private Limited is ranked here" [ref=f7e288]:
+                    - generic [ref=f7e289]: Could cross limit by 22 Nov 2026
+                    - generic [ref=f7e290]:
+                      - text: 54 days away · risk score 99% ·
+                      - link "Why Brindale Civil Projects Private Limited is ranked here" [ref=f7e291] [cursor=pointer]:
+                        - /url: /why/forecast/01a0eeb3-8327-7db4-bc8f-5371b9046791
+                        - text: See why
+                - row [ref=f7e292]:
+                  - cell [ref=f7e293]:
+                    - button "Show detail for Cinderbay Marine Services Private Limited" [ref=f7e294] [cursor=pointer]
+                  - cell [ref=f7e297]:
+                    - checkbox "Select Cinderbay Marine Services Private Limited" [ref=f7e298]
+                  - cell "3" [ref=f7e299]
+                  - 'cell "Cinderbay Marine Services Private Limited B-000016 · SMA-1, 31 to 60 days overdue Market: move uses most of cushion" [ref=f7e300]':
+                    - link "Cinderbay Marine Services Private Limited" [ref=f7e301] [cursor=pointer]:
+                      - /url: /borrowers/B-000016
+                    - generic [ref=f7e302]:
+                      - text: B-000016 · SMA-1, 31 to 60 days overdue
+                      - generic "Brent crude +13.4% at 22 Sep 2026 prices vs a 19.4% breakeven." [ref=f7e303]: "Market: move uses most of cushion"
+                  - cell "₹284.53 crore" [ref=f7e304]
+                  - cell "Act" [ref=f7e305]
+                  - cell [ref=f7e307]:
+                    - 'generic "Cinderbay Marine Services Private Limited: risk trend over the stored forecast" [ref=f7e308]':
+                      - 'img "Cinderbay Marine Services Private Limited: risk trend over the stored forecast" [ref=f7e309]'
+                  - cell "Could cross limit by 13 Dec 2026 75 days away · risk score 99% · Why Cinderbay Marine Services Private Limited is ranked here" [ref=f7e312]:
+                    - generic [ref=f7e313]: Could cross limit by 13 Dec 2026
+                    - generic [ref=f7e314]:
+                      - text: 75 days away · risk score 99% ·
+                      - link "Why Cinderbay Marine Services Private Limited is ranked here" [ref=f7e315] [cursor=pointer]:
+                        - /url: /why/forecast/01a0eeb3-85d2-7612-8cc8-f6d24da1d135
+                        - text: See why
+                - row [ref=f7e316]:
+                  - cell [ref=f7e317]:
+                    - button "Show detail for Ashmere Metalworks Private Limited" [ref=f7e318] [cursor=pointer]
+                  - cell [ref=f7e321]:
+                    - checkbox "Select Ashmere Metalworks Private Limited" [ref=f7e322]
+                  - cell "4" [ref=f7e323]
+                  - cell "Ashmere Metalworks Private Limited B-000007 · SMA-1, 31 to 60 days overdue" [ref=f7e324]:
+                    - link "Ashmere Metalworks Private Limited" [ref=f7e325] [cursor=pointer]:
+                      - /url: /borrowers/B-000007
+                    - generic [ref=f7e326]: B-000007 · SMA-1, 31 to 60 days overdue
+                  - cell "₹241.58 crore" [ref=f7e327]
+                  - cell "Act" [ref=f7e328]
+                  - cell [ref=f7e330]:
+                    - 'generic "Ashmere Metalworks Private Limited: risk trend over the stored forecast" [ref=f7e331]':
+                      - 'img "Ashmere Metalworks Private Limited: risk trend over the stored forecast" [ref=f7e332]'
+                  - cell "At or past its limit now as of 29 Sep 2026 · risk score 99% · Why Ashmere Metalworks Private Limited is ranked here" [ref=f7e335]:
+                    - generic [ref=f7e336]: At or past its limit now
+                    - generic [ref=f7e337]:
+                      - text: as of 29 Sep 2026 · risk score 99% ·
+                      - link "Why Ashmere Metalworks Private Limited is ranked here" [ref=f7e338] [cursor=pointer]:
+                        - /url: /why/forecast/01a0eeb3-7d44-7cca-b7f9-2de008e5a5ae
+                        - text: See why
+                - row [ref=f7e339]:
+                  - cell [ref=f7e340]:
+                    - button "Show detail for Deepwell Urban Estates Private Limited" [ref=f7e341] [cursor=pointer]
+                  - cell [ref=f7e344]:
+                    - checkbox "Select Deepwell Urban Estates Private Limited" [ref=f7e345]
+                  - cell "7" [ref=f7e346]
+                  - cell "Deepwell Urban Estates Private Limited B-000022 · SMA-0, 1 to 30 days overdue" [ref=f7e347]:
+                    - link "Deepwell Urban Estates Private Limited" [ref=f7e348] [cursor=pointer]:
+                      - /url: /borrowers/B-000022
+                    - generic [ref=f7e349]: B-000022 · SMA-0, 1 to 30 days overdue
+                  - cell "₹148.91 crore" [ref=f7e350]
+                  - cell "Act" [ref=f7e351]
+                  - cell [ref=f7e353]:
+                    - 'generic "Deepwell Urban Estates Private Limited: risk trend over the stored forecast" [ref=f7e354]':
+                      - 'img "Deepwell Urban Estates Private Limited: risk trend over the stored forecast" [ref=f7e355]'
+                  - cell "At or past its limit now as of 29 Sep 2026 · risk score 99% · Why Deepwell Urban Estates Private Limited is ranked here" [ref=f7e358]:
+                    - generic [ref=f7e359]: At or past its limit now
+                    - generic [ref=f7e360]:
+                      - text: as of 29 Sep 2026 · risk score 99% ·
+                      - link "Why Deepwell Urban Estates Private Limited is ranked here" [ref=f7e361] [cursor=pointer]:
+                        - /url: /why/forecast/01a0eeb3-8aa4-77c0-b151-005dc152a8e8
+                        - text: See why
+                - row [ref=f7e362]:
+                  - cell [ref=f7e363]:
+                    - button "Show detail for Ardentia Specialty Chemicals Private Limited" [ref=f7e364] [cursor=pointer]
+                  - cell [ref=f7e367]:
+                    - checkbox "Select Ardentia Specialty Chemicals Private Limited" [ref=f7e368]
+                  - cell "8" [ref=f7e369]
+                  - 'cell "Ardentia Specialty Chemicals Private Limited B-000005 · SMA-1, 31 to 60 days overdue Market: move uses most of cushion" [ref=f7e370]':
+                    - link "Ardentia Specialty Chemicals Private Limited" [ref=f7e371] [cursor=pointer]:
+                      - /url: /borrowers/B-000005
+                    - generic [ref=f7e372]:
+                      - text: B-000005 · SMA-1, 31 to 60 days overdue
+                      - generic "Input basket (brent crude, asia lng) +13.7% at 22 Sep 2026 prices vs a 18.7% breakeven." [ref=f7e373]: "Market: move uses most of cushion"
+                  - cell "₹112.53 crore" [ref=f7e374]
+                  - cell "Act" [ref=f7e375]
+                  - cell [ref=f7e377]:
+                    - 'generic "Ardentia Specialty Chemicals Private Limited: risk trend over the stored forecast" [ref=f7e378]':
+                      - 'img "Ardentia Specialty Chemicals Private Limited: risk trend over the stored forecast" [ref=f7e379]'
+                  - cell "Could cross limit by 16 Oct 2026 17 days away · risk score 99% · Why Ardentia Specialty Chemicals Private Limited is ranked here" [ref=f7e382]:
+                    - generic [ref=f7e383]: Could cross limit by 16 Oct 2026
+                    - generic [ref=f7e384]:
+                      - text: 17 days away · risk score 99% ·
+                      - link "Why Ardentia Specialty Chemicals Private Limited is ranked here" [ref=f7e385] [cursor=pointer]:
+                        - /url: /why/forecast/01a0eeb3-7b9a-775c-bfd6-e093f357e322
+                        - text: See why
+                - row [ref=f7e386]:
+                  - cell [ref=f7e387]:
+                    - button "Show detail for Bellora Mobility Components Private Limited" [ref=f7e388] [cursor=pointer]
+                  - cell [ref=f7e391]:
+                    - checkbox "Select Bellora Mobility Components Private Limited" [ref=f7e392]
+                  - cell "9" [ref=f7e393]
+                  - cell "Bellora Mobility Components Private Limited B-000009 · No overdues" [ref=f7e394]:
+                    - link "Bellora Mobility Components Private Limited" [ref=f7e395] [cursor=pointer]:
+                      - /url: /borrowers/B-000009
+                    - generic [ref=f7e396]: B-000009 · No overdues
+                  - cell "₹91.37 crore" [ref=f7e397]
+                  - cell "Act" [ref=f7e398]
+                  - cell [ref=f7e400]:
+                    - 'generic "Bellora Mobility Components Private Limited: risk trend over the stored forecast" [ref=f7e401]':
+                      - 'img "Bellora Mobility Components Private Limited: risk trend over the stored forecast" [ref=f7e402]'
+                  - cell "Could cross limit by 01 Nov 2026 33 days away · risk score 99% · Why Bellora Mobility Components Private Limited is ranked here" [ref=f7e405]:
+                    - generic [ref=f7e406]: Could cross limit by 01 Nov 2026
+                    - generic [ref=f7e407]:
+                      - text: 33 days away · risk score 99% ·
+                      - link "Why Bellora Mobility Components Private Limited is ranked here" [ref=f7e408] [cursor=pointer]:
+                        - /url: /why/forecast/01a0eeb3-7e4f-7b9e-8e97-9c2e3f93f27d
+                        - text: See why
+                - row [ref=f7e409]:
+                  - cell [ref=f7e410]:
+                    - button "Show detail for Amberwick Mineral Resources Private Limited" [ref=f7e411] [cursor=pointer]
+                  - cell [ref=f7e414]:
+                    - checkbox "Select Amberwick Mineral Resources Private Limited" [ref=f7e415]
+                  - cell "10" [ref=f7e416]
+                  - 'cell "Amberwick Mineral Resources Private Limited B-000002 · Over 90 days overdue Market: adverse, within cushion" [ref=f7e417]':
+                    - link "Amberwick Mineral Resources Private Limited" [ref=f7e418] [cursor=pointer]:
+                      - /url: /borrowers/B-000002
+                    - generic [ref=f7e419]:
+                      - text: B-000002 · Over 90 days overdue
+                      - generic "Brent crude +13.4% at 22 Sep 2026 prices vs a 30.1% breakeven." [ref=f7e420]: "Market: adverse, within cushion"
+                  - cell "₹71.58 crore" [ref=f7e421]
+                  - cell "Act" [ref=f7e422]
+                  - cell [ref=f7e424]:
+                    - 'generic "Amberwick Mineral Resources Private Limited: risk trend over the stored forecast" [ref=f7e425]':
+                      - 'img "Amberwick Mineral Resources Private Limited: risk trend over the stored forecast" [ref=f7e426]'
+                  - cell "At or past its limit now as of 29 Sep 2026 · risk score 99% · Why Amberwick Mineral Resources Private Limited is ranked here" [ref=f7e429]:
+                    - generic [ref=f7e430]: At or past its limit now
+                    - generic [ref=f7e431]:
+                      - text: as of 29 Sep 2026 · risk score 99% ·
+                      - link "Why Amberwick Mineral Resources Private Limited is ranked here" [ref=f7e432] [cursor=pointer]:
+                        - /url: /why/forecast/01a0eeb3-7a29-71eb-ac6c-cefc63b9fbcb
+                        - text: See why
+            - generic [ref=f7e433]:
+              - text: Last updated
+              - time [ref=f7e434]: just now

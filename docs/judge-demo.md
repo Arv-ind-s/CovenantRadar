@@ -13,6 +13,16 @@ filename is required. All data is synthetic. Gen AI is in recorded mode and
 makes no live provider calls. Train/setup output includes the synthetic ML
 report; the report is also saved to `var/ml-reference/report.json`.
 
+The queue shows the last completed scan, the next nightly scan, public-source
+health, and a scoped feed of stored signal and scoring changes. With the
+`riskhead` demo login, choose a borrower in **Synthetic walkthrough borrower**
+and select **Inject synthetic payment signal**. This uses the ingestion service
+and submits the real pipeline; the borrower page compares the previous and
+new stored outcomes. Refresh the queue after the run finishes to see the
+changed band and case. This button is disabled outside the demo launcher by
+default. The normal schedule remains nightly; the demo action is an explicit
+manual trigger, not a claim that bank feeds are connected continuously.
+
 ## Five-minute story
 
 1. **Problem, 30 seconds:** “A covenant can look healthy at the last filing and

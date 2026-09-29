@@ -1,0 +1,726 @@
+/*
+  Portfolio queue.
+
+  Loaded last, after `case-file.css`, so these rules settle the queue's own
+  layout in one place over the shared sheets. Token-only.
+
+  The screen answers one question, "who do I open first", so the ledger
+  must start within the first screen. Everything above it is kept to three
+  quiet layers: a status line, the band tiles, and the three newest changes.
+*/
+
+/* The queue's own width decides its layout, not the viewport's: with the
+   sidebar open a 1024-wide window leaves the queue about 42rem. */
+.queue-workspace {
+  gap: var(--space-4);
+  container-type: inline-size;
+  container-name: queue;
+}
+
+/* ------------------------------------------------------------------ */
+/* Triage card                                                         */
+/* ------------------------------------------------------------------ */
+
+.queue-workspace .queue-triage-bar {
+  gap: var(--space-4);
+  padding: var(--space-4) var(--space-5);
+}
+
+/* One line on a desk: how fresh the ranking is on the left, how fresh the
+   data behind it is on the right. */
+.queue-status {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: baseline;
+  justify-content: space-between;
+  gap: var(--space-1) var(--space-5);
+}
+
+.queue-status p {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: baseline;
+  gap: var(--space-1) var(--space-3);
+  margin: 0;
+  color: var(--ink-muted);
+  font-family: var(--font-ui);
+  font-size: var(--size-caption);
+}
+
+.queue-status .queue-freshness__rank {
+  color: var(--ink);
+  font-family: var(--font-ui);
+  font-weight: var(--weight-semi);
+}
+
+.queue-status__data > * + *::before {
+  margin-inline-end: var(--space-3);
+  color: var(--hairline);
+  content: "·";
+}
+
+.queue-status__problem {
+  color: var(--watch);
+  font-weight: var(--weight-semi);
+}
+
+.queue-status .queue-freshness__check {
+  font-size: var(--size-caption);
+}
+
+/* Band tiles: label and count on one line, the meaning under it. */
+.queue-workspace .queue-bands {
+  gap: var(--space-3);
+}
+
+.queue-workspace .queue-band-tile {
+  grid-template-columns: minmax(0, 1fr) auto;
+  grid-template-areas:
+    "label value"
+    "hint hint"
+    "share share";
+  align-items: center;
+  gap: calc(var(--space-1) / 2) var(--space-3);
+  padding: var(--space-2) var(--space-4) var(--space-3);
+}
+
+.queue-workspace .queue-band-tile > .queue-band-tile__label,
+.queue-workspace .queue-band-tile > .queue-summary-chip {
+  grid-area: label;
+  justify-self: start;
+}
+
+.queue-workspace .queue-band-tile__label {
+  color: var(--ink);
+  font-family: var(--font-ui);
+  font-size: var(--size-data);
+  font-weight: var(--weight-semi);
+}
+
+.queue-workspace .queue-band-tile__value {
+  grid-area: value;
+  font-size: var(--size-case-title);
+}
+
+.queue-workspace .queue-band-tile__hint {
+  grid-area: hint;
+  color: var(--ink-muted);
+  font-family: var(--font-ui);
+  font-size: var(--size-caption);
+  line-height: 1.35;
+}
+
+.queue-workspace .queue-band-tile__share {
+  grid-area: share;
+  margin-block-start: var(--space-1);
+}
+
+/* What's new: always open, one line per change. */
+.queue-workspace .queue-activity {
+  margin: 0;
+  padding: var(--space-3) 0 0;
+  border: 0;
+  border-block-start: var(--border);
+  border-radius: 0;
+  background: transparent;
+}
+
+.queue-activity__title {
+  margin: 0 0 var(--space-2);
+  color: var(--ink-muted);
+  font-family: var(--font-ui);
+  font-size: var(--size-caption);
+  font-weight: var(--weight-bold);
+  letter-spacing: var(--tracking-label);
+  text-transform: uppercase;
+}
+
+.queue-workspace .queue-activity__list {
+  display: grid;
+  gap: var(--space-1);
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+
+.queue-workspace .queue-activity__list li {
+  display: grid;
+  grid-template-columns: 7rem minmax(0, 1fr);
+  align-items: baseline;
+  gap: var(--space-3);
+  padding: 0;
+  border: 0;
+}
+
+.queue-workspace .queue-activity__list time {
+  color: var(--ink-muted);
+  font-family: var(--font-data);
+  font-size: var(--size-caption);
+  font-variant-numeric: tabular-nums;
+}
+
+.queue-workspace .queue-activity__list p {
+  margin: 0;
+  font-size: var(--size-data);
+  line-height: 1.5;
+}
+
+.queue-activity__list strong {
+  margin-inline-end: var(--space-1);
+  font-weight: var(--weight-semi);
+}
+
+.queue-workspace .queue-activity__change {
+  display: inline;
+  margin-inline-start: var(--space-2);
+  color: var(--ink-muted);
+}
+
+.queue-activity__tag {
+  margin-inline-start: var(--space-2);
+  padding: 0 var(--space-2);
+  border-radius: var(--radius-pill);
+  background: var(--surface-subtle);
+  color: var(--ink-muted);
+  font-size: var(--size-caption);
+}
+
+.queue-activity__empty {
+  margin: 0;
+  color: var(--ink-muted);
+  font-size: var(--size-data);
+}
+
+/* The demo control: a small menu in the page heading, opened on demand.
+   This sheet loads on every page, so heading rules are scoped to the one
+   whose main holds the queue. */
+main:has(.queue-workspace) .page-heading__actions {
+  align-items: center;
+  gap: var(--space-2);
+}
+
+/* `details:not(.shell-user-menu)` boxes and clips every `<details>`, which
+   cut the menu off below its own summary; that selector outranks a lone
+   class, hence the element in this one. */
+/* The heading's entrance animation leaves it a stacking context of its
+   own, which the content below painted over; lift it while the menu is
+   open so the menu sits above the triage card. */
+.page-heading:has(details.queue-demo-menu[open]) {
+  z-index: 20;
+}
+
+details.queue-demo-menu {
+  position: relative;
+  overflow: visible;
+  border: 0;
+  border-radius: 0;
+  background: transparent;
+}
+
+.queue-demo-menu > summary {
+  list-style: none;
+  cursor: pointer;
+}
+
+.queue-demo-menu > summary::-webkit-details-marker {
+  display: none;
+}
+
+.queue-demo-menu[open] > summary {
+  border-color: var(--accent);
+  color: var(--accent);
+}
+
+.queue-demo-menu .queue-demo {
+  position: absolute;
+  inset-block-start: calc(100% + var(--space-2));
+  inset-inline-end: 0;
+  z-index: 20;
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) auto;
+  gap: var(--space-2);
+  width: min(26rem, 90vw);
+  margin: 0;
+  padding: var(--space-4);
+  border: var(--border);
+  border-radius: var(--radius-md);
+  background: var(--surface-overlay);
+  box-shadow: var(--shadow-lg);
+}
+
+.queue-demo-menu .queue-demo label,
+.queue-demo-menu .queue-demo__note {
+  grid-column: 1 / -1;
+  width: auto;
+  margin: 0;
+}
+
+.queue-demo-menu .queue-demo label {
+  font-size: var(--size-data);
+  font-weight: var(--weight-semi);
+}
+
+.queue-demo-menu .queue-demo__note {
+  color: var(--ink-muted);
+  font-size: var(--size-caption);
+}
+
+.queue-demo-menu .queue-demo select {
+  width: 100%;
+  min-width: 0;
+}
+
+/* The shared rule for every `button` in `.page-content` outranks the
+   secondary modifier on its own; these are secondary actions. */
+.page-content .queue-row-actions button.button--secondary {
+  border: var(--border);
+  background: var(--surface-raised);
+  color: var(--ink);
+  box-shadow: none;
+}
+
+.page-content .queue-row-actions button.button--secondary:hover {
+  border-color: var(--accent);
+  background: var(--accent-soft);
+  color: var(--accent);
+}
+
+/* ------------------------------------------------------------------ */
+/* Toolbar: filters, count, saved views and the glossary on one row    */
+/* ------------------------------------------------------------------ */
+
+.queue-toolbar {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: flex-end;
+  justify-content: space-between;
+  gap: var(--space-3) var(--space-5);
+}
+
+.queue-toolbar .queue-filters {
+  flex: 1 1 34rem;
+  min-width: 0;
+  margin: 0;
+}
+
+.queue-toolbar .queue-filters__fields {
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  gap: var(--space-2);
+}
+
+.queue-toolbar .filter-group label {
+  position: absolute;
+  width: var(--border-width);
+  height: var(--border-width);
+  margin: calc(var(--border-width) * -1);
+  padding: 0;
+  overflow: hidden;
+  clip-path: inset(50%);
+  white-space: nowrap;
+}
+
+.queue-toolbar .queue-filters__state {
+  align-self: center;
+}
+
+.queue-toolbar .queue-filters__state {
+  display: flex;
+  flex: 0 1 auto;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: var(--space-2) var(--space-4);
+  margin: 0;
+}
+
+.queue-toolbar .queue-filters__state:has(.queue-glossary[open]) {
+  flex-basis: 100%;
+}
+
+.queue-toolbar .queue-filters__count {
+  margin: 0;
+}
+
+/* The glossary is a link-sized control until it is opened. */
+.queue-toolbar .queue-glossary {
+  padding: 0;
+  border: 0;
+  background: transparent;
+}
+
+.queue-toolbar .queue-glossary > summary {
+  color: var(--accent);
+  font-size: var(--size-data);
+  font-weight: var(--weight-semi);
+  list-style: none;
+}
+
+.queue-toolbar .queue-glossary > summary::-webkit-details-marker {
+  display: none;
+}
+
+.queue-toolbar .queue-glossary[open] {
+  flex-basis: 100%;
+  order: 99;
+  padding: var(--space-4);
+  border: var(--border);
+  border-radius: var(--radius-md);
+  background: var(--surface-subtle);
+}
+
+/* ------------------------------------------------------------------ */
+/* Ledger                                                              */
+/* ------------------------------------------------------------------ */
+
+/*
+  Row height is set by the tallest cell and names never truncate, so every
+  column except the borrower gets a fixed width and the borrower takes the
+  rest. With the outlook at two lines, most rows are two lines tall.
+*/
+.queue-ledger-region .ledger-table__table th,
+.queue-ledger-region .ledger-table__table td {
+  padding: var(--space-3);
+}
+
+.queue-ledger-region .ledger-table__table .ledger-table__heading--icon,
+.queue-ledger-region .ledger-table__table .ledger-row__cell--icon {
+  width: var(--hit-min);
+  padding-inline: 0;
+}
+
+.queue-ledger-region .ledger-table__table .ledger-table__heading--rank,
+.queue-ledger-region .ledger-table__table .ledger-row__cell--rank {
+  width: var(--space-8);
+  padding-inline: var(--space-1) var(--space-2);
+}
+
+.queue-ledger-region .ledger-table__heading--amount,
+.queue-ledger-region .ledger-row__cell--amount {
+  width: 7rem;
+}
+
+.queue-ledger-region thead th:nth-child(6),
+.queue-ledger-region tbody tr.ledger-row > td:nth-child(6) {
+  width: 6rem;
+}
+
+.queue-ledger-region .ledger-table__heading--trajectory,
+.queue-ledger-region .ledger-row__cell--trajectory {
+  width: 6rem;
+}
+
+/* app.css sizes the trend cell and its wrapper at a fixed 7.5rem, wider
+   than the 5rem sparkline, which took that width from the borrower. */
+.queue-ledger-region .queue-row__trajectory-cell {
+  min-width: 0;
+}
+
+.queue-ledger-region .queue-row__trajectory {
+  width: 5rem;
+}
+
+.queue-ledger-region .ledger-row__cell--trajectory .trajectory__plot--mini {
+  width: 5rem;
+}
+
+.queue-ledger-region thead th:nth-child(8),
+.queue-ledger-region .ledger-row__cell--risk {
+  width: 16rem;
+}
+
+/* Reference, repayment status and any market flag share one line. */
+.queue-ledger-region .ledger-row__meta {
+  margin-block-start: var(--space-1);
+  font-family: var(--font-ui);
+}
+
+/* The market flag is the one thing a row adds when it has one, so it takes
+   its own short line rather than an indented wrap of the subtitle. */
+.queue-ledger-region .ledger-row__meta .queue-market-badge {
+  display: block;
+  width: fit-content;
+  margin: var(--space-1) 0 0;
+}
+
+/* Outlook: the sentence, then the figures and the "See why" link. */
+.ledger-row__cell--risk .queue-row__probability {
+  display: block;
+  color: var(--ink);
+  font-family: var(--font-ui);
+  font-size: var(--size-data);
+  font-weight: var(--weight-semi);
+  line-height: 1.35;
+}
+
+.queue-row__outlook-detail {
+  display: block;
+  margin-block-start: var(--space-1);
+  color: var(--ink-muted);
+  font-family: var(--font-ui);
+  font-size: var(--size-caption);
+  font-variant-numeric: tabular-nums;
+}
+
+.queue-row__outlook-detail .queue-row__why {
+  display: inline;
+  margin: 0;
+  font-size: var(--size-caption);
+}
+
+/* ------------------------------------------------------------------ */
+/* Row detail                                                          */
+/* ------------------------------------------------------------------ */
+
+/* The detail holds sentences ("Open, assigned to …", "First review, …"),
+   which the table's data face made hard to read. The 30/60/90 figures keep
+   the data face. */
+.ledger-detail__block > p:not(.queue-row__confidence),
+.ledger-detail__block .queue-row__driver {
+  font-family: var(--font-ui);
+}
+
+/* The row's actions run along the bottom of its detail as one row of
+   small buttons, instead of a column of five full-size ones. */
+.queue-ledger-region .ledger-detail__block--actions {
+  display: flex;
+  flex-wrap: wrap;
+  grid-column: 1 / -1;
+  align-items: center;
+  gap: var(--space-2);
+  padding-block-start: var(--space-3);
+  border-block-start: var(--border);
+}
+
+.queue-ledger-region .ledger-detail__block--actions .queue-row-actions {
+  display: flex;
+  flex-wrap: wrap;
+  gap: var(--space-2);
+  margin: 0;
+}
+
+.queue-ledger-region .ledger-detail__block--actions a.button,
+.page-content .queue-ledger-region .queue-row-actions button.button.button--secondary {
+  min-height: var(--space-10);
+  padding: var(--space-1) var(--space-3);
+  font-size: var(--size-data);
+}
+
+/* ------------------------------------------------------------------ */
+/* Selection bar                                                       */
+/* ------------------------------------------------------------------ */
+
+/* One line: the count, two choose-and-apply pairs, then the rest. The
+   placeholder options already say "Assign to" and "Set case status", so the
+   captions are kept for assistive technology only. */
+.queue-workspace .queue-selection-bar {
+  gap: var(--space-2) var(--space-4);
+  padding: var(--space-2) var(--space-2) var(--space-2) var(--space-5);
+}
+
+.queue-workspace .queue-selection-bar__actions {
+  align-items: center;
+  gap: var(--space-2);
+}
+
+.queue-workspace .queue-selection-bar .filter-group {
+  gap: var(--space-1);
+}
+
+.queue-workspace .queue-selection-bar .filter-group label {
+  position: absolute;
+  width: var(--border-width);
+  height: var(--border-width);
+  margin: calc(var(--border-width) * -1);
+  padding: 0;
+  overflow: hidden;
+  clip-path: inset(50%);
+  white-space: nowrap;
+}
+
+.queue-workspace .queue-selection-bar select {
+  width: auto;
+  min-width: 11rem;
+  min-height: var(--space-10);
+}
+
+.page-content .queue-selection-bar button.button {
+  min-height: var(--space-10);
+  padding: var(--space-1) var(--space-3);
+  font-size: var(--size-data);
+}
+
+.page-content .queue-selection-bar button.button.button--secondary {
+  border: var(--border);
+  background: var(--surface-raised);
+  color: var(--ink);
+  box-shadow: none;
+}
+
+.page-content .queue-selection-bar button.button.button--secondary:hover {
+  border-color: var(--accent);
+  background: var(--accent-soft);
+  color: var(--accent);
+}
+
+/* ------------------------------------------------------------------ */
+/* Narrower queue                                                      */
+/* ------------------------------------------------------------------ */
+
+/*
+  Columns leave in order of how little the decision needs them. The trend
+  shape goes first; the exposure figure next, and it is already repeated in
+  the row detail, which shows it once the column is gone.
+*/
+@container queue (max-width: 62rem) {
+  .queue-ledger-region .ledger-table__heading--trajectory,
+  .queue-ledger-region .ledger-row__cell--trajectory {
+    display: none;
+  }
+
+  .queue-workspace .queue-bands {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+}
+
+@container queue (max-width: 48rem) {
+  .queue-ledger-region .ledger-table__heading--amount,
+  .queue-ledger-region .ledger-row__cell--amount {
+    display: none;
+  }
+
+  .queue-ledger-region .ledger-detail__exposure {
+    display: block;
+  }
+
+  .queue-ledger-region thead th:nth-child(8),
+  .queue-ledger-region .ledger-row__cell--risk {
+    width: 13rem;
+  }
+}
+
+/*
+  On a phone the ledger is a list of cards, not a table that scrolls
+  sideways with the band and outlook out of sight. Each row becomes: the
+  disclosure and checkbox down the left edge, the borrower and band on the
+  first line, the outlook under them. Exposure and the trend are in the row
+  detail; the order of the cards is the rank.
+*/
+@container queue (max-width: 36rem) {
+  .queue-ledger-region .ledger-table {
+    overflow: visible;
+  }
+
+  .queue-ledger-region .ledger-table__table,
+  .queue-ledger-region .ledger-table__table tbody {
+    display: block;
+  }
+
+  .queue-ledger-region .ledger-table__table thead {
+    display: none;
+  }
+
+  .queue-ledger-region tr.ledger-row {
+    display: grid;
+    grid-template-columns: var(--space-8) var(--space-8) minmax(0, 1fr) auto;
+    grid-template-areas:
+      "toggle select borrower band"
+      "toggle select outlook outlook";
+    align-items: start;
+    column-gap: var(--space-2);
+    border-block-end: var(--border);
+  }
+
+  .queue-ledger-region .ledger-table__table tr.ledger-row > td {
+    display: block;
+    width: auto;
+    padding: var(--space-3) 0 0;
+    border: 0;
+    background: transparent;
+  }
+
+  .queue-ledger-region tr.ledger-row > td:nth-child(1) {
+    grid-area: toggle;
+    align-self: stretch;
+    padding-block-end: var(--space-3);
+  }
+
+  .queue-ledger-region tr.ledger-row > td:nth-child(2) { grid-area: select; }
+  /* app.css holds the borrower cell to 16rem, wider than a card column. */
+  .queue-ledger-region tr.ledger-row > td:nth-child(4) { grid-area: borrower; min-width: 0; }
+  .queue-ledger-region tr.ledger-row > td:nth-child(6) { grid-area: band; padding-inline-end: var(--space-3); }
+
+  .queue-ledger-region tr.ledger-row > td:nth-child(8) {
+    grid-area: outlook;
+    padding-block: var(--space-2) var(--space-3);
+  }
+
+  .queue-ledger-region tr.ledger-row > td:nth-child(3),
+  .queue-ledger-region tr.ledger-row > td:nth-child(5),
+  .queue-ledger-region tr.ledger-row > td:nth-child(7) {
+    display: none;
+  }
+
+  .queue-ledger-region tr.ledger-detail:not([hidden]),
+  .queue-ledger-region tr.ledger-detail:not([hidden]) > td {
+    display: block;
+  }
+
+  .queue-ledger-region .ledger-detail__exposure {
+    display: block;
+  }
+}
+
+/* ------------------------------------------------------------------ */
+/* Narrower screens                                                    */
+/* ------------------------------------------------------------------ */
+
+@media (max-width: 64rem) {
+  .queue-status {
+    justify-content: flex-start;
+  }
+
+  .queue-toolbar .queue-filters {
+    flex-basis: 100%;
+  }
+
+  .queue-ledger-region thead th:nth-child(8),
+  .queue-ledger-region .ledger-row__cell--risk {
+    width: 14rem;
+  }
+}
+
+@media (max-width: 40rem) {
+  .queue-workspace .queue-triage-bar {
+    padding: var(--space-4);
+  }
+
+  /* Stacked, the dot separators would start each line. */
+  .queue-status__data {
+    flex-direction: column;
+    align-items: flex-start;
+  }
+
+  .queue-status__data > * + *::before {
+    content: none;
+  }
+
+  main:has(.queue-workspace) .page-heading__actions {
+    flex-wrap: wrap;
+  }
+
+  main:has(.queue-workspace) .page-heading__actions > * {
+    flex: 1 1 auto;
+  }
+
+  details.queue-demo-menu > summary {
+    width: 100%;
+  }
+
+  .queue-workspace .queue-activity__list li {
+    grid-template-columns: minmax(0, 1fr);
+    gap: 0;
+  }
+
+  .queue-toolbar .queue-filters__fields {
+    grid-template-columns: minmax(0, 1fr);
+  }
+}

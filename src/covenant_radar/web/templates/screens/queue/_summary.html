@@ -1,7 +1,14 @@
 {% import "_components/components.html" as components %}
 {#
-  The triage bar: one freshness line, then the band distribution as
-  navigation.
+  The triage bar, in three bands of decreasing weight: one line saying how
+  fresh the ranking is, the band tiles as navigation, and the three newest
+  changes as single lines.
+
+  This region re-renders on its own 30-second poll, which restores expanded
+  table rows, focus and scroll but no other open state. So nothing in here
+  collapses or holds a choice: the activity list is always open, and the
+  demo control that needs a selection lives outside this region in
+  `_workspace.html`.
 
   The tiles are real links carrying every other active filter, so they work
   without JavaScript, survive a bookmark, and stay reachable from inside the
@@ -26,7 +33,7 @@
     family and its measured value, a band) to the words a credit officer
     would use for it.
   #}
-  {% set run_states = {"succeeded": "Completed", "running": "In progress", "queued": "Queued", "failed": "Did not finish", "never_run": "Not run yet"} %}
+  {% set run_problems = {"running": "Latest review still in progress", "queued": "Latest review queued", "failed": "Latest review did not finish", "never_run": "No review has run yet"} %}
   {% set band_names = {"act": "Act now", "amber": "Amber", "watch": "Watch"} %}
   {% macro signal_sentence(family, observation) -%}
     {%- set value = observation.split(" ")[0] if observation and observation != "Observation received" else "" -%}
@@ -42,46 +49,26 @@
     {%- endif -%}
   {%- endmacro %}
 
-  <section class="monitoring-strip" aria-label="Data freshness" data-monitoring-state="{{ monitoring.state }}">
-    <div><span class="monitoring-strip__label">Data last checked</span><strong>{% if monitoring.last_scan %}<time datetime="{{ monitoring.last_scan.isoformat() }}">{{ monitoring.last_scan.strftime('%d %b, %H:%M') }} UTC</time>{% else %}Not checked yet{% endif %}</strong></div>
-    <div><span class="monitoring-strip__label">Next check</span><strong><time datetime="{{ monitoring.next_scan.isoformat() }}">{{ monitoring.next_scan.strftime('%d %b, %H:%M') }} UTC</time></strong></div>
-    <div><span class="monitoring-strip__label">Market data sources</span><strong>{% if monitoring.sources_total %}{% if monitoring.sources_current == monitoring.sources_total %}All {{ monitoring.sources_total }} up to date{% else %}{{ monitoring.sources_current }} of {{ monitoring.sources_total }} up to date{% endif %}{% else %}Not available{% endif %}</strong></div>
-    <div><span class="monitoring-strip__label">Latest review</span><strong>{{ run_states.get(monitoring.state, monitoring.state|replace('_', ' ')|capitalize) }}{% if monitoring.processed is not none %} · {{ monitoring.processed }} borrower{{ "" if monitoring.processed == 1 else "s" }} reviewed{% endif %}</strong></div>
-    {% if principal.has('MANAGE_JOBS') %}<a href="/admin/jobs">Review details →</a>{% endif %}
-  </section>
-
-  <section class="monitoring-feed" aria-labelledby="monitoring-feed-title">
-    <div class="monitoring-feed__heading"><div><p class="monitoring-feed__eyebrow">Latest activity</p><h2 id="monitoring-feed-title">What's new in your portfolio</h2></div><span>Newest first</span></div>
-    {% if recent_changes %}
-      <ol class="monitoring-feed__list">
-      {% for change in recent_changes[:5] %}
-        <li data-change-id="{{ change.id }}"><time datetime="{{ change.ingested_at.isoformat() }}">{{ change.ingested_at.strftime('%d %b, %H:%M') }} UTC</time><div><strong>{{ change.borrower }}</strong><p><a href="{{ change.signal_href }}">{{ signal_sentence(change.family, change.observation) }}</a> <span aria-hidden="true">→</span> {% if change.status == 'Scored' %}<a href="{{ change.forecast_href }}">{% if change.band %}now rated {{ band_names.get(change.band, change.band|title) }}{% else %}risk re-scored{% endif %}</a>{% else %}will count in the next review{% endif %}{% if change.case_href %} <span aria-hidden="true">→</span> <a href="{{ change.case_href }}">case {{ change.case_state|lower }}</a>{% endif %}{% if change.change %}<span class="monitoring-feed__change">{{ change.change }}</span>{% endif %}</p>{% if change.synthetic %}<small>Demo data</small>{% endif %}</div></li>
-      {% endfor %}
-      </ol>
-    {% else %}<p>Nothing new in your portfolio yet. New warning signals will show up here as they arrive.</p>{% endif %}
-    {% if demo_enabled and can_run_demo and view.rows %}
-      <form method="post" action="/demo/signal" class="monitoring-demo">
-        <input type="hidden" name="csrf_token" value="{{ csrf_token }}">
-        <label for="demo-borrower">Try it: pick a borrower and simulate a late payment</label>
-        <select id="demo-borrower" name="borrower_reference">{% for row in view.rows %}<option value="{{ row.borrower_reference }}"{% if row.band == 'watch' %} data-watch="true"{% endif %}>{{ row.borrower_name }}</option>{% endfor %}</select>
-        <button class="button button--secondary" type="submit">Simulate a late payment</button>
-      </form>
-    {% endif %}
-  </section>
-
-  <p class="queue-freshness">
-    <span class="queue-freshness__rank">{{ labels.ranked_by }}</span>
-    <span class="queue-freshness__separator" aria-hidden="true">·</span>
-    <span class="queue-freshness__run">{{ labels.summary_as_of }}{% if summary.as_of_date %} {{ summary.as_of_date|ist_date }}{% endif %}</span>
-    <span class="queue-freshness__separator" aria-hidden="true">·</span>
-    <span class="queue-freshness__checked">{{ labels.freshness_checked }} <time data-last-updated>just now</time></span>
-    <button class="text-action queue-freshness__check"
-            type="button"
-            hx-get="/"
-            hx-target="#queue-workspace"
-            hx-include="#queue-filters"
-            hx-swap="outerHTML transition:true">{{ labels.freshness_check_now }}</button>
-  </p>
+  <div class="queue-status" data-monitoring-state="{{ monitoring.state }}">
+    <p class="queue-status__ranking queue-freshness">
+      <strong class="queue-freshness__rank">{{ labels.ranked_by }}</strong>
+      {% if summary.as_of_date %}<span class="queue-freshness__run">{{ labels.summary_as_of }} {{ summary.as_of_date|ist_date }}</span>{% endif %}
+      <span class="queue-freshness__checked">{{ labels.freshness_checked }} <time data-last-updated>just now</time></span>
+      <button class="text-action queue-freshness__check"
+              type="button"
+              hx-get="/"
+              hx-target="#queue-workspace"
+              hx-include="#queue-filters"
+              hx-swap="outerHTML transition:true">{{ labels.freshness_check_now }}</button>
+    </p>
+    <p class="queue-status__data" aria-label="Data freshness">
+      {% if monitoring.state in run_problems %}<span class="queue-status__problem">{{ run_problems[monitoring.state] }}</span>{% endif %}
+      <span>Data checked {% if monitoring.last_scan %}<time datetime="{{ monitoring.last_scan.isoformat() }}">{{ monitoring.last_scan.strftime('%d %b, %H:%M') }} UTC</time>{% else %}not yet{% endif %}</span>
+      <span>{% if monitoring.sources_total %}{{ monitoring.sources_current }} of {{ monitoring.sources_total }} market sources current{% else %}Market sources not available{% endif %}</span>
+      <span>Next check <time datetime="{{ monitoring.next_scan.isoformat() }}">{{ monitoring.next_scan.strftime('%d %b, %H:%M') }} UTC</time></span>
+      {% if principal.has('MANAGE_JOBS') %}<a href="/admin/jobs">Review details</a>{% endif %}
+    </p>
+  </div>
 
   <div class="queue-update-notice" data-queue-update-notice hidden role="status" aria-live="polite">
     <span>{{ labels.freshness_newer }}</span>
@@ -98,7 +85,7 @@
        {% if not filters.band %}aria-current="true" data-active="true"{% endif %}>
       <span class="queue-band-tile__label">{{ labels.summary_all }}</span>
       <strong class="queue-band-tile__value" data-live-value="total">{{ summary.total }}</strong>
-      <span class="queue-band-tile__hint">Everyone in your portfolio</span>
+      <span class="queue-band-tile__hint">{% if summary.exposure_total == labels.summary_no_exposure %}Exposure not available{% else %}{{ summary.exposure_total }}{% endif %} · <span data-live-value="changed">{{ summary.what_changed if summary.what_changed else "no" }}</span> band change{{ "" if summary.what_changed == 1 else "s" }}</span>
     </a>
     {% for band, label, count, hint in (
          ("act", labels.summary_act, summary.act, "Highest risk. Open these first"),
@@ -131,14 +118,25 @@
     {% endfor %}
   </nav>
 
-  <dl class="queue-triage-bar__facts">
-    <div>
-      <dt>{{ labels.summary_exposure }}</dt>
-      <dd>{{ summary.exposure_total }}</dd>
-    </div>
-    <div>
-      <dt>{{ labels.summary_changed }}</dt>
-      <dd data-live-value="changed">{{ summary.what_changed if summary.what_changed else "None" }}</dd>
-    </div>
-  </dl>
+  <section class="queue-activity monitoring-feed" aria-labelledby="monitoring-feed-title">
+    <h3 class="queue-activity__title" id="monitoring-feed-title">What's new</h3>
+    {% if recent_changes %}
+      <ol class="queue-activity__list monitoring-feed__list">
+      {% for change in recent_changes[:3] %}
+        <li data-change-id="{{ change.id }}">
+          <time datetime="{{ change.ingested_at.isoformat() }}">{{ change.ingested_at.strftime('%d %b, %H:%M') }}</time>
+          <p>
+            <strong>{{ change.borrower }}</strong>
+            <a href="{{ change.signal_href }}">{{ signal_sentence(change.family, change.observation) }}</a>
+            <span aria-hidden="true">→</span>
+            {% if change.status == 'Scored' %}<a href="{{ change.forecast_href }}">{% if change.band %}now rated {{ band_names.get(change.band, change.band|title) }}{% else %}risk re-scored{% endif %}</a>{% else %}will count in the next review{% endif %}
+            {% if change.case_href %}<span aria-hidden="true">→</span> <a href="{{ change.case_href }}">case {{ change.case_state|lower }}</a>{% endif %}
+            {% if change.change and not change.change.startswith("First review") %}<span class="queue-activity__change monitoring-feed__change">{{ change.change }}</span>{% endif %}
+            {% if change.synthetic %}<small class="queue-activity__tag">Demo data</small>{% endif %}
+          </p>
+        </li>
+      {% endfor %}
+      </ol>
+    {% else %}<p class="queue-activity__empty">Nothing new in your portfolio yet. New warning signals will show up here as they arrive.</p>{% endif %}
+  </section>
 </section>

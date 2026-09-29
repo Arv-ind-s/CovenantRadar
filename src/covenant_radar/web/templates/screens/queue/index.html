@@ -4,9 +4,29 @@
 {% block page_title %}{{ labels.title }}{% endblock %}
 {% block h1 %}{{ labels.heading }}{% endblock %}
 {% block head %}<link rel="stylesheet" href="/static/css/queue-market.css">{% endblock %}
-{% block page_description %}<p>Every borrower in your portfolio, ranked by how soon they need your attention. Start at the top.</p>{% endblock %}
+{% block page_description %}<p>Every borrower in your portfolio, ranked by how soon they need your attention.</p>{% endblock %}
+{#
+  Two page-level actions. The demo control lives here rather than beside
+  the activity list because that list re-renders every 30 seconds, which
+  reset a borrower choice mid-selection; up here it is outside every poll,
+  so the menu also stays open while it is used.
+#}
+{% block page_actions %}
+  {% if demo_enabled is defined and demo_enabled and can_run_demo and view is defined and view.rows %}
+    <details class="queue-demo-menu">
+      <summary class="button button--secondary">Simulate a signal</summary>
+      <form method="post" action="/demo/signal" class="queue-demo monitoring-demo">
+        <input type="hidden" name="csrf_token" value="{{ csrf_token }}">
+        <label for="demo-borrower">Simulate a late payment for</label>
+        <select id="demo-borrower" name="borrower_reference">{% for row in view.rows %}<option value="{{ row.borrower_reference }}"{% if row.band == 'watch' %} data-watch="true"{% endif %}>{{ row.borrower_name }}</option>{% endfor %}</select>
+        <button class="button" type="submit">Simulate</button>
+        <p class="queue-demo__note">Demo data. Watch "What's new" and the row update after the next review.</p>
+      </form>
+    </details>
+  {% endif %}
+  <a class="button button--secondary" href="/intelligence" title="How far commodity, rupee and rate moves since the last statements eat into each borrower’s interest-cover cushion">{{ tr("navigation.intelligence") }} →</a>
+{% endblock %}
 
 {% block content %}
-  <p>How far commodity, rupee and rate moves since the last statements eat into each borrower’s interest-cover cushion: <a href="/intelligence">{{ tr("navigation.intelligence") }} →</a></p>
   {% include "screens/queue/_workspace.html" %}
 {% endblock %}

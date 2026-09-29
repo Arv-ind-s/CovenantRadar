@@ -42,7 +42,7 @@
        } %}
     <div class="ledger-table" data-state="rest">
       <table class="ledger-table__table">
-        <caption class="ledger-table__caption">
+        <caption class="ledger-table__caption sr-only">
           {{ labels.heading }} — {{ labels.ranked_by }}{% if view.as_of_date %}, {{ view.as_of_date|ist_date }}{% endif %}
         </caption>
         <thead>
@@ -86,10 +86,12 @@
               <td class="ledger-row__cell ledger-row__cell--rank">{{ row.rank }}</td>
               <td class="ledger-row__cell ledger-row__cell--borrower">
                 <a class="text-action" href="{{ row.href }}">{{ row.borrower_name }}</a>
-                <span class="ledger-row__meta">{{ row.borrower_reference }}{% if row.sma_band and row.sma_band != '—' %} · {{ sma_names.get(row.sma_band, row.sma_band) }}{% endif %}</span>
-                {% if row.market_impact is defined and row.market_impact and row.market_impact.priority != 'none' %}
-                  <span class="queue-market-badge queue-market-badge--{{ row.market_impact.priority }}" title="{{ row.market_impact.headline }}" data-market-priority="{{ row.market_impact.priority }}">Market: {{ row.market_impact.label|lower }}</span>
-                {% endif %}
+                <span class="ledger-row__meta">
+                  {{- row.borrower_reference }}{% if row.sma_band and row.sma_band != '—' %} · {{ sma_names.get(row.sma_band, row.sma_band) }}{% endif -%}
+                  {% if row.market_impact is defined and row.market_impact and row.market_impact.priority != 'none' %}
+                    <span class="queue-market-badge queue-market-badge--{{ row.market_impact.priority }}" title="{{ row.market_impact.headline }}" data-market-priority="{{ row.market_impact.priority }}">Market: {{ row.market_impact.label|lower }}</span>
+                  {%- endif -%}
+                </span>
               </td>
               <td class="ledger-row__cell ledger-row__cell--right ledger-row__cell--amount">{% if row.exposure is not none %}{{ row.exposure|indian_currency }}{% else %}—{% endif %}</td>
               <td class="ledger-row__cell">{{ components.band_chip(row.band) }}</td>
@@ -117,20 +119,22 @@
                 #}
                 {% set has_score = row.probability_display.endswith("%") %}
                 {% set days_out = (row.crossing_date - view.as_of_date).days if row.crossing_date and view.as_of_date else none %}
+                {% set note_words = row.crossing_note.split() if row.crossing_note else [] %}
                 <span class="queue-row__probability">
-                  {%- if row.crossing_date and days_out is not none and days_out <= 0 -%}At or past a covenant limit now
-                  {%- elif row.crossing_date -%}Could cross a covenant limit by {{ row.crossing_date|ist_date }}
+                  {%- if row.crossing_date and days_out is not none and days_out <= 0 -%}At or past its limit now
+                  {%- elif row.crossing_date -%}Could cross limit by {{ row.crossing_date|ist_date }}
+                  {%- elif note_words|length > 1 and note_words[-1] == "days" and note_words[-2].isdigit() -%}No limit crossing within {{ note_words[-2] }} days
                   {%- elif row.crossing_note -%}{{ row.crossing_note }}
                   {%- else -%}{{ row.probability_display }}
                   {%- endif -%}
                 </span>
-                {% if has_score %}
-                  <span class="queue-row__outlook-detail">
-                    {%- if row.crossing_date and days_out is not none and days_out > 0 -%}{{ days_out }} day{{ "" if days_out == 1 else "s" }} away · {% elif row.crossing_date and view.as_of_date -%}As of {{ view.as_of_date|ist_date }} · {% endif -%}
-                    Risk score {{ row.probability_display }}
-                  </span>
-                {% endif %}
-                {% if row.why_href %}<a class="queue-row__why text-action" href="{{ row.why_href }}" hx-get="{{ row.why_href }}" hx-target="body" hx-swap="beforeend" aria-label="Why {{ row.borrower_name }} is ranked here">{{ labels.why }}</a>{% endif %}
+                <span class="queue-row__outlook-detail">
+                  {%- if has_score -%}
+                    {%- if row.crossing_date and days_out is not none and days_out > 0 -%}{{ days_out }} day{{ "" if days_out == 1 else "s" }} away · {% elif row.crossing_date and view.as_of_date -%}as of {{ view.as_of_date|ist_date }} · {% endif -%}
+                    risk score {{ row.probability_display }}
+                  {%- endif -%}
+                  {%- if row.why_href %}{% if has_score %} · {% endif %}<a class="queue-row__why text-action" href="{{ row.why_href }}" hx-get="{{ row.why_href }}" hx-target="body" hx-swap="beforeend" aria-label="Why {{ row.borrower_name }} is ranked here">{{ labels.why }}</a>{% endif -%}
+                </span>
               </td>
             </tr>
             <tr class="ledger-detail" id="{{ row.detail_id }}" hidden>

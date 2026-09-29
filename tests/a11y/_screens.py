@@ -33,10 +33,10 @@ from sqlalchemy import create_engine, text
 from sqlalchemy.orm import Session
 from sqlalchemy.pool import StaticPool
 
+import covenant_radar.db.models  # noqa: F401 - registers every table on Base.metadata
 from covenant_radar.asgi import create_app
 from covenant_radar.core.clock import FixedClock
 from covenant_radar.core.ids import new_id
-import covenant_radar.db.models  # noqa: F401 - registers every table on Base.metadata
 from covenant_radar.db.base import Base
 from covenant_radar.db.models.covenant import CovenantSchedule
 from covenant_radar.db.models.document import DocumentPage
@@ -64,7 +64,8 @@ from covenant_radar.web.routes.statements import create_statements_router
 from covenant_radar.web.routes.why import create_why_router
 from tests.integration.test_admin_ops import _World as _AdminOpsWorld
 from tests.integration.test_audit_screens import _World as _AuditWorld
-from tests.integration.test_auth_local import _build as _build_auth, _STRONG_PASSWORD
+from tests.integration.test_auth_local import _STRONG_PASSWORD
+from tests.integration.test_auth_local import _build as _build_auth
 from tests.integration.test_case_file import _Fixture as _CaseFileFixture
 from tests.integration.test_case_file import financials as _case_file_financials
 from tests.integration.test_case_screens import _Fixture as _CasesFixture
@@ -72,10 +73,10 @@ from tests.integration.test_document_upload import _Fixture as _DocumentFixture
 from tests.integration.test_evidence_margin import _Fixture as _EvidenceFixture
 from tests.integration.test_forecast_panel import _forecast, _path
 from tests.integration.test_governance_screens import _World as _GovernanceWorld
+from tests.integration.test_inapp_notifications import _Fixture as _NotificationFixture
 from tests.integration.test_intake_screen import _generator as _intake_generator
 from tests.integration.test_intake_screen import _ScreenFixture as _IntakeFixture
 from tests.integration.test_master_data import _Bundle as _MasterDataBundle
-from tests.integration.test_inapp_notifications import _Fixture as _NotificationFixture
 from tests.integration.test_queue_screen import _Fixture as _QueueFixture
 from tests.integration.test_search import _SearchBundle
 from tests.integration.test_simulator_screen import _SimulatorFixture
@@ -184,8 +185,7 @@ def _sign_in_rest(theme: str) -> str:
 
 def _change_password_rest(theme: str) -> str:
     from covenant_radar.services.auth import UserRecord
-
-    from tests.integration.test_auth_local import _password_service, _USER_ID
+    from tests.integration.test_auth_local import _USER_ID, _password_service
 
     password_service = _password_service()
     user = UserRecord(
@@ -251,6 +251,24 @@ def _not_found_rest(theme: str) -> str:
     app = create_app()
     with TestClient(app, raise_server_exceptions=False) as client:
         return _get(client, "/route-that-does-not-exist", theme=theme)
+
+
+def _forbidden_rest(theme: str) -> str:
+    from covenant_radar.api.deps import public
+    from covenant_radar.core.errors import AuthorizationError
+
+    app = create_app()
+
+    @app.get("/__t083_forbidden")
+    @public
+    async def forbidden() -> None:
+        raise AuthorizationError("This role cannot access this screen.")
+
+    with TestClient(app, raise_server_exceptions=False) as client:
+        client.cookies.set("covenant_radar_theme", theme)
+        response = client.get("/__t083_forbidden", headers={"Accept": "text/html"})
+        assert response.status_code == 403
+        return response.text
 
 
 def _server_error_rest(theme: str) -> str:
@@ -1304,8 +1322,9 @@ def _bulk_result_rest(theme: str) -> str:
             value={"state": "in_progress", "reason": None},
             now=_NOW,
         )
-        from covenant_radar.web.routes.bulk import _LABELS
         from starlette.requests import Request
+
+        from covenant_radar.web.routes.bulk import _LABELS
 
         app = create_app(routers=(), principal_resolver=lambda _request: principal)
         request = Request(
@@ -1473,6 +1492,7 @@ SCREENS: tuple[ScreenCase, ...] = (
         (ScreenState("rest", _mfa_verify_rest),),
     ),
     ScreenCase("shell_404", ("screens/_404.html",), (ScreenState("rest", _not_found_rest),)),
+    ScreenCase("shell_403", ("screens/_403.html",), (ScreenState("rest", _forbidden_rest),)),
     ScreenCase("shell_500", ("screens/_500.html",), (ScreenState("rest", _server_error_rest),)),
     ScreenCase(
         "master_data_borrowers",

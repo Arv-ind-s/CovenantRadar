@@ -33,10 +33,11 @@ def _check_sql() -> str:
 
 def upgrade() -> None:
     # SQLite cannot alter a CHECK constraint in place, so batch recreation is
-    # required there.  PostgreSQL accepts the same operation and preserves all
-    # existing columns, indexes, foreign keys, and rows.
+    # required there. PostgreSQL must alter in place: rebuilding a referenced
+    # table tries to drop its primary key while foreign keys still depend on it.
+    recreate = "always" if op.get_bind().dialect.name == "sqlite" else "auto"
     for table in ("signal_event", "evidence_item"):
-        with op.batch_alter_table(table, schema=None, recreate="always") as batch_op:
+        with op.batch_alter_table(table, schema=None, recreate=recreate) as batch_op:
             # The application's naming convention expands ``family_valid``
             # to ``ck_<table>_family_valid`` during batch recreation.  Passing
             # the logical name avoids Alembic applying that convention twice.
@@ -47,7 +48,8 @@ def upgrade() -> None:
 def downgrade() -> None:
     legacy = ("payment", "utilisation", "treasury", "concentration", "industry", "news")
     sql = "family IN (" + ", ".join(repr(value) for value in legacy) + ")"
+    recreate = "always" if op.get_bind().dialect.name == "sqlite" else "auto"
     for table in ("signal_event", "evidence_item"):
-        with op.batch_alter_table(table, schema=None, recreate="always") as batch_op:
+        with op.batch_alter_table(table, schema=None, recreate=recreate) as batch_op:
             batch_op.drop_constraint("family_valid", type_="check")
             batch_op.create_check_constraint("family_valid", sql)

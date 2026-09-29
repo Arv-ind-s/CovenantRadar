@@ -1,0 +1,1362 @@
+/*
+  Borrower case file.
+
+  Loaded after every other signed-in sheet and scoped under `.case-file`, so
+  the rules here settle the case file's own layout in one place instead of
+  adding a further layer to the shared sheets. Values are token-only.
+
+  Surface rhythm, outermost first: panel on `--surface-raised`, card inside
+  a panel on `--surface-subtle`, tile inside a card back on
+  `--surface-raised`. Type rhythm: identifiers and figures in the data face,
+  everything a person reads as a sentence in the UI face.
+*/
+
+/* ------------------------------------------------------------------ */
+/* Page chrome                                                         */
+/* ------------------------------------------------------------------ */
+
+.shell-breadcrumb__link {
+  display: inline;
+  min-height: 0;
+  color: var(--ink-muted);
+  font-weight: var(--weight-medium);
+  text-decoration: none;
+}
+
+/* Where the shell drops the root crumb and its chevrons to make room, the
+   trail collapses to the current reference, which is the part to keep. */
+@media (max-width: 72rem) {
+  .shell-breadcrumb__link {
+    display: none;
+  }
+}
+
+.shell-breadcrumb__link:hover,
+.shell-breadcrumb__link:focus-visible {
+  color: var(--ink);
+  text-decoration: underline;
+}
+
+/* A trail inside the breadcrumb's last span: keep its chevron on the line,
+   spaced like the root's own, rather than as the block `.icon` it is. */
+.shell-breadcrumb > span:has(> .shell-breadcrumb__link) {
+  display: inline-flex;
+  align-items: center;
+  gap: var(--space-1);
+  min-width: 0;
+}
+
+.case-file {
+  gap: var(--space-5);
+}
+
+.case-file__panels {
+  gap: var(--space-5);
+}
+
+/* Large containers do not lift on hover; only small cards do. */
+.case-file .panel:hover {
+  border-color: var(--hairline);
+  box-shadow: var(--shadow-sm);
+}
+
+/* ------------------------------------------------------------------ */
+/* Header fact strip                                                   */
+/* ------------------------------------------------------------------ */
+
+/*
+  Four facts in one strip, divided by hairlines rather than boxed, so the
+  strip reads as one summary. It no longer sticks: at four lines of wrapped
+  text it covered a third of the viewport while scrolling.
+*/
+.case-file .case-file__header,
+.case-file .case-header {
+  position: static;
+}
+
+.case-file .case-file__header {
+  padding: var(--space-5) var(--space-6);
+}
+
+.case-file .case-header {
+  display: block;
+  background: transparent;
+}
+
+.case-file .case-header__facts {
+  display: grid;
+  grid-template-columns:
+    minmax(0, 0.7fr)
+    minmax(0, 0.8fr)
+    minmax(0, 1fr)
+    minmax(0, 1.5fr);
+  gap: 0;
+  margin: 0;
+}
+
+.case-file .case-header__fact {
+  display: grid;
+  align-content: start;
+  gap: var(--space-2);
+  min-width: 0;
+  padding: var(--space-1) var(--space-5);
+  border: 0;
+  border-inline-start: var(--border);
+  border-radius: 0;
+  background: transparent;
+}
+
+.case-file .case-header__fact:first-child {
+  padding-inline-start: 0;
+  border-inline-start: 0;
+}
+
+.case-file .case-header__fact-label {
+  color: var(--ink-muted);
+  font-family: var(--font-ui);
+  font-size: var(--size-caption);
+  font-weight: var(--weight-bold);
+  letter-spacing: var(--tracking-label);
+  text-transform: uppercase;
+}
+
+.case-file .case-header__fact-value {
+  color: var(--ink);
+  font-family: var(--font-head);
+  font-size: var(--size-section);
+  font-weight: var(--weight-semi);
+  letter-spacing: -0.01em;
+  line-height: 1.3;
+  text-align: start;
+}
+
+.case-file .case-header__fact[data-fact="name"] .case-header__fact-value,
+.case-file .case-header__fact[data-fact="exposure"] .case-header__fact-value {
+  font-family: var(--font-data);
+  font-variant-numeric: tabular-nums;
+  letter-spacing: 0;
+}
+
+.case-file .case-header__fact[data-fact="name"] .case-header__fact-value {
+  font-size: var(--size-body);
+}
+
+/* A sentence, so the reading face at reading size. */
+.case-file .case-header__fact[data-fact="dated_risk"] .case-header__fact-value {
+  font-family: var(--font-ui);
+  font-size: var(--size-body);
+  font-weight: var(--weight-medium);
+  letter-spacing: 0;
+  line-height: 1.45;
+}
+
+.case-file .case-header__fact-value--missing {
+  color: var(--ink-muted);
+  font-weight: var(--weight-regular);
+}
+
+/* ------------------------------------------------------------------ */
+/* Case actions: one toolbar row                                       */
+/* ------------------------------------------------------------------ */
+
+.case-file .case-actions {
+  padding: var(--space-4) var(--space-6);
+}
+
+.case-file .case-actions__bar {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  justify-content: space-between;
+  gap: var(--space-3) var(--space-6);
+}
+
+.case-file .case-actions__bar .panel__title {
+  margin: 0;
+}
+
+.case-file .case-actions__row {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: var(--space-2);
+}
+
+/* app.css caps each control at twelve rems, narrower than "Generate AI
+   explanation" on one line, so that button ran into its neighbour. */
+.case-file .case-actions__control {
+  display: block;
+  flex: 0 0 auto;
+  max-width: none;
+  padding: 0;
+  border: 0;
+  border-radius: 0;
+  background: transparent;
+  box-shadow: none;
+}
+
+.case-file .case-actions__form {
+  margin: 0;
+}
+
+.case-file .case-actions__row .button {
+  white-space: nowrap;
+}
+
+.case-file .case-actions__notes {
+  display: grid;
+  gap: var(--space-1);
+  margin: var(--space-3) 0 0;
+  padding: var(--space-3) 0 0;
+  border-block-start: var(--border);
+  list-style: none;
+  color: var(--ink-muted);
+  font-size: var(--size-data);
+}
+
+.case-file .case-actions__reason {
+  margin: 0;
+}
+
+.case-file .case-actions__reason strong {
+  color: var(--ink);
+  font-weight: var(--weight-semi);
+}
+
+/* ------------------------------------------------------------------ */
+/* AI explanation, empty                                               */
+/* ------------------------------------------------------------------ */
+
+.case-file .case-memo--empty {
+  padding: var(--space-4) var(--space-6);
+}
+
+.case-file .case-memo--empty .panel__title {
+  margin-block-end: var(--space-1);
+  font-size: var(--size-body);
+}
+
+.case-file .case-memo--empty .case-memo__message {
+  margin: 0;
+  color: var(--ink-muted);
+  font-size: var(--size-data);
+}
+
+/* ------------------------------------------------------------------ */
+/* Section tabs                                                        */
+/* ------------------------------------------------------------------ */
+
+/*
+  The section strip and the covenant switcher inside the forecast panel
+  were the same boxed pills, so the two levels of navigation looked like
+  one. Sections become an underlined tab bar; the covenant switcher stays a
+  set of smaller pills beneath it.
+*/
+.case-file__sections > .tab-strip {
+  flex-wrap: nowrap;
+  gap: var(--space-1);
+  margin-block-end: 0;
+  padding-block-end: 0;
+  overflow-x: auto;
+  border-block-end: var(--border);
+  scrollbar-width: thin;
+}
+
+/* In a narrow column the six sections wrap rather than scroll, so every
+   one stays visible and reachable without a horizontal gesture. */
+@media (max-width: 80rem) {
+  .case-file__sections > .tab-strip {
+    flex-wrap: wrap;
+    overflow-x: visible;
+  }
+}
+
+.case-file__sections > .tab-strip .tab-strip__tab {
+  flex: 0 0 auto;
+  margin-block-end: calc(var(--border-width) * -1);
+  padding: var(--space-3) var(--space-4);
+  border: 0;
+  border-block-end: calc(var(--space-1) / 2) solid transparent;
+  border-radius: 0;
+  background: transparent;
+  color: var(--ink-muted);
+}
+
+.case-file__sections > .tab-strip .tab-strip__tab:hover {
+  border-block-end-color: var(--hairline);
+  color: var(--ink);
+}
+
+.case-file__sections > .tab-strip .tab-strip__tab[aria-selected="true"] {
+  border-block-end-color: var(--accent);
+  background: transparent;
+  color: var(--ink);
+}
+
+.case-file__sections > .tab-strip .tab-strip__name {
+  white-space: nowrap;
+}
+
+.case-file .forecast-panel > .tab-strip {
+  margin-block-end: 0;
+  padding-block-end: 0;
+  border: 0;
+}
+
+.case-file .forecast-panel > .tab-strip .tab-strip__tab {
+  padding: var(--space-2) var(--space-3);
+  border-radius: var(--radius);
+}
+
+.case-file .forecast-panel > .tab-strip .tab-strip__name {
+  font-size: var(--size-data);
+}
+
+/* ------------------------------------------------------------------ */
+/* Panel headings shared by the tab panels                             */
+/* ------------------------------------------------------------------ */
+
+.case-file__sections > .panel {
+  padding: var(--space-6);
+}
+
+.case-file__sections .panel__heading {
+  align-items: flex-start;
+  margin-block-end: var(--space-5);
+}
+
+/* Row headers are labels for a row, not column headers. The shared table
+   rule sets every `th` in capitals, unbreakable and caption-sized. */
+.case-file table th[scope="row"] {
+  position: static;
+  background: transparent;
+  color: var(--ink);
+  font-family: var(--font-ui);
+  font-size: var(--size-data);
+  font-weight: var(--weight-semi);
+  letter-spacing: normal;
+  text-transform: none;
+  white-space: normal;
+}
+
+/* ------------------------------------------------------------------ */
+/* Forecast                                                            */
+/* ------------------------------------------------------------------ */
+
+.case-file .forecast-explanation {
+  border-radius: var(--radius);
+}
+
+.case-file #case-forecast > .forecast-explanation {
+  margin-block-end: var(--space-5);
+}
+
+/* This summary inherited the three-column grid of the per-horizon rows in
+   the explanation drawer, which squeezed its one label into the first. */
+.case-file #case-forecast > .forecast-explanation > summary {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: var(--space-3);
+  cursor: pointer;
+}
+
+.case-file #case-forecast > .forecast-explanation > summary::after {
+  color: var(--ink-muted);
+  font-family: var(--font-data);
+  font-size: var(--size-body);
+  content: "+";
+}
+
+.case-file #case-forecast > .forecast-explanation[open] > summary::after {
+  content: "\2212";
+}
+
+.case-file .forecast-panel {
+  gap: var(--space-4);
+}
+
+.case-file .forecast-covenant {
+  gap: var(--space-5);
+  padding: var(--space-5);
+  border: var(--border);
+  border-radius: var(--radius-md);
+}
+
+.case-file .forecast-covenant:hover {
+  border-color: var(--hairline);
+  box-shadow: none;
+  transform: none;
+}
+
+.case-file .forecast-covenant__heading {
+  align-items: baseline;
+}
+
+.case-file .forecast-covenant__name {
+  font-size: var(--size-section);
+  letter-spacing: -0.01em;
+}
+
+.case-file .forecast-covenant__reference {
+  margin: 0;
+  font-size: var(--size-caption);
+  letter-spacing: var(--tracking-label);
+}
+
+/* Horizon: slider, then the figures at the selected day as tiles. */
+.case-file .horizon-control {
+  gap: var(--space-4);
+  padding: var(--space-5);
+  border: var(--border);
+  border-radius: var(--radius-md);
+  background: var(--surface-raised);
+}
+
+.case-file .horizon-control__heading {
+  align-items: center;
+}
+
+.case-file .horizon-control__title {
+  font-size: var(--size-body);
+}
+
+.case-file .horizon-control__selected {
+  padding: var(--space-1) var(--space-3);
+  border-radius: var(--radius-pill);
+  background: var(--accent-soft);
+  color: var(--accent);
+  font-size: var(--size-caption);
+  font-weight: var(--weight-semi);
+}
+
+.case-file .horizon-control__label {
+  color: var(--ink-muted);
+  font-size: var(--size-caption);
+  font-weight: var(--weight-semi);
+  letter-spacing: var(--tracking-label);
+  text-transform: uppercase;
+}
+
+/*
+  A custom track and a thumb sized as a thumb. The input keeps its full
+  `--hit-min` height, so the pointer target is unchanged; only the drawn
+  thumb stops being a disc larger than the text around it.
+*/
+.case-file .horizon-control__input {
+  height: var(--hit-min);
+  min-height: var(--hit-min);
+  margin: 0;
+  background: transparent;
+  cursor: pointer;
+  appearance: none;
+}
+
+.case-file .horizon-control__input:focus-visible {
+  border-radius: var(--radius);
+  outline-offset: var(--space-1);
+}
+
+.case-file .horizon-control__input::-webkit-slider-runnable-track {
+  height: var(--space-1);
+  border-radius: var(--radius-pill);
+  background: var(--hairline);
+}
+
+.case-file .horizon-control__input::-moz-range-track {
+  height: var(--space-1);
+  border-radius: var(--radius-pill);
+  background: var(--hairline);
+}
+
+.case-file .horizon-control__input::-moz-range-progress {
+  height: var(--space-1);
+  border-radius: var(--radius-pill);
+  background: var(--accent-fill);
+}
+
+.case-file .horizon-control__input::-webkit-slider-thumb {
+  width: var(--space-5);
+  min-width: 0;
+  height: var(--space-5);
+  min-height: 0;
+  margin-block-start: calc((var(--space-1) - var(--space-5)) / 2);
+  border: 0;
+  border-radius: var(--radius-pill);
+  background: var(--accent-fill);
+  box-shadow: 0 0 0 var(--space-1) var(--accent-soft), var(--shadow-sm);
+  appearance: none;
+  transition: box-shadow var(--dur-state) var(--ease);
+}
+
+.case-file .horizon-control__input::-moz-range-thumb {
+  width: var(--space-5);
+  min-width: 0;
+  height: var(--space-5);
+  min-height: 0;
+  border: 0;
+  border-radius: var(--radius-pill);
+  background: var(--accent-fill);
+  box-shadow: 0 0 0 var(--space-1) var(--accent-soft), var(--shadow-sm);
+}
+
+.case-file .horizon-control__input:hover::-webkit-slider-thumb,
+.case-file .horizon-control__input:focus-visible::-webkit-slider-thumb {
+  box-shadow: 0 0 0 var(--space-2) var(--accent-soft), var(--shadow-md);
+}
+
+.case-file .horizon-control__status {
+  min-height: 0;
+  color: var(--ink-muted);
+  font-size: var(--size-caption);
+}
+
+.case-file .horizon-control__live-ledger {
+  grid-template-columns: repeat(4, minmax(0, 1fr));
+  gap: var(--space-2);
+  padding: 0;
+  border: 0;
+}
+
+.case-file .horizon-control__live-ledger > div {
+  display: grid;
+  align-content: start;
+  gap: var(--space-1);
+  padding: var(--space-3) var(--space-4);
+  border-radius: var(--radius);
+  background: var(--surface-subtle);
+}
+
+.case-file .horizon-control__live-ledger dt {
+  color: var(--ink-muted);
+  font-size: var(--size-caption);
+  font-weight: var(--weight-bold);
+  letter-spacing: var(--tracking-label);
+  text-transform: uppercase;
+}
+
+.case-file .horizon-control__live-ledger dd {
+  margin: 0;
+  color: var(--ink);
+  font-family: var(--font-data);
+  font-size: var(--size-section);
+  font-weight: var(--weight-semi);
+  text-align: start;
+}
+
+/* The crossing is a sentence: its own full-width row in the reading face. */
+.case-file .horizon-control__live-ledger > div:last-child {
+  grid-column: 1 / -1;
+}
+
+.case-file .horizon-control__live-ledger > div:last-child dd,
+.case-file .horizon-control__live-ledger [data-suppressed="true"] {
+  font-family: var(--font-ui);
+  font-size: var(--size-body);
+  font-weight: var(--weight-medium);
+}
+
+.case-file .horizon-control__drivers {
+  grid-auto-flow: column;
+  justify-content: start;
+  align-items: baseline;
+  gap: var(--space-3);
+}
+
+.case-file .horizon-control__drivers h5 {
+  color: var(--ink-muted);
+  font-family: var(--font-ui);
+  font-size: var(--size-caption);
+  letter-spacing: var(--tracking-label);
+  text-transform: uppercase;
+}
+
+.case-file .horizon-control__drivers ul {
+  display: flex;
+  flex-wrap: wrap;
+  gap: var(--space-2);
+  margin: 0;
+  padding: 0;
+  list-style: none;
+  color: var(--ink);
+}
+
+.case-file .horizon-control__drivers li {
+  padding: var(--space-1) var(--space-3);
+  border-radius: var(--radius-pill);
+  background: var(--surface-subtle);
+  font-size: var(--size-data);
+}
+
+/* Chart first at full width, then the figures table at full width. */
+.case-file .forecast-covenant__layout {
+  grid-template-columns: minmax(0, 1fr);
+  gap: var(--space-5);
+}
+
+.case-file .forecast-covenant__trajectory {
+  gap: var(--space-3);
+  padding: var(--space-5);
+  border: var(--border);
+  border-radius: var(--radius-md);
+  background: var(--surface-raised);
+}
+
+.case-file .forecast-covenant__trajectory .trajectory__caption {
+  font-size: var(--size-body);
+}
+
+.case-file .forecast-covenant__trajectory .trajectory__plot {
+  padding: 0;
+  border: 0;
+  border-radius: var(--radius);
+  background: var(--surface-subtle);
+}
+
+.case-file .trajectory__line {
+  stroke-width: 1.4;
+}
+
+/* Labels inside the plot scale with it: at desktop width they drew larger
+   than the page's headings. The HTML axis below replaces them. */
+.case-file .trajectory__plot:has(~ .trajectory__axis) .trajectory__gridline-label {
+  display: none;
+}
+
+/* Three equal 30-day spans between the plot's two-unit side insets; each
+   label sits on the gridline that starts its span, the last on the end. */
+.case-file .trajectory__axis {
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  margin-block-start: calc(var(--space-2) * -1);
+  padding-inline: 2%;
+  color: var(--ink-muted);
+  font-family: var(--font-data);
+  font-size: var(--size-caption);
+}
+
+.case-file .trajectory__axis span {
+  grid-row: 1;
+  white-space: nowrap;
+}
+
+.case-file .trajectory__axis span:nth-child(1) { grid-column: 1; justify-self: start; }
+.case-file .trajectory__axis span:nth-child(2) { grid-column: 2; justify-self: start; transform: translateX(-50%); }
+.case-file .trajectory__axis span:nth-child(3) { grid-column: 3; justify-self: start; transform: translateX(-50%); }
+.case-file .trajectory__axis span:nth-child(4) { grid-column: 3; justify-self: end; }
+
+.case-file .trajectory__selected-point {
+  fill: var(--accent-fill);
+  stroke: var(--surface-raised);
+  stroke-width: calc(var(--space-1) / 2);
+  vector-effect: non-scaling-stroke;
+}
+
+.case-file .trajectory__legend {
+  display: flex;
+  flex-wrap: wrap;
+  gap: var(--space-2) var(--space-5);
+  margin: 0;
+  padding: 0;
+  list-style: none;
+  color: var(--ink-muted);
+  font-size: var(--size-caption);
+}
+
+.case-file .trajectory__legend-item {
+  display: inline-flex;
+  align-items: center;
+  gap: var(--space-2);
+}
+
+.case-file .trajectory__legend-item::before {
+  width: var(--space-5);
+  border-block-start: calc(var(--space-1) / 2) solid var(--accent);
+  content: "";
+}
+
+.case-file .trajectory__legend-item--threshold::before {
+  border-block-start-style: dashed;
+  border-block-start-color: var(--ink-muted);
+}
+
+.case-file .trajectory__legend-item--selected::before {
+  border-block-start-style: dotted;
+  border-block-start-color: var(--ink-muted);
+}
+
+.case-file .trajectory__legend-item--crossing {
+  color: var(--breach);
+  font-weight: var(--weight-semi);
+}
+
+.case-file .trajectory__legend-item--crossing::before {
+  width: 0;
+  height: var(--space-3);
+  border-block-start: 0;
+  border-inline-start: calc(var(--space-1) / 2) solid var(--breach);
+}
+
+/* The crossing label inside the plot scaled with it, to heading size at
+   desktop width. The legend entry above carries the same date. */
+.case-file .trajectory:has(.trajectory__legend-item--crossing) .trajectory__crossing-annotation {
+  display: none;
+}
+
+.no-js .case-file .trajectory__legend-item--selected {
+  display: none;
+}
+
+.case-file .forecast-covenant__reason {
+  color: var(--ink-muted);
+  font-size: var(--size-caption);
+}
+
+.case-file .forecast-covenant__figures {
+  overflow-x: auto;
+  border: var(--border);
+  border-radius: var(--radius-md);
+  background: var(--surface-raised);
+}
+
+.case-file .forecast-covenant__table caption {
+  margin: 0;
+  padding: var(--space-3) var(--space-4);
+  border-block-end: var(--border);
+  color: var(--ink);
+  font-family: var(--font-head);
+  font-size: var(--size-body);
+  font-weight: var(--weight-bold);
+}
+
+.case-file .forecast-covenant__table th,
+.case-file .forecast-covenant__table td {
+  padding: var(--space-3) var(--space-4);
+  vertical-align: middle;
+}
+
+.case-file .forecast-covenant__table thead th {
+  position: static;
+  font-size: var(--size-caption);
+}
+
+/* One quiet header row per table: no column rules between the labels. */
+.case-file table thead th {
+  border-inline: 0;
+  box-shadow: none;
+}
+
+.case-file .forecast-covenant__table tbody tr:last-child > * {
+  border-block-end: 0;
+}
+
+.case-file .forecast-covenant__table .forecast-number {
+  width: 1%;
+  font-size: var(--size-body);
+}
+
+.case-file .forecast-covenant__table thead th.forecast-number {
+  font-family: var(--font-ui);
+  font-size: var(--size-caption);
+}
+
+.case-file .forecast-horizon__crossing {
+  min-width: 14rem;
+  font-size: var(--size-data);
+}
+
+.case-file .forecast-horizon__method {
+  min-width: 8rem;
+  color: var(--ink-muted);
+}
+
+/* The two drawer openers are secondary actions. The shared rule for every
+   `button` inside `.page-content` outranks the modifier on its own. */
+.page-content .case-file .forecast-covenant__evidence button.button--secondary {
+  border: var(--border);
+  background: var(--surface-raised);
+  color: var(--ink);
+  font-size: var(--size-data);
+  font-weight: var(--weight-semi);
+  box-shadow: none;
+}
+
+.page-content .case-file .forecast-covenant__evidence button.button--secondary:hover {
+  border-color: var(--accent);
+  background: var(--accent-soft);
+  color: var(--accent);
+}
+
+.case-file .forecast-covenant__evidence {
+  margin-block-start: 0;
+}
+
+/* ------------------------------------------------------------------ */
+/* Covenant position                                                   */
+/* ------------------------------------------------------------------ */
+
+/* The panel's h2 already says "Covenant position"; the caption stays for
+   the table's accessible name only. */
+.case-file .case-covenant-ledger .ledger-table__caption {
+  position: absolute;
+  width: var(--border-width);
+  height: var(--border-width);
+  margin: calc(var(--border-width) * -1);
+  padding: 0;
+  overflow: hidden;
+  clip-path: inset(50%);
+  white-space: nowrap;
+}
+
+.case-file .case-covenant-ledger {
+  border: var(--border);
+  border-radius: var(--radius-md);
+  container-type: inline-size;
+}
+
+/* app.css fixes this table at eighty per cent of the widest content area,
+   wider than the panel at any common desktop width. Below this minimum the
+   ledger scrolls inside its own frame. */
+.case-file .case-covenant-ledger .ledger-table__table {
+  min-width: 52rem;
+  font-family: var(--font-ui);
+}
+
+.case-file .case-covenant-ledger th,
+.case-file .case-covenant-ledger td {
+  padding: var(--space-3) var(--space-2);
+}
+
+.case-file .case-covenant-ledger th:first-child,
+.case-file .case-covenant-ledger td:first-child {
+  padding-inline-start: var(--space-4);
+}
+
+/* Column labels may wrap: "Threshold in force" held on one line set the
+   width of a column whose figures are four characters wide. */
+.case-file .case-covenant-ledger thead th {
+  position: static;
+  vertical-align: bottom;
+  white-space: normal;
+}
+
+/* `.ledger-table td { text-align: start }` outranks the right-alignment
+   modifiers on their own, so the figures sat ragged under their labels. */
+.case-file .ledger-table .ledger-table__heading--right,
+.case-file .ledger-table .ledger-row__cell--right {
+  text-align: end;
+}
+
+.case-file .ledger-table .ledger-table__heading--center,
+.case-file .ledger-table .ledger-row__cell--center {
+  text-align: center;
+}
+
+.case-file .case-covenant-row__name {
+  min-width: 11rem;
+  font-family: var(--font-head);
+  font-size: var(--size-body);
+}
+
+/* When the ledger scrolls sideways in a narrow column, the covenant name
+   stays in view so the figures beside it are never unlabelled. */
+.case-file .case-covenant-ledger th.case-covenant-row__name,
+.case-file .case-covenant-ledger thead th:first-child {
+  position: sticky;
+  inset-inline-start: 0;
+  z-index: 1;
+}
+
+.case-file .case-covenant-ledger th.case-covenant-row__name {
+  background: var(--surface-raised);
+}
+
+.case-file .case-covenant-ledger tbody tr:hover > th.case-covenant-row__name {
+  background: var(--accent-soft);
+}
+
+.case-file .case-covenant-row__reference {
+  margin-block-start: var(--space-1);
+  font-family: var(--font-data);
+  font-size: var(--size-caption);
+  letter-spacing: var(--tracking-label);
+}
+
+.case-file .case-covenant-ledger td.ledger-row__cell:nth-child(2) {
+  color: var(--ink-muted);
+  font-family: var(--font-data);
+  font-size: var(--size-caption);
+  white-space: nowrap;
+}
+
+.case-file .case-covenant-row__numeric {
+  font-family: var(--font-data);
+  font-variant-numeric: tabular-nums;
+  overflow-wrap: normal;
+  white-space: nowrap;
+}
+
+.case-file .case-covenant-row__verdict {
+  display: inline-flex;
+  align-items: center;
+  gap: var(--space-1);
+  padding: var(--space-1) var(--space-2);
+  border-radius: var(--radius-pill);
+  background: var(--surface-subtle);
+  color: var(--ink-muted);
+  font-family: var(--font-ui);
+  font-size: var(--size-caption);
+  font-weight: var(--weight-bold);
+  letter-spacing: var(--tracking-label);
+  text-transform: uppercase;
+  white-space: nowrap;
+}
+
+.case-file .case-covenant-row__verdict[data-verdict="pass"] {
+  background: var(--headroom-bg);
+  color: var(--headroom);
+}
+
+.case-file .case-covenant-row__verdict[data-verdict="warning"] {
+  background: var(--watch-bg);
+  color: var(--watch);
+}
+
+.case-file .case-covenant-row__verdict[data-verdict="breach"],
+.case-file .case-covenant-row__verdict[data-verdict="breach_cure_open"] {
+  background: var(--breach-bg);
+  color: var(--breach);
+}
+
+.case-file .case-covenant-row__why {
+  display: block;
+  margin: var(--space-1) 0 0;
+}
+
+/* Headroom colour follows the verdict, not always green. */
+.case-file .case-covenant-row[data-verdict="warning"] .case-covenant-row__headroom {
+  color: var(--watch);
+}
+
+.case-file .case-covenant-row[data-verdict="breach"] .case-covenant-row__headroom,
+.case-file .case-covenant-row[data-verdict="breach_cure_open"] .case-covenant-row__headroom {
+  color: var(--breach);
+}
+
+.case-file .case-covenant-row__detail {
+  font-size: var(--size-caption);
+}
+
+.case-file .case-covenant-ledger td.ledger-row__cell:nth-child(8) {
+  min-width: 10rem;
+  max-width: 14rem;
+  color: var(--ink-muted);
+  font-size: var(--size-data);
+  overflow-wrap: normal;
+}
+
+/* The quarterly history: a compact chart beside its four figures, instead
+   of a chart the full width of the table and as tall as a screen. */
+.case-file .case-covenant-row__history-row > td {
+  padding: 0 var(--space-3) var(--space-4);
+  background: var(--surface-raised);
+}
+
+.case-file .case-covenant-row__history-row:hover > td {
+  background: var(--surface-raised);
+}
+
+.case-file .case-covenant-row__history {
+  display: grid;
+  grid-template-columns: minmax(0, 20rem) minmax(0, 1fr);
+  grid-template-areas:
+    "caption caption"
+    "plot ledger";
+  align-items: center;
+  gap: var(--space-2) var(--space-5);
+  position: sticky;
+  inset-inline-start: var(--space-3);
+  box-sizing: border-box;
+  max-width: calc(100cqi - var(--space-6));
+  margin: 0;
+  padding: var(--space-4);
+  border-radius: var(--radius);
+  background: var(--surface-subtle);
+}
+
+.case-file .case-covenant-row__history .trajectory__caption {
+  grid-area: caption;
+  color: var(--ink-muted);
+  font-family: var(--font-ui);
+  font-size: var(--size-caption);
+  font-weight: var(--weight-bold);
+  letter-spacing: var(--tracking-label);
+  text-transform: uppercase;
+}
+
+.case-file .case-covenant-row__history .trajectory__plot {
+  grid-area: plot;
+  min-height: 0;
+  height: auto;
+  aspect-ratio: 5 / 2;
+  padding: 0;
+  border: 0;
+  border-radius: var(--radius-sm);
+  background: var(--surface-raised);
+}
+
+.case-file .case-covenant-row__history .trajectory__ledger {
+  display: grid;
+  grid-area: ledger;
+  grid-template-columns: repeat(auto-fit, minmax(7rem, 1fr));
+  gap: var(--space-2);
+  padding: 0;
+  border: 0;
+}
+
+.case-file .case-covenant-row__history .trajectory__ledger-item {
+  display: grid;
+  gap: var(--space-1);
+  padding: var(--space-2) var(--space-3);
+  border-radius: var(--radius-sm);
+  background: var(--surface-raised);
+}
+
+.case-file .case-covenant-row__history .trajectory__ledger-item dt {
+  color: var(--ink-muted);
+  font-family: var(--font-ui);
+  font-size: var(--size-caption);
+}
+
+.case-file .case-covenant-row__history .trajectory__ledger-item dd {
+  margin: 0;
+  color: var(--ink);
+  font-family: var(--font-data);
+  font-size: var(--size-body);
+  font-weight: var(--weight-semi);
+  font-variant-numeric: tabular-nums;
+}
+
+/* ------------------------------------------------------------------ */
+/* Financials                                                          */
+/* ------------------------------------------------------------------ */
+
+/* Eight filed periods do not fit one row of a third-width card; two rows
+   of four do, with every label and value legible. */
+.case-file .ratio-card__periods {
+  grid-auto-flow: row;
+  grid-template-columns: repeat(4, minmax(0, 1fr));
+  gap: var(--space-1);
+  overflow: visible;
+}
+
+.case-file .ratio-card__period {
+  padding: var(--space-2) var(--space-1);
+  border-radius: 0 0 var(--radius-sm) var(--radius-sm);
+  background: var(--surface-subtle);
+}
+
+.case-file .ratio-card__period-label {
+  white-space: nowrap;
+}
+
+.case-file .ratio-card__attribution {
+  font-size: var(--size-data);
+}
+
+/* A `td` set to `display: flex` leaves the table layout, which is what
+   drew the trend cell out of line with its row. */
+.case-file .statement-row__trend {
+  display: table-cell;
+  min-width: 6.5rem;
+  text-align: center;
+  vertical-align: top;
+}
+
+.case-file .statement-row__spark {
+  margin-inline: auto;
+}
+
+.case-file .statement-row__change {
+  display: block;
+  margin-block-start: var(--space-1);
+}
+
+.case-file .statement-table__line-heading,
+.case-file .statement-row__line {
+  min-width: 11rem;
+}
+
+/* Sans tabular figures: the same alignment as the data face, in the width
+   the eight periods and the trend column need to fit a desktop panel. */
+.case-file .statement-row__value {
+  font-family: var(--font-ui);
+  font-size: var(--size-data);
+  font-variant-numeric: tabular-nums;
+}
+
+.case-file .statement-table tbody tr:hover > th {
+  background: var(--accent-soft);
+}
+
+/* ------------------------------------------------------------------ */
+/* Seven signal families                                               */
+/* ------------------------------------------------------------------ */
+
+.case-file .signal-grid {
+  grid-template-columns: repeat(auto-fill, minmax(13rem, 1fr));
+  align-items: start;
+  gap: var(--space-3);
+}
+
+.case-file .signal-card {
+  background: var(--surface-subtle);
+}
+
+/* Title on its own line, trend chip under it. Side by side, the unbreakable
+   trend word left the title a few characters and it broke letter by letter. */
+.case-file .signal-card__summary {
+  flex-direction: column;
+  align-items: flex-start;
+  justify-content: flex-start;
+  gap: var(--space-2);
+  padding: var(--space-4);
+}
+
+.case-file .signal-card__title {
+  display: flex;
+  align-items: center;
+  overflow-wrap: normal;
+  font-family: var(--font-head);
+  font-size: var(--size-body);
+  line-height: 1.3;
+}
+
+.case-file .signal-card__trend {
+  padding: var(--space-1) var(--space-2);
+  border-radius: var(--radius-pill);
+  background: var(--surface-raised);
+  font-family: var(--font-ui);
+  font-weight: var(--weight-semi);
+}
+
+.case-file .signal-card__trend[data-trend="worsening"] {
+  background: var(--watch-bg);
+  color: var(--watch);
+}
+
+.case-file .signal-card__trend[data-trend="improving"] {
+  background: var(--headroom-bg);
+  color: var(--headroom);
+}
+
+.case-file .signal-card__body {
+  padding: 0 var(--space-4) var(--space-4);
+}
+
+/* The shared plot min-height is sized for the full forecast chart; in a
+   card a quarter of that width it letterboxed the drawing in a tall box. */
+.case-file .signal-card__chart .trajectory__plot {
+  height: auto;
+  min-height: 0;
+  aspect-ratio: 5 / 2;
+  padding: 0;
+  border: 0;
+  border-radius: var(--radius-sm);
+  background: var(--surface-raised);
+}
+
+/* ------------------------------------------------------------------ */
+/* Evidence register                                                   */
+/* ------------------------------------------------------------------ */
+
+.case-file .case-evidence__scroll {
+  border: var(--border);
+  border-radius: var(--radius-md);
+}
+
+.case-file .case-evidence__table {
+  min-width: 52rem;
+}
+
+.case-file .case-evidence__table caption {
+  padding: var(--space-3) var(--space-4);
+  border-block-end: var(--border);
+  color: var(--ink-muted);
+  font-family: var(--font-ui);
+  font-size: var(--size-data);
+  font-weight: var(--weight-regular);
+}
+
+.case-file .case-evidence__table thead th {
+  position: static;
+  border-block-start: 0;
+}
+
+.case-file .case-evidence__table th,
+.case-file .case-evidence__table td {
+  padding: var(--space-3) var(--space-4);
+}
+
+.case-file .case-evidence__table td {
+  font-family: var(--font-ui);
+  font-variant-numeric: tabular-nums;
+}
+
+.case-file .case-evidence__table td:nth-child(2) {
+  min-width: 11rem;
+}
+
+.case-file .case-evidence__table td:nth-child(3),
+.case-file .case-evidence__table td:nth-child(4) {
+  white-space: nowrap;
+}
+
+.case-file .case-evidence__table td:nth-child(5) {
+  min-width: 10rem;
+}
+
+.case-file .case-evidence__table td:nth-child(6) {
+  min-width: 13rem;
+}
+
+.case-file .case-evidence__family-row th {
+  padding-block: var(--space-2);
+  background: var(--surface-subtle);
+  font-size: var(--size-caption);
+  letter-spacing: var(--tracking-label);
+}
+
+.case-file .case-evidence__table tbody:first-of-type .case-evidence__family-row th {
+  padding-block-start: var(--space-2);
+}
+
+.case-file .case-evidence__table tbody tr:hover > th[scope="row"] {
+  background: var(--accent-soft);
+}
+
+/* ------------------------------------------------------------------ */
+/* Documents                                                           */
+/* ------------------------------------------------------------------ */
+
+.case-file .case-documents .state {
+  min-height: 0;
+}
+
+/* ------------------------------------------------------------------ */
+/* Narrower screens                                                    */
+/* ------------------------------------------------------------------ */
+
+@media (max-width: 64rem) {
+  .case-file .case-header__facts {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    row-gap: var(--space-4);
+  }
+
+  .case-file .case-header__fact:nth-child(odd) {
+    padding-inline-start: 0;
+    border-inline-start: 0;
+  }
+
+  .case-file .horizon-control__live-ledger {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+
+  .case-file .case-covenant-row__history {
+    grid-template-columns: minmax(0, 1fr);
+    grid-template-areas:
+      "caption"
+      "plot"
+      "ledger";
+  }
+
+  .case-file .case-covenant-row__history .trajectory__plot {
+    max-width: 24rem;
+  }
+}
+
+@media (max-width: 40rem) {
+  .case-file .case-file__header,
+  .case-file .case-actions,
+  .case-file .case-memo--empty,
+  .case-file__sections > .panel {
+    padding: var(--space-4);
+  }
+
+  .case-file .case-header__facts {
+    grid-template-columns: minmax(0, 1fr);
+  }
+
+  .case-file .case-header__fact,
+  .case-file .case-header__fact:nth-child(odd) {
+    padding: 0 0 var(--space-3);
+    border: 0;
+    border-block-end: var(--border);
+  }
+
+  .case-file .case-header__fact:last-child {
+    padding-block-end: 0;
+    border-block-end: 0;
+  }
+
+  .case-file .forecast-covenant,
+  .case-file .horizon-control,
+  .case-file .forecast-covenant__trajectory {
+    padding: var(--space-3);
+  }
+
+  .case-file .horizon-control__drivers {
+    grid-auto-flow: row;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .case-file .horizon-control__input::-webkit-slider-thumb {
+    transition: none;
+  }
+}
+
+/* ------------------------------------------------------------------ */
+/* Portfolio queue: the plain-language copy                            */
+/* ------------------------------------------------------------------ */
+
+/*
+  Kept with the case file's layer because both screens now phrase risk the
+  same way: the outcome in words, then the score as its supporting figure.
+*/
+.queue-band-tile__hint {
+  color: var(--ink-muted);
+  font-family: var(--font-ui);
+  font-size: var(--size-caption);
+  line-height: 1.35;
+}
+
+.ledger-row__cell--risk .queue-row__probability {
+  display: block;
+  color: var(--ink);
+  font-family: var(--font-ui);
+  font-size: var(--size-data);
+  font-weight: var(--weight-semi);
+  line-height: 1.35;
+}
+
+.queue-row__outlook-detail {
+  display: block;
+  margin-block-start: var(--space-1);
+  color: var(--ink-muted);
+  font-family: var(--font-data);
+  font-size: var(--size-caption);
+}
+
+/* The driver is now a sentence, so it reads in the UI face. */
+.queue-row__driver {
+  font-family: var(--font-ui);
+}
+
+/* "No related market news" is the common case; it stays as quiet text
+   rather than a chip so the rows that do have news stand out. */
+.queue-market-badge--none {
+  padding-inline: 0;
+  background: transparent;
+  font-weight: var(--weight-regular);
+}

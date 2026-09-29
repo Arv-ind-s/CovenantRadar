@@ -193,7 +193,14 @@ class ModelRegistryGuard:
         self.repository = repository
         self.environment = environment
 
-    def ensure_permitted(self, component: str) -> ModelRegistrationRecord | None:
+    def ensure_permitted(
+        self,
+        component: str,
+        *,
+        provider: str | None = None,
+        model_id: str | None = None,
+        prompt_version: str | None = None,
+    ) -> ModelRegistrationRecord | None:
         """Return the usable registration for `component`, or refuse/warn.
 
         Raises `ComponentNotRegistered` or `ComponentNotApproved` in
@@ -219,6 +226,18 @@ class ModelRegistryGuard:
                 "a distinct approver signs off.",
                 component=name,
                 reason=f"state:{record.state}",
+            )
+        if (
+            (provider is not None and record.provider != provider)
+            or (model_id is not None and record.model_id != model_id)
+            or (prompt_version is not None and record.prompt_version != prompt_version)
+        ):
+            self._deny(
+                ComponentNotApproved,
+                f"Component {name!r} approval does not match the selected provider, model "
+                "and prompt version. Register and approve this configuration before use.",
+                component=name,
+                reason="configuration_mismatch",
             )
         return record
 

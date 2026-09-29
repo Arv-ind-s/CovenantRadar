@@ -1,0 +1,32 @@
+{% extends "base.html" %}
+{% from "screens/intelligence/_macros.html" import borrower_card with context %}
+{% block page_title %}Market review · {{ row.name }} · Covenant Radar{% endblock %}
+{% block h1 %}Record a market review{% endblock %}
+{% block breadcrumb_label %}Market intelligence{% endblock %}
+{% block head %}<link rel="stylesheet" href="/static/css/intelligence.css">{% endblock %}
+{% block content %}
+<div class="mkt mkt--review">
+  <a href="/intelligence#{{ row.anchor }}">← Market intelligence</a>
+  {{ borrower_card(row, expanded=true, actions=false) }}
+  <section class="mkt-panel" aria-labelledby="review-heading">
+    <h2 id="review-heading">Case note</h2>
+    {% if not cases %}
+      <p>{{ row.name }} has no open case in your scope. Open a case from the borrower file to record this review.</p>
+    {% elif not selected %}
+      <form class="mkt-case-select" method="get" action="/intelligence/review/{{ row.reference|urlencode }}">
+        <label for="review-case">Open case</label>
+        <select name="case" id="review-case" required>{% for option in cases %}<option value="{{ option.reference }}">{{ option.reference }}</option>{% endfor %}</select>
+        <button class="button" type="submit">Prepare note</button>
+      </form>
+    {% else %}
+      <p>The draft cites every market figure and headline with its source. Confirm pass-through, hedges and the floating-rate share with the borrower before concluding. Recording a note does not change covenant results, forecasts or risk scores.</p>
+      <form class="mkt-review-form" method="post" action="/cases/{{ selected.reference }}">
+        <input type="hidden" name="action" value="comment">
+        <label for="review-comment">Note for case {{ selected.reference }}</label>
+        <textarea id="review-comment" name="comment" rows="18" maxlength="4000" required>{{ draft }}</textarea>
+        <button class="button button--primary" type="submit">Record review in case {{ selected.reference }}</button>
+      </form>
+    {% endif %}
+  </section>
+</div>
+{% endblock %}

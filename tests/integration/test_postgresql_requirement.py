@@ -10,14 +10,16 @@ import pytest
 
 @pytest.mark.integration
 def test_postgresql_service_is_required() -> None:
-    database_url = os.environ.get("COVENANT_RADAR_DATABASE_URL")
+    database_url = os.environ.get("RADAR_TEST_DATABASE_URL")
     if database_url is None:
         pytest.fail(
-            "PostgreSQL is required for integration tests; COVENANT_RADAR_DATABASE_URL is unset."
+            "PostgreSQL is required for integration tests; RADAR_TEST_DATABASE_URL is unset."
         )
 
     try:
-        with psycopg.connect(database_url, connect_timeout=5) as connection:
+        with psycopg.connect(
+            database_url.replace("postgresql+psycopg://", "postgresql://", 1), connect_timeout=5
+        ) as connection:
             with connection.cursor() as cursor:
                 cursor.execute("SELECT 1")
                 assert cursor.fetchone() == (1,)

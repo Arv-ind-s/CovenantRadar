@@ -2,6 +2,7 @@
 
 from __future__ import annotations
 
+import re
 from datetime import UTC, date, datetime
 from decimal import Decimal
 from uuid import uuid4
@@ -323,10 +324,19 @@ def test_not_run_section_shows_only_that() -> None:
 
         assert response.status_code == 200
         body = response.text
-        assert body.count("This stage has not run.") == 7
-        assert "What it received" not in body
-        assert "What it produced" not in body
-        assert "Thresholds compared" not in body
+        # The borrower view now includes the stored covenant-test trace.
+        # Unrun stages still must not manufacture inputs or outputs.
+        sections = re.findall(
+            r'<details class="why-stage"[^>]*data-state="not-run"[^>]*>(.*?)</details>',
+            body,
+            flags=re.DOTALL,
+        )
+        assert len(sections) == 6
+        assert 'id="why-stage-2" data-stage="2" data-state="code"' in body
+        for section in sections:
+            assert "What it received" not in section
+            assert "What it produced" not in section
+            assert "Thresholds compared" not in section
     finally:
         bundle.close()
 

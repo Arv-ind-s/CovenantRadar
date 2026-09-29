@@ -1,5 +1,5 @@
 """Fixtures giving each integration test its own isolated transaction
-against the PostgreSQL instance CI supplies (`COVENANT_RADAR_DATABASE_URL`),
+against the PostgreSQL instance CI supplies (`RADAR_TEST_DATABASE_URL`),
 so tests never see one another's writes and never depend on run order.
 
 Uses SQLAlchemy's own documented recipe for joining a session to an
@@ -17,15 +17,17 @@ from __future__ import annotations
 
 import os
 from collections.abc import Callable, Iterator
+from uuid import uuid4
 
 import pytest
 from sqlalchemy import Connection, Engine, create_engine, event
 from sqlalchemy.orm import Session, sessionmaker
 from sqlalchemy.orm.session import SessionTransaction
+from sqlalchemy.schema import CreateSchema, DropSchema
 
 from covenant_radar.db.base import Base
 
-_DATABASE_URL_ENV = "COVENANT_RADAR_DATABASE_URL"
+_DATABASE_URL_ENV = "RADAR_TEST_DATABASE_URL"
 
 
 def _required_database_url() -> str:
@@ -35,18 +37,25 @@ def _required_database_url() -> str:
     return database_url
 
 
-@pytest.fixture(scope="session")
+@pytest.fixture(scope="module")
 def database_engine() -> Iterator[Engine]:
-    """One pooled engine for the whole integration run, against the
-    PostgreSQL instance CI supplies. Every table currently declared on the
-    shared `Base` is created once and dropped once, rather than per test."""
-    engine = create_engine(_required_database_url(), pool_pre_ping=True)
-    Base.metadata.create_all(engine)
+    """Use a private schema so ORM fixtures cannot alter migration-test tables."""
+    database_url = _required_database_url()
+    schema = f"test_integration_{uuid4().hex}"
+    admin = create_engine(database_url, pool_pre_ping=True)
+    with admin.begin() as connection:
+        connection.execute(CreateSchema(schema))
+    engine = create_engine(
+        database_url, pool_pre_ping=True, connect_args={"options": f"-csearch_path={schema}"}
+    )
     try:
+        Base.metadata.create_all(engine)
         yield engine
     finally:
-        Base.metadata.drop_all(engine)
         engine.dispose()
+        with admin.begin() as connection:
+            connection.execute(DropSchema(schema, cascade=True))
+        admin.dispose()
 
 
 @pytest.fixture

@@ -16,7 +16,7 @@ from decimal import Decimal
 from uuid import UUID
 
 import pytest
-from sqlalchemy import String, select
+from sqlalchemy import Engine, MetaData, String, select
 from sqlalchemy.orm import Mapped, Session, mapped_column
 
 from covenant_radar.core.ids import new_id
@@ -34,9 +34,20 @@ class _IntegrationSampleRecord(Base, StandardColumns):
     the two files stay collectible together without a shared import."""
 
     __tablename__ = "_test_db_base_integration_record"
+    metadata = MetaData(naming_convention=Base.metadata.naming_convention)
 
     label: Mapped[str] = mapped_column(String(50))
     amount: Mapped[Decimal] = mapped_column(MoneyAmount)
+
+
+@pytest.fixture(scope="module", autouse=True)
+def sample_table(database_engine: Engine):
+    """Keep test-only tables out of the application's migration metadata."""
+    _IntegrationSampleRecord.metadata.create_all(database_engine)
+    try:
+        yield
+    finally:
+        _IntegrationSampleRecord.metadata.drop_all(database_engine)
 
 
 def test_uuid_datetime_and_money_round_trip_on_postgresql(db_session: Session) -> None:

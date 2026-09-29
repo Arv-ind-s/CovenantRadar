@@ -26,7 +26,9 @@
     </ul>
   {% else %}
     {% set state_id = "case-documents-empty" %}
-    {% set state_title = labels.documents_title %}
+    {# The panel's own h2 already says "Source documents"; the empty state
+       names the situation instead of repeating it. #}
+    {% set state_title = "No documents uploaded yet" %}
     {% set state_message = labels.documents_empty %}
     {% set state_action_label = labels.documents_upload if view.documents_upload_href else "" %}
     {% set state_action_href = view.documents_upload_href or "" %}

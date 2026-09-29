@@ -163,6 +163,9 @@
     <h2 class="panel__title" id="evaluations-title">Evaluation scoreboard</h2>
     {% if view.evaluations %}
       {% for release in view.evaluations %}
+        {% if release.commit_sha == "demo-release-7a" %}
+          <p class="case-file__panel-message" role="note">Illustrative governance scenario. These seeded scores demonstrate approval controls; they are not measured model performance. Run the evaluation harness for measured results.</p>
+        {% endif %}
         <div class="governance__scroll">
           <table class="governance__table">
             <caption>Release {{ release.commit_sha }} — both arms against the pass marks (spec §17.7)</caption>

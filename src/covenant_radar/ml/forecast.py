@@ -8,6 +8,7 @@ and offline reproducibility straightforward.
 from __future__ import annotations
 
 import hashlib
+import hmac
 import json
 import pickle
 from collections.abc import Iterable, Mapping
@@ -40,7 +41,19 @@ class SklearnForecastPredictor:
         self.path = Path(artifact_path)
         raw = self.path.read_bytes()
         self.checksum = hashlib.sha256(raw).hexdigest()
+        # Verify integrity before deserialization. Artifacts and their manifests
+        # must still come from a trusted local training/deployment process.
+        manifest = json.loads(self.path.with_suffix(".manifest.json").read_text(encoding="utf-8"))
+        expected = manifest.get("checksum")
+        if not isinstance(expected, str) or not hmac.compare_digest(self.checksum, expected):
+            raise ValueError("ML artifact checksum does not match its manifest.")
         payload = pickle.loads(raw)
+        if (
+            payload["version"] != manifest.get("version")
+            or list(payload["features"]) != manifest.get("features")
+            or sorted(payload["models"]) != manifest.get("horizons")
+        ):
+            raise ValueError("ML artifact metadata does not match its manifest.")
         self.version = str(payload["version"])
         self.features = tuple(payload["features"])
         self.models = payload["models"]
@@ -129,10 +142,15 @@ def train_candidates(
 def _contributions(
     model: object, vector: Any, features: tuple[str, ...]
 ) -> tuple[FeatureContribution, ...]:
-    """Use exact linear contributions where available; otherwise disclose none."""
-    estimator = getattr(model, "calibrated_classifiers_", [None])[0]
-    base = getattr(estimator, "estimator", None)
-    coefficients = getattr(base, "coef_", None)
+    """Expose coefficients only for an uncalibrated linear estimator.
+
+    A calibrated ensemble averages several sigmoid-transformed predictions.
+    The first fold's coefficients do not explain that probability; reporting
+    them as signed probability contributions would be misleading.
+    """
+    if hasattr(model, "calibrated_classifiers_"):
+        return ()
+    coefficients = getattr(model, "coef_", None)
     if coefficients is None:
         return ()
     return tuple(

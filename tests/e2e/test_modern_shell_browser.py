@@ -19,15 +19,20 @@ STATIC_ROOT = ROOT / "src" / "covenant_radar" / "web" / "static"
 ORIGIN = "http://assets.test"
 LIVE_UPDATES_PATH = "/live/updates"
 CHROME_CANDIDATES = (
+    Path("/Applications/Google Chrome.app/Contents/MacOS/Google Chrome"),
+    Path("/usr/bin/chromium"),
+    Path("/usr/bin/google-chrome"),
     Path(r"C:\Program Files\Google\Chrome\Application\chrome.exe"),
     Path(r"C:\Program Files (x86)\Microsoft\Edge\Application\msedge.exe"),
 )
 
 
-def _browser_executable() -> Path:
-    executable = next((path for path in CHROME_CANDIDATES if path.is_file()), None)
+def _browser_executable(bundled_path: str) -> Path:
+    executable = next(
+        (path for path in (Path(bundled_path), *CHROME_CANDIDATES) if path.is_file()), None
+    )
     if executable is None:
-        pytest.skip("A local Chromium browser is required for shell smoke coverage.")
+        pytest.fail("Install Chromium with: python -m playwright install chromium")
     return executable
 
 
@@ -74,11 +79,15 @@ def _install_asset_host(page: Page, html: str) -> None:
 
 
 @pytest.mark.parametrize("width,height", ((1440, 900), (1024, 768), (390, 844)))
-def test_shell_responsive_navigation_and_table_overflow(width: int, height: int) -> None:
+def test_shell_responsive_navigation_and_table_overflow(
+    width: int, height: int, tmp_path: Path
+) -> None:
     html = _queue_rest("light")
     errors: list[str] = []
     with sync_playwright() as playwright:
-        browser = playwright.chromium.launch(executable_path=str(_browser_executable()))
+        browser = playwright.chromium.launch(
+            executable_path=str(_browser_executable(playwright.chromium.executable_path))
+        )
         page = browser.new_page(viewport={"width": width, "height": height})
         page.on(
             "console",
@@ -102,17 +111,23 @@ def test_shell_responsive_navigation_and_table_overflow(width: int, height: int)
             page.keyboard.press("Escape")
             assert opener.get_attribute("aria-expanded") == "false"
             assert opener.evaluate("element => element === document.activeElement")
+            assert page.locator(".page-content").evaluate(
+                "element => getComputedStyle(element).opacity === '1'"
+            ), "Closing navigation must not hide content by restarting its entrance animation"
         else:
             assert page.locator("#shell-sidebar").is_visible()
             assert not page.locator("[data-sidebar-open]").is_visible()
         assert not errors
+        page.screenshot(path=str(tmp_path / f"queue-{width}.png"), full_page=True)
         browser.close()
 
 
 def test_sidebar_persistence_dark_theme_and_reduced_motion() -> None:
     html = _queue_rest("dark")
     with sync_playwright() as playwright:
-        browser = playwright.chromium.launch(executable_path=str(_browser_executable()))
+        browser = playwright.chromium.launch(
+            executable_path=str(_browser_executable(playwright.chromium.executable_path))
+        )
         context = browser.new_context(
             viewport={"width": 1440, "height": 900},
             reduced_motion="reduce",
@@ -130,4 +145,32 @@ def test_sidebar_persistence_dark_theme_and_reduced_motion() -> None:
         assert page.evaluate("localStorage.getItem('covenant-radar-sidebar')") == "collapsed"
         page.reload(wait_until="networkidle")
         assert page.locator("html").get_attribute("data-sidebar") == "collapsed"
+        browser.close()
+
+
+def test_clear_selection_uses_current_ledger_after_live_refresh() -> None:
+    html = _queue_rest("light")
+    with sync_playwright() as playwright:
+        browser = playwright.chromium.launch(
+            executable_path=str(_browser_executable(playwright.chromium.executable_path))
+        )
+        page = browser.new_page(viewport={"width": 1440, "height": 900})
+        _install_asset_host(page, html)
+        page.goto(ORIGIN, wait_until="networkidle")
+        # Simulate the same outerHTML replacement that the live poll performs.
+        page.evaluate("""() => {
+            const oldLedger = document.getElementById('queue-ledger');
+            const freshLedger = oldLedger.cloneNode(true);
+            delete freshLedger.dataset.selectionInstalled;
+            freshLedger.querySelectorAll('.row-select').forEach(box => box.disabled = false);
+            oldLedger.replaceWith(freshLedger);
+            document.dispatchEvent(new CustomEvent('htmx:afterSwap', {
+                detail: {target: freshLedger}
+            }));
+        }""")
+        page.locator(".row-select").first.check()
+        assert page.locator("#selection-count").inner_text() == "1"
+        page.locator("#clear-selection").click()
+        assert page.locator(".row-select:checked").count() == 0
+        assert page.locator("#queue-selection").is_hidden()
         browser.close()

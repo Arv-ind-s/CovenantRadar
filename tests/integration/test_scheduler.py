@@ -3,7 +3,7 @@ ledger, per-job concurrency lock, restart resumption and graceful shutdown
 (`plan.md §5.9`, `spec §R-28`).
 
 Uses a private, file-based SQLite database (real background threads need
-more than one connection) rather than the `COVENANT_RADAR_DATABASE_URL`
+more than one connection) rather than the `RADAR_TEST_DATABASE_URL`
 PostgreSQL fixture, matching the pattern other tasks already established
 for self-contained scheduler/ledger coverage on a laptop with no live
 PostgreSQL instance.

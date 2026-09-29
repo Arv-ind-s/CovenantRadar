@@ -40,8 +40,9 @@ distance_weight = 0.50
 velocity_weight = 0.30
 pressure_weight = 0.20
 max_probability = 0.99
-ml_enabled = true
-ml_artifact_path = "var/ml-reference/stage4-gradient_boosted-ff9af19f21f7.pkl"
+ml_enabled = false
+# scripts/demo_up.py trains and selects a verified artifact automatically.
+# For a deployment, explicitly set ml_enabled and ml_artifact_path together.
 # The challenger runs beside the deterministic model and its prediction is
 # recorded on every forecast, but the deterministic probability is what the
 # queue, the band and the case are built from. Promoting it to "champion" also

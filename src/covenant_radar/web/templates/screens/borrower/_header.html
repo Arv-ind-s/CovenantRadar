@@ -1,17 +1,25 @@
 {% if view is defined %}
+{#
+  The legal name is already the page's h1 directly above this strip, so the
+  borrower fact carries the reference instead of repeating the name at
+  display size. The other three facts keep their stored wording.
+#}
 <div class="case-header" data-borrower-reference="{{ view.header.borrower_reference }}">
-  <p class="case-header__identifier">{{ labels.reference }}: {{ view.header.borrower_reference }}</p>
   <div class="case-header__facts" aria-label="{{ labels.header_label }}">
     {% for fact in view.header.facts %}
       <div class="case-header__fact" data-fact="{{ fact.key }}">
-        <span class="case-header__fact-label">{{ fact.label }}</span>
-        <span class="case-header__fact-value{% if fact.missing %} case-header__fact-value--missing{% endif %}"{% if fact.key == "dated_risk" %} data-horizon-header-risk{% endif %}>
-          {{ fact.value }}
-        </span>
+        <span class="case-header__fact-label">{% if fact.key == "name" %}{{ labels.reference }}{% else %}{{ fact.label }}{% endif %}</span>
+        {% if fact.key == "name" %}
+          <span class="case-header__fact-value" title="{{ fact.value }}">{{ view.header.borrower_reference }}</span>
+          <span class="sr-only">{{ fact.label }}: {{ fact.value }}</span>
+        {% else %}
+          <span class="case-header__fact-value{% if fact.missing %} case-header__fact-value--missing{% endif %}"{% if fact.key == "dated_risk" %} data-horizon-header-risk{% endif %}>
+            {{ fact.value }}
+          </span>
+        {% endif %}
         {% if fact.detail %}<span class="case-header__fact-detail">{{ fact.detail }}</span>{% endif %}
       </div>
     {% endfor %}
-    <div class="case-header__whitespace" aria-hidden="true"></div>
   </div>
 </div>
 {% endif %}

@@ -73,10 +73,17 @@
     return Number.isFinite(numeric) ? text : null;
   };
 
+  // Four places, as the server formats the same figures on the covenant
+  // ledger; a stored path value arrives with eight.  Values that already fit
+  // are passed through untouched.
+  const DISPLAY_PLACES = 4;
+
   const decimalText = (value) => {
-    const text = validDecimal(value);
+    let text = validDecimal(value);
     if (text === null) return "Unavailable";
     if (!text.includes(".")) return text;
+    const places = text.split(".")[1].replace(/e.*$/i, "").length;
+    if (places > DISPLAY_PLACES) text = Number(text).toFixed(DISPLAY_PLACES);
     return text.replace(/(\.\d*?[1-9])0+(?:$|e)/i, "$1").replace(/\.0+(?:$|e)/i, "");
   };
 
@@ -108,10 +115,18 @@
     return { year, month, day, timestamp };
   };
 
+  // The server writes "29 Sep 2026"; current ICU data gives "Sept" for
+  // en-IN, so the same date read two ways on one screen.  English uses the
+  // server's three-letter months; Hindi keeps the locale's own format.
+  const MONTHS = ["Jan", "Feb", "Mar", "Apr", "May", "Jun", "Jul", "Aug", "Sep", "Oct", "Nov", "Dec"];
+
   const displayDate = (value) => {
     const parts = dateParts(value);
     if (parts === null) return null;
-    const locale = document.documentElement.lang === "hi" ? "hi-IN" : "en-IN";
+    if (document.documentElement.lang !== "hi") {
+      return `${String(parts.day).padStart(2, "0")} ${MONTHS[parts.month - 1]} ${parts.year}`;
+    }
+    const locale = "hi-IN";
     return new Intl.DateTimeFormat(locale, {
       day: "2-digit",
       month: "short",
@@ -172,6 +187,22 @@
     return { xStart, xEnd, yStart: Math.min(yStart, yEnd), yEnd: Math.max(yStart, yEnd) };
   };
 
+  const lineYAt = (line, x) => {
+    const points = (line.getAttribute("points") || "")
+      .trim()
+      .split(/\s+/)
+      .map((pair) => pair.split(",").map(Number))
+      .filter((pair) => pair.length === 2 && pair.every(Number.isFinite));
+    if (points.length === 0) return null;
+    if (x <= points[0][0]) return points[0][1];
+    for (let index = 1; index < points.length; index += 1) {
+      const [x1, y1] = points[index - 1];
+      const [x2, y2] = points[index];
+      if (x <= x2) return x2 === x1 ? y2 : y1 + ((y2 - y1) * (x - x1)) / (x2 - x1);
+    }
+    return points[points.length - 1][1];
+  };
+
   const clearDynamicMarkers = (svg) => {
     svg
       .querySelectorAll(
@@ -205,18 +236,29 @@
     });
     svg.appendChild(selectedMarker);
 
-    // The path is already a persisted path rendered by the server.  Clipping
-    // it at the response's selected day makes the current state visible
-    // without deriving or filling any missing business value in the browser.
-    // The area fill is the same path closed to the plot floor and so shares
-    // the polyline's horizontal extent exactly; the one percentage clips
-    // both at the same day.
+    // The path is already a persisted path rendered by the server, so the
+    // whole of it stays drawn.  Clipping the line itself at the selected day
+    // left the chart blank on load, because the default day is zero.  Only
+    // the area fill is clipped, so the shaded body shows how far along the
+    // stored path the reader has moved.
     const rightInset = Math.max(0, 100 - progress * 100);
-    const clip = `inset(0 ${rightInset}% 0 0)`;
-    line.style.clipPath = clip;
+    line.style.clipPath = "";
     const area = svg.querySelector(".trajectory__area");
-    if (area) area.style.clipPath = clip;
+    if (area) area.style.clipPath = `inset(0 ${rightInset}% 0 0)`;
     line.dataset.selectedDay = String(day);
+
+    // A dot where the cursor meets the drawn line.  Its height is read from
+    // the polyline's own rendered coordinates; no business value is derived.
+    const pointY = lineYAt(line, x);
+    if (pointY !== null) {
+      svg.appendChild(createSvgElement("circle", {
+        class: "trajectory__selected-point",
+        cx: x,
+        cy: pointY,
+        r: 1.1,
+        "data-horizon-selected-marker": "true",
+      }));
+    }
     const crossingDate = displayDate(payload.crossing_date);
     const crossingDay = crossingDate === null ? null : crossingDayFor(state, payload.crossing_date);
     if (crossingDate !== null && crossingDay !== null && day >= crossingDay) {
@@ -277,6 +319,10 @@
 
   const updateHeader = (state, payload) => {
     if (state.card.dataset.horizonUpdatesHeader !== "true") return;
+    // The server's header already states the dated risk for the default day,
+    // with its probability.  Replacing it on the initial load dropped that
+    // probability, so the header follows the slider only once it is moved.
+    if (!state.moved) return;
     const header = document.querySelector("[data-horizon-header-risk]");
     if (!header) return;
     const date = displayDate(payload.crossing_date);
@@ -383,6 +429,7 @@
     if (parsed === null) return;
     const day = clampDay(parsed, state.range);
     setSelectedDay(state, day);
+    state.moved = true;
     state.queuedDay = day;
     void requestDay(state);
   };
@@ -411,6 +458,7 @@
       queuedDay: null,
       appliedDay: null,
       interactive: false,
+      moved: false,
     };
     const selected = selectedDayFor(control, range);
     setSelectedDay(state, selected);

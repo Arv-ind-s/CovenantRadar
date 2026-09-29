@@ -562,10 +562,16 @@ class MemoGenerationService:
             )
         except MemoShapeRefusal as error:
             return self._refuse(borrower_id, slots, actions, prompt_version, error)
-        except ProviderUnavailable:
+        except ProviderUnavailable as error:
             return MemoGenerationOutcome(
                 kind=MemoOutcomeKind.PROVIDER_UNAVAILABLE,
-                message=DEGRADED_MEMO_MESSAGE,
+                message=(
+                    "Offline replay has no recorded AI draft for this evidence. "
+                    "The forecast and its evidence remain available. To draft a new memo, "
+                    "configure an approved live AI provider or supply a matching recording."
+                    if error.provider == "recorded" and error.reason == "cassette miss"
+                    else DEGRADED_MEMO_MESSAGE
+                ),
             )
         except ModelGovernanceBlocked:
             # The guarded client already records the refusal on `model_call`.

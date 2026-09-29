@@ -3,7 +3,7 @@
 Uses an isolated in-memory SQLite schema (the same pattern
 `tests/security/test_audit_coverage.py` already relies on) rather than the
 PostgreSQL-only `tests/integration/conftest.py` fixtures, so this suite does
-not depend on `COVENANT_RADAR_DATABASE_URL` being configured.
+not depend on `RADAR_TEST_DATABASE_URL` being configured.
 """
 
 from __future__ import annotations
@@ -472,6 +472,25 @@ def test_memo_retained_after_forecast_superseded() -> None:
         assert retained is not None
         assert retained.run_id == run_one.id
         assert retained.drafted_text == original_drafted_text
+    finally:
+        session.close()
+        engine.dispose()
+
+
+def test_missing_offline_recording_is_not_presented_as_transient_outage() -> None:
+    from covenant_radar.ai.providers.recorded import RecordedProvider
+
+    engine, session = _schema_session()
+    try:
+        _, borrower = _portfolio_and_borrower(session, reference="B-OFFLINE-MISS")
+        client = ModelClient(RecordedProvider(responses={}), model="offline-demo")
+        outcome = _service(session, client, request_id="rq-offline-miss").generate(
+            borrower_id=borrower.id, records=_records(), catalogue=_catalogue()
+        )
+        assert outcome.kind is MemoOutcomeKind.PROVIDER_UNAVAILABLE
+        assert "Offline replay has no recorded AI draft" in outcome.message
+        assert "try again shortly" not in outcome.message
+        assert outcome.memo is None
     finally:
         session.close()
         engine.dispose()

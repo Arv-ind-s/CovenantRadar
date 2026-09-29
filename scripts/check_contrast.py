@@ -108,6 +108,19 @@ EXPECTED_TOKENS: Final[tuple[str, ...]] = (
     "--dur-slow",
     "--ease",
     "--ease-spring",
+    "--auth-fixed-stage",
+    "--auth-fixed-bloom",
+    "--auth-fixed-accent",
+    "--auth-fixed-scene-ink",
+    "--auth-fixed-ink",
+    "--auth-fixed-gradient-top",
+    "--auth-fixed-gradient-middle",
+    "--auth-fixed-gradient-bottom",
+    "--auth-fixed-white",
+    "--auth-fixed-muted",
+    "--auth-fixed-subtle",
+    "--auth-fixed-button-top",
+    "--auth-fixed-button-bottom",
 )
 
 COLOUR_TOKENS: Final[tuple[str, ...]] = (

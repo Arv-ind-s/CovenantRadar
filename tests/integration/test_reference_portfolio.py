@@ -46,9 +46,9 @@ def test_two_runs_content_identical() -> None:
     assert first.content_hash == second.content_hash
 
 
-def test_sizes_match_specification() -> None:
-    assert DEFAULT_REFERENCE_CONFIG.borrower_count == 5_000
-    assert DEFAULT_REFERENCE_CONFIG.facility_count == 12_000
+def test_default_demo_sizes_match_curated_roster() -> None:
+    assert DEFAULT_REFERENCE_CONFIG.borrower_count == 24
+    assert DEFAULT_REFERENCE_CONFIG.facility_count == 28
     assert DEFAULT_REFERENCE_CONFIG.quarter_count == 8
     portfolio = generate_reference_portfolio(
         ReferencePortfolioConfig(seed=19, borrower_count=7, facility_count=11, quarter_count=3)

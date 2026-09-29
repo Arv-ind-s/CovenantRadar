@@ -89,9 +89,9 @@ def test_roles_match_spec_matrix(db_session: Session) -> None:
             "RUN_SIMULATION",
             "LOG_ACTION",
             "UPDATE_CASE",
-                "RECORD_DISPOSITION",
-                "EXPORT_EVIDENCE",
-                "INGEST_FINANCIAL_STATEMENTS",
+            "RECORD_DISPOSITION",
+            "EXPORT_EVIDENCE",
+            "INGEST_FINANCIAL_STATEMENTS",
         },
         "credit_approver": expected_common
         | {
@@ -119,9 +119,9 @@ def test_roles_match_spec_matrix(db_session: Session) -> None:
             "UPDATE_CASE",
             "RECORD_DISPOSITION",
             "OVERRIDE_RISK_VIEW",
-                "PROPOSE_THRESHOLDS",
-                "EXPORT_EVIDENCE",
-                "INGEST_FINANCIAL_STATEMENTS",
+            "PROPOSE_THRESHOLDS",
+            "EXPORT_EVIDENCE",
+            "INGEST_FINANCIAL_STATEMENTS",
         },
         "risk_head": expected_common
         | {
@@ -148,9 +148,9 @@ def test_roles_match_spec_matrix(db_session: Session) -> None:
             "UPLOAD_DOCUMENT",
             "RUN_INTAKE",
             "RESOLVE_QUARANTINE",
-                "CORRECT_SOURCE_DATA",
-                "INGEST_DATA",
-                "INGEST_FINANCIAL_STATEMENTS",
+            "CORRECT_SOURCE_DATA",
+            "INGEST_DATA",
+            "INGEST_FINANCIAL_STATEMENTS",
         },
     }
     assert "CONFIRM_FAILED_COVENANT" not in permission_by_code
@@ -164,7 +164,7 @@ def test_newer_taxonomy_supersedes_not_overwrites(db_session: Session, tmp_path:
 
     industry_path = data_dir / "industries.json"
     industries = json.loads(industry_path.read_text(encoding="utf-8"))
-    industries["taxonomy_version"] = "2.0"
+    industries["taxonomy_version"] = "3.0"
     industries["industries"] = [
         row for row in industries["industries"] if row["code"] not in {"A", "A01"}
     ]
@@ -183,7 +183,7 @@ def test_newer_taxonomy_supersedes_not_overwrites(db_session: Session, tmp_path:
     assert report.retained["industries"] >= 1
     assert retained is not None
     assert added is not None
-    assert added.taxonomy_version == "2.0"
+    assert added.taxonomy_version == "3.0"
 
 
 def test_retired_reference_still_resolves(db_session: Session, tmp_path: Path) -> None:
@@ -193,7 +193,7 @@ def test_retired_reference_still_resolves(db_session: Session, tmp_path: Path) -
 
     industry_path = data_dir / "industries.json"
     industries = json.loads(industry_path.read_text(encoding="utf-8"))
-    industries["taxonomy_version"] = "2.0"
+    industries["taxonomy_version"] = "3.0"
     industries["industries"] = [row for row in industries["industries"] if row["code"] != "A01"]
     industry_path.write_text(json.dumps(industries), encoding="utf-8")
 

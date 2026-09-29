@@ -55,9 +55,11 @@ from covenant_radar.config.settings import (
 )
 from covenant_radar.core.context import get_request_id
 from covenant_radar.core.errors import ExternalServiceError
+from covenant_radar.db.models.facility import Facility as FacilityRow
 from covenant_radar.db.models.identity import AppUser
 from covenant_radar.db.repositories.audit import AuditRepository
 from covenant_radar.db.repositories.identity import SqlAlchemyIdentityStore
+from covenant_radar.db.scoping import Scope, resolve_scope
 from covenant_radar.db.session import (
     DatabaseCircuitBreaker,
     create_database_engine,
@@ -66,6 +68,7 @@ from covenant_radar.db.session import (
 from covenant_radar.documents.store import FileSystemDocumentStore
 from covenant_radar.domain.intake.candidates import ClauseCandidate
 from covenant_radar.domain.intake.proposal import StageOneProposal
+from covenant_radar.domain.intake.verify import VerificationContext
 from covenant_radar.domain.memo.slots import MemoRecords
 from covenant_radar.lifecycle import (
     ApplicationLifecycle,
@@ -81,11 +84,7 @@ from covenant_radar.lifecycle import (
 from covenant_radar.notifications.inapp import InAppNotificationService, InAppNotifier
 from covenant_radar.ports.document_store import DocumentStore
 from covenant_radar.security.crypto import FieldEncryptor, HMACFingerprinter
-from covenant_radar.db.models.facility import Facility as FacilityRow
-from covenant_radar.db.scoping import Scope, resolve_scope
-from covenant_radar.domain.intake.verify import VerificationContext
 from covenant_radar.security.rbac import Principal, RolePermissionResolver
-from covenant_radar.services.intake_context import build_verification_context
 from covenant_radar.security.sessions import SessionManager, SessionSettings
 from covenant_radar.services.admin_users import AdminUsersService
 from covenant_radar.services.auth import AuthService
@@ -98,6 +97,8 @@ from covenant_radar.services.documents import DocumentService
 from covenant_radar.services.export import ExportService, ExportStore
 from covenant_radar.services.ingestion import SignalIngestionService
 from covenant_radar.services.intake import IntakeService
+from covenant_radar.services.intake_context import build_verification_context
+from covenant_radar.services.market_intelligence import MarketIntelligenceService
 from covenant_radar.services.master_data import MasterDataService
 from covenant_radar.services.memo import (
     MemoExportService,
@@ -127,10 +128,12 @@ from covenant_radar.web.routes.cases import create_cases_router
 from covenant_radar.web.routes.catalogue import create_catalogue_router
 from covenant_radar.web.routes.certificates import create_certificates_router
 from covenant_radar.web.routes.covenants import create_covenants_router
+from covenant_radar.web.routes.demo_walkthrough import create_demo_walkthrough_router
 from covenant_radar.web.routes.dispositions import create_dispositions_router
 from covenant_radar.web.routes.documents import create_documents_router
 from covenant_radar.web.routes.governance import create_governance_router
 from covenant_radar.web.routes.intake import create_intake_router
+from covenant_radar.web.routes.intelligence import create_intelligence_router
 from covenant_radar.web.routes.live import create_live_router
 from covenant_radar.web.routes.master_data import create_master_data_router
 from covenant_radar.web.routes.notifications import create_notifications_router
@@ -454,11 +457,20 @@ def create_production_app(settings: Settings | None = None) -> FastAPI:
             )
 
     nightly = build_nightly_runtime(session_factory, resolved)
+    market_intelligence = MarketIntelligenceService(
+        cache_path=resolved.intelligence.cache_path,
+        enabled=resolved.intelligence.enabled,
+        refresh_seconds=resolved.intelligence.refresh_seconds,
+    )
 
     routers = (
         create_auth_router(auth),
         create_admin_users_router(admin_users),
-        create_queue_router(sessions),
+        create_queue_router(sessions, intelligence=market_intelligence),
+        create_intelligence_router(
+            sessions,
+            service=market_intelligence,
+        ),
         create_search_router(
             cast(Session, sessions),
             audit_writer=audit,
@@ -500,6 +512,7 @@ def create_production_app(settings: Settings | None = None) -> FastAPI:
             notifications=inapp_notifications,
             cursor_secret=api_cursor_secret,
         ),
+        create_demo_walkthrough_router(sessions, ingestion=signal_ingestion, nightly=nightly),
         create_cases_router(sessions, case_service=cases, audit_writer=audit),
         create_certificates_router(certificates),
         create_dispositions_router(dispositions),

@@ -10,8 +10,9 @@ with a stored record behind every number on screen.
 - **Domain:** Commercial banking · credit risk · Indian lending conventions
 - **Shape:** A server-rendered web workspace, a REST API, a nightly batch
   pipeline and a command-line operations tool — all in one Python application
-- **Status:** Version 0.1.0. Runs end to end on a laptop, offline, against a
-  synthetic 5,000-borrower portfolio.
+- **Status:** Version 0.1.0. Runs against a synthetic 24-borrower demo portfolio,
+  with a live public-data workspace for official news and economic context.
+  The scoring workflow also runs offline.
 
 ---
 
@@ -158,8 +159,8 @@ because hiding an improving factor would misrepresent the explanation.
 **A shadow ML challenger.** A local scikit-learn model (calibrated logistic
 regression and gradient boosting, one per horizon) runs alongside the
 deterministic forecast. Its artifact is checksum-verified and loaded from
-disk; it never makes a network call and never receives an identifier. In the
-shipped configuration it runs in **`shadow` mode**: its prediction is recorded
+disk; it never makes a network call and never receives an identifier. The cross-platform demo launcher trains and selects the artifact, then runs it
+in **`shadow` mode** (ML is disabled in the base config until an artifact is configured): its prediction is recorded
 on every forecast, but the queue, the band and the case are still built from
 the deterministic probability. Promoting it to champion requires an approved
 model registration — it cannot be switched on by editing a config file alone.
@@ -349,6 +350,37 @@ helper — same interface as a live provider, selected by configuration. They
 synthetic portfolio, the full scoring, alerting and demo workflow runs
 air-gapped on a laptop.
 
+The market-intelligence workspace uses public endpoints when enabled. Set
+`COVENANT_RADAR_INTELLIGENCE__ENABLED=false` (or launch the Python demo with
+`--offline-data`) for an entirely offline session. Cached public records remain
+visible with an offline label.
+
+### Real events become reviewable work
+
+Covenant tests use the last reported quarter, but markets keep moving. The
+**Market intelligence** workspace (`/intelligence`) measures how far each
+borrower's sector drivers have moved since its last statements. The drivers are
+Brent, USD/INR, the call rate, the 10-year G-sec yield, and IMF prices for iron
+ore, coal, aluminium, copper, cotton, sugar, wheat, LNG and rubber, all from
+official series via FRED. Each move is set against the borrower's own
+interest-cover cushion, meaning how far EBIT can fall, or rates can rise, before
+the covenant breaches.
+
+Every figure carries its source and as-of date. Two lenses separate the
+unreported quarter so far from what happens if latest prices hold. For example:
+"Brent +13.4% at 22 Sep 2026 prices vs a 1.1% breakeven. The Sep quarter test
+should benefit from lower average costs so far, but if prices hold, the Dec
+quarter test is at risk." Recent reporting from Google News, grouped by market,
+explains each move. Breakevens use sector cost-share assumptions, which are
+shown on every line. **Record market review in case** drafts a cited case note.
+
+The **portfolio queue** shows a market-pressure badge and an expandable panel
+per borrower. Neither changes the stored ranking, probabilities, bands or
+covenant results.
+
+See [the live-data guide](docs/market-intelligence.md) for the method, sources,
+configuration and limitations.
+
 ---
 
 ## 4. Feature catalogue
@@ -358,6 +390,7 @@ air-gapped on a laptop.
 | Screen | Route | What it does |
 |---|---|---|
 | Portfolio queue | `/` | Ranked action list with band, portfolio, industry, assignee, SMA-band and case-state filters; summary strip; mini-trajectories; "what changed"; saved views; bulk actions |
+| Market intelligence | `/intelligence` | Commodity, rupee and rate moves since the last statements set against each borrower's interest-cover cushion; driver tiles, cited news, source health and a cited case-note workflow |
 | Borrower case file | `/borrowers/{ref}` | Header facts, covenant position, forecast trajectory with a day selector, evidence margin, signals, documents, memo block and case actions |
 | Forecast trajectory | (in case file) | The stored daily path with threshold marker, crossing annotation, named 30/60/90 stops, and per-day value, headroom, probability, confidence and drivers |
 | Why this decision | `/why/{type}/{id}` | Per-stage explanation: inputs, outputs, thresholds compared, decider, rule/model version, source records |
@@ -570,12 +603,13 @@ deterministic synthetic Indian commercial-lending book, generated from a seed
 via SHA-256 — never from process randomness or the wall clock — so the same
 seed reproduces the same portfolio byte for byte.
 
-**Reference portfolio (default):** 5,000 borrowers, 12,000 facilities, 8
-financial quarters, borrower groups, contacts, and behavioural signals across
-all seven families. At 365 days that is roughly **12.8 million signal events**
-(7 per borrower per day) — trim it with `-SignalDays` for a faster rebuild.
+**Reference portfolio (current demo default):** 24 borrowers, 28 facilities,
+8 financial quarters, borrower groups, contacts, and behavioural signals across
+all seven families. Larger portfolios can be generated with an explicit
+`ReferencePortfolioConfig`; the current default is sized for a laptop presentation.
+The demo launcher uses one day of base signals before adding the curated history.
 
-**Demo overlay:** the first 36 borrowers get three real covenants each — a
+**Demo overlay:** the demo borrowers get three real covenants each — a
 leverage ratio at 3.00x (max), an interest-coverage ratio at 1.50x (min) and a
 current ratio at 1.20x (min) — built through the *real* registry and engine
 services, with real statement provenance, threshold snapshots and forecast
@@ -683,6 +717,32 @@ byte for byte for all non-timestamp content.
 
 ## 12. Running it
 
+### Cross-platform judge demo
+
+With Python 3.12+ and the project dependencies installed:
+
+```sh
+python scripts/demo_up.py
+```
+
+Open http://127.0.0.1:8000 and sign in as `riskhead` with `CovenantRadar#2026`.
+The launcher trains the synthetic ML challenger, applies migrations, seeds a
+fresh isolated database, creates personas and runs the real nightly pipeline.
+Use `--port 8001` if needed, or `--without-ml` for a faster rules-only rehearsal.
+Each launch starts fresh; encryption keys live only in that process. Keep it
+running during the presentation.
+
+Open **Market intelligence** in the sidebar to fetch real public data. The first
+visit fills within about 10–20 seconds, and no API key is needed. Market data is
+live, but borrower accounts remain synthetic; import actual statements through the
+existing financial-statement workflow to evaluate your own borrower figures.
+Use `--offline-data` to disable public requests.
+
+Gen AI uses offline recordings. Only exact matching prompts can be replayed;
+arbitrary borrower memos need a configured, approved live provider. The screen
+explains a missing recording explicitly. See [the judge runbook](judge-demo.md)
+and [the review findings](repo-review.md) before rehearsing.
+
 ### Fastest path: the prepared demo
 
 PowerShell is the supported local demo shell. From the repository root:
@@ -692,7 +752,7 @@ powershell.exe -NoProfile -ExecutionPolicy Bypass -File .\scripts\demo_up.ps1
 ```
 
 This installs the package, applies migrations, loads the reference portfolio
-with its signal stream, seeds the 36 demo borrowers with three covenants each,
+with its signal stream, seeds the demo borrowers with three covenants each,
 creates the personas, runs the real six-step nightly pipeline, and starts the
 UI at `http://127.0.0.1:8000`.
 

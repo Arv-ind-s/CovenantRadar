@@ -235,7 +235,7 @@ def test_sla_breach_escalates_and_lists_overdue(fixture: _Fixture) -> None:
     assert case.state == "escalated"
     assert (
         fixture.session.scalar(
-            select(func.count(Notification.id)).where(Notification.template == "case_sla_breach")
+            select(func.count(Notification.id)).where(Notification.template == "sla_breach")
         )
         == 1
     )
@@ -255,7 +255,7 @@ def test_missing_assignee_falls_to_default_and_notifies(fixture: _Fixture) -> No
     assert (
         fixture.session.scalar(
             select(func.count(Notification.id)).where(
-                Notification.template == "case_assignee_fallback",
+                Notification.template == "assignee_fallback",
                 Notification.recipient_id == fixture.principal.id,
             )
         )

@@ -4,7 +4,7 @@ dual-engine support (`plan.md §5`'s migration rule).
 The SQLite half of every test runs against a real on-disk database — a
 temp file, never `:memory:`, since each helper in `covenant_radar.cli`
 opens its own connection and `:memory:` does not survive that. The
-PostgreSQL half runs against the same `COVENANT_RADAR_DATABASE_URL`
+PostgreSQL half runs against the same `RADAR_TEST_DATABASE_URL`
 instance `tests/integration` requires, and fails loudly rather than
 skipping silently when that service is unavailable — the policy
 `plan.md`'s open question on CI PostgreSQL settles for exactly this
@@ -28,7 +28,7 @@ from covenant_radar.db.base import Base
 pytestmark = pytest.mark.migration
 
 _REPO_ROOT = Path(__file__).resolve().parents[2]
-_DATABASE_URL_ENV = "COVENANT_RADAR_DATABASE_URL"
+_DATABASE_URL_ENV = "RADAR_TEST_DATABASE_URL"
 
 
 def _sqlite_url(tmp_path: Path, name: str = "migration.db") -> str:

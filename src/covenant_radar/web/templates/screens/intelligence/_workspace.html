@@ -1,0 +1,131 @@
+{%- from "screens/intelligence/_macros.html" import borrower_card, compact_row with context -%}
+<div class="mkt" id="intelligence-workspace" hx-get="/intelligence{% if view.driver %}?driver={{ view.driver|urlencode }}{% endif %}" hx-trigger="every {{ 5 if (view.refreshing or not view.loaded) and view.enabled else view.refresh_seconds }}s" hx-target="this" hx-swap="outerHTML" aria-busy="{{ 'true' if view.refreshing else 'false' }}">
+  <section class="mkt-hero" aria-labelledby="mkt-heading">
+    <div class="mkt-hero__text">
+      <p class="mkt-eyebrow">Market pressure{% if view.reporting.end %} · since statements to {{ view.reporting.end }}{% endif %}</p>
+      <h2 id="mkt-heading">
+        {%- if not view.loaded -%}Waiting for market data
+        {%- elif view.counts.attention -%}{{ view.counts.attention }} of {{ view.borrower_count }} borrowers face market moves that threaten their interest-cover cushion
+        {%- else -%}No borrower’s interest-cover cushion is threatened by observed market moves
+        {%- endif -%}
+      </h2>
+      <p>{% if view.reporting.end %}Covenant tests use financials to {{ view.reporting.end }}; the {{ view.reporting.next_quarter }} will not be reported for weeks. {% endif %}Each borrower’s cushion, meaning how far EBIT can fall before interest cover breaches, is set against official commodity, currency and rate data for its sector.</p>
+    </div>
+    <div class="mkt-hero__side">
+      <dl class="mkt-stats">
+        <div class="mkt-stat mkt-stat--breach"><dt>Below minimum</dt><dd>{{ view.counts.below }}</dd></div>
+        <div class="mkt-stat mkt-stat--breach"><dt>Move exceeds cushion</dt><dd>{{ view.counts.exceeds }}</dd></div>
+        <div class="mkt-stat mkt-stat--watch"><dt>Uses most of cushion</dt><dd>{{ view.counts.tight }}</dd></div>
+        <div class="mkt-stat"><dt>Adverse, within</dt><dd>{{ view.counts.watch }}</dd></div>
+        <div class="mkt-stat mkt-stat--ok"><dt>Easing, unexposed or no data</dt><dd>{{ view.counts.calm }}</dd></div>
+      </dl>
+      <form method="post" action="/intelligence/refresh" class="mkt-refresh">
+        <button class="button" type="submit"{% if not view.enabled %} disabled{% endif %}>Refresh data</button>
+        <small>{% if view.refreshing %}<span class="mkt-live">Refreshing sources…</span>{% else %}{{ view.sources_current }}/{{ view.sources|length }} sources current · checked {{ view.checked_at[11:16] }} UTC{% endif %}</small>
+      </form>
+    </div>
+  </section>
+
+  {% if not view.enabled %}<p class="mkt-notice" role="status">Offline mode: public data requests are disabled. Only previously retrieved data is shown.</p>{% endif %}
+  {% if view.cache_error %}<p class="mkt-notice" role="status">Data loaded, but the snapshot could not be saved to disk; it may be unavailable after a restart.</p>{% endif %}
+  {% if not view.loaded %}
+  <div class="mkt-notice" role="status"><strong>{% if view.refreshing %}Fetching FRED series and news…{% elif view.enabled %}No market data retrieved yet.{% else %}No saved market data.{% endif %}</strong> This page updates automatically. No estimated or synthetic values are substituted while a source is unavailable.</div>
+  {% endif %}
+
+  {% if view.tiles %}
+  <section aria-labelledby="moves-heading">
+    <div class="mkt-heading"><h2 id="moves-heading">What moved since {{ view.reporting.end }}</h2><span>Change against the {{ view.reporting.label }} average. Shaded band on each chart: the reported quarter.</span></div>
+    <div class="mkt-tiles">
+      {% for tile in view.tiles %}
+      <article class="mkt-tile{% if view.driver == tile.key %} is-selected{% endif %}">
+        <div class="mkt-tile__top"><h3>{{ tile.label }}</h3>{% if tile.hurting %}<span class="mkt-pill">{{ tile.hurting }} under pressure</span>{% endif %}</div>
+        {% if tile.available %}
+        <p class="mkt-tile__value">{{ tile.latest }}<small>{{ tile.unit }}</small></p>
+        <p class="mkt-tile__asof">{{ tile.latest_date }} · {{ tile.frequency }}</p>
+        {{ tile.spark }}
+        <dl class="mkt-tile__moves">
+          <div><dt>{{ tile.qtd_label or 'Since quarter' }} average</dt><dd class="trend trend--{{ tile.qtd_trend }}">{{ tile.qtd }}</dd></div>
+          <div><dt>Latest</dt><dd class="trend trend--{{ tile.latest_trend }}">{{ tile.latest_change }}{% if tile.rupee and tile.rupee != tile.latest_change %}<small>{{ tile.rupee }} in ₹</small>{% endif %}</dd></div>
+        </dl>
+        {% else %}<p class="mkt-tile__missing">{% if view.refreshing %}Fetching…{% else %}Source unavailable. No value substituted.{% endif %}</p>{% endif %}
+        <p class="mkt-tile__reach">{{ tile.story }}. Reaches {{ tile.exposed }} borrower{{ '' if tile.exposed == 1 else 's' }}{% if tile.sectors|length <= 3 %}: {{ tile.sectors|join(', ') }}{% endif %}.</p>
+        <div class="mkt-tile__links"><a href="/intelligence?driver={{ tile.key|urlencode }}#borrowers">Show borrowers →</a><a href="{{ tile.url }}" target="_blank" rel="noopener noreferrer">{{ tile.publisher }} ↗</a></div>
+      </article>
+      {% endfor %}
+    </div>
+    {% if view.other_tiles %}
+    <details class="mkt-more"><summary>Also tracked, with no exposure in your book ({{ view.other_tiles|length }})</summary>
+      <ul class="mkt-other">{% for tile in view.other_tiles %}<li><a href="{{ tile.url }}" target="_blank" rel="noopener noreferrer">{{ tile.label }} ↗</a><span>{{ tile.latest }} {{ tile.unit }} · {{ tile.latest_date }}</span><span class="trend trend--{{ tile.latest_trend }}">{{ tile.latest_change }}</span></li>{% endfor %}</ul>
+    </details>
+    {% endif %}
+  </section>
+  {% endif %}
+
+  <section id="borrowers" aria-labelledby="borrowers-heading">
+    <div class="mkt-heading"><h2 id="borrowers-heading">Where the moves land</h2>{% if view.driver %}<span>Borrowers exposed to {{ view.driver_label }} · <a href="/intelligence#borrowers">Show all</a></span>{% else %}<span>{{ view.borrower_count }} borrowers in your scope, most urgent first</span>{% endif %}</div>
+    <p class="mkt-method"><strong>Cushion</strong>: how far quarterly EBIT can fall before interest cover reaches its minimum, from reported figures. <strong>Breakeven</strong>: the input-price rise that would use the whole cushion, at the sector’s assumed cost share (shown on each line) and with no pass-through. <strong>Rate tolerance</strong>: the rate rise that would do the same if all debt repriced for a quarter.</p>
+    {% for row in view.attention %}{{ borrower_card(row, expanded=loop.first) }}{% endfor %}
+    {% if not view.attention and view.loaded %}<p class="mkt-notice">No borrower in this view has a market move beyond or near its cushion. That is not a clean credit view; it only means observed market moves are not the pressure.</p>{% endif %}
+    {% if view.watch %}
+    <h3 class="mkt-subhead">Adverse moves still within the cushion <small>{{ view.watch|length }}</small></h3>
+    <ul class="mkt-compact-list">{% for row in view.watch %}{{ compact_row(row) }}{% endfor %}</ul>
+    {% endif %}
+    {% if view.calm %}
+    <details class="mkt-more"><summary>Easing, unexposed or without data ({{ view.calm|length }})</summary>
+      <ul class="mkt-compact-list">{% for row in view.calm %}{{ compact_row(row) }}{% endfor %}</ul>
+    </details>
+    {% endif %}
+  </section>
+
+  {% if view.stories %}
+  <section aria-labelledby="news-heading">
+    <div class="mkt-heading"><h2 id="news-heading">Why markets moved</h2><span>Recent reporting from the last 14 days via Google News, grouped by the market it explains</span></div>
+    <div class="mkt-story-grid">
+      {% for group in view.stories %}
+      <section class="mkt-story" aria-label="{{ group.label }} reporting">
+        <h3>{{ group.label }}</h3>
+        <ul class="mkt-news">
+          {% for story in group['items'] %}<li><a href="{{ story.url }}" target="_blank" rel="noopener noreferrer">{{ story.title }}</a><small>{{ story.publisher }} · {{ story.published }}</small></li>{% endfor %}
+        </ul>
+      </section>
+      {% endfor %}
+    </div>
+  </section>
+  {% endif %}
+
+  <details class="mkt-method-panel" id="method">
+    <summary>Method, assumptions and source health</summary>
+    <div class="mkt-method-grid">
+      <section>
+        <h3>How to read this</h3>
+        <ul>
+          <li><strong>Quarter so far</strong>: the average since the reported quarter ended against that quarter’s average. It is what the next, unreported quarter is absorbing.</li>
+          <li><strong>Latest</strong>: the most recent observation against the same base. It is what the following quarter absorbs if prices hold.</li>
+          <li>Dollar-priced commodities are converted to rupees with USD/INR over the same windows. Monthly IMF prices arrive about a month in arrears; each figure shows its period.</li>
+          <li>Input-cost baskets weight each commodity by its assumed share, so a fall in one input can offset a rise in another.</li>
+          <li>Nothing here changes stored ranks, forecasts, bands or covenant results. Record a conclusion in the borrower’s case.</li>
+        </ul>
+      </section>
+      <section>
+        <h3>Sector assumptions in your book</h3>
+        <p class="mkt-method">Analyst defaults, not borrower facts. Replace them with the borrower’s own cost structure where known.</p>
+        <table class="mkt-components">
+          <thead><tr><th scope="col">Sector</th><th scope="col">Series</th><th scope="col">Share of revenue</th></tr></thead>
+          <tbody>
+          {% for sector in view.assumptions %}
+            {% for exposure in sector.exposures %}<tr><th scope="row">{% if loop.first %}{{ sector.name }}{% endif %}</th><td>{{ exposure.label }} <small>{{ exposure.role }} · {{ exposure.note }}</small></td><td>{{ exposure.share }}</td></tr>
+            {% else %}<tr><th scope="row">{{ sector.name }}</th><td colspan="2"><small>Borrowing rates only</small></td></tr>{% endfor %}
+          {% endfor %}
+          </tbody>
+        </table>
+      </section>
+      <section>
+        <h3>Source health</h3>
+        <ul class="mkt-sources">
+          {% for source in view.sources %}<li class="mkt-source mkt-source--{{ source.status|lower }}"><a href="{{ source.url }}" target="_blank" rel="noopener noreferrer">{{ source.name }}</a><span>{{ source.status }}{% if source.latest %} · data to {{ source.latest }}{% endif %}</span></li>{% endfor %}
+        </ul>
+        <p class="mkt-method">Series: FRED CSV downloads of U.S. EIA, Federal Reserve H.10, OECD and IMF data. News: Google News RSS searches for market terms only. Borrower names and financials never leave the application. <a href="/intelligence/data{% if view.driver %}?driver={{ view.driver|urlencode }}{% endif %}">Briefing JSON</a></p>
+      </section>
+    </div>
+  </details>
+</div>

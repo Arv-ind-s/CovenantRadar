@@ -2917,17 +2917,12 @@ body[data-overlay-open="true"] {
   to { opacity: 1; transform: translateY(0); }
 }
 
-/*
-  Ends at `none` rather than `translateY(0)`.  With `animation-fill-mode:
-  both` the final frame's transform persists, and any transform — even an
-  identity one — makes the element a containing block for `position: fixed`
-  descendants.  That would pin every drawer opened inside `.page-content` to
-  the panel instead of the viewport.  `none` is visually identical and
-  leaves fixed positioning working.
-*/
+/* Fade without transforming the containing block of fixed drawers. Keep the
+   animation running when an overlay opens so closing it cannot restart the
+   entrance and briefly hide the entire page. */
 @keyframes content-enter {
-  from { opacity: 0; transform: translateY(var(--space-4)); }
-  to { opacity: 1; transform: none; }
+  from { opacity: 0; }
+  to { opacity: 1; }
 }
 
 @keyframes auth-enter {
@@ -3455,8 +3450,7 @@ a.admin-metric:hover,
 
 /*
   A `position: fixed` element is positioned against the viewport only if no
-  ancestor holds a transform — an identity one counts. Two do: `.page-content`
-  keeps the final frame of its entrance animation, and a covenant card is
+  ancestor holds a transform — an identity one counts. A covenant card is
   lifted while the pointer is over it, which is exactly when its own drawer
   is opened. Either one pins the drawer inside the panel instead of the
   window, which is how a drawer ends up half of it above the top of the
@@ -3464,15 +3458,8 @@ a.admin-metric:hover,
 
   `setOverlayState` in `app.js` already marks the body while any overlay is
   open, so the transforms can be dropped for precisely that moment. The
-  entrance animation is cancelled rather than overridden because an
-  animation's filled value outranks a normal declaration; by the time a
-  reader opens a drawer it has long since finished, so there is nothing to
-  see. This also covers any drawer added later, anywhere in the app.
+  page-content entrance uses opacity only and needs no override.
 */
-body[data-overlay-open="true"] .page-content {
-  animation: none;
-}
-
 body[data-overlay-open="true"] .forecast-covenant {
   transform: none;
 }

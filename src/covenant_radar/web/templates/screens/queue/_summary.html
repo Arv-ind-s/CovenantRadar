@@ -20,6 +20,55 @@
          data-live-poll>
   <h2 class="sr-only" id="queue-summary-title">{{ labels.snapshot_title }}</h2>
 
+  {#
+    Plain-language readings of the stored monitoring facts. Nothing here is
+    recomputed: each phrase maps a stored value (a job state, a signal
+    family and its measured value, a band) to the words a credit officer
+    would use for it.
+  #}
+  {% set run_states = {"succeeded": "Completed", "running": "In progress", "queued": "Queued", "failed": "Did not finish", "never_run": "Not run yet"} %}
+  {% set band_names = {"act": "Act now", "amber": "Amber", "watch": "Watch"} %}
+  {% macro signal_sentence(family, observation) -%}
+    {%- set value = observation.split(" ")[0] if observation and observation != "Observation received" else "" -%}
+    {%- if not value -%}{{ family }} update received
+    {%- elif family == "Payment" -%}Payment {{ value }} days overdue
+    {%- elif family == "News" -%}News alert, risk score {{ value }}
+    {%- elif family == "Account Activity" -%}Account activity changed by {{ value }}%
+    {%- elif family == "Utilisation" -%}Facility utilisation at {{ value }}%
+    {%- elif family == "Treasury" -%}Cash outflow ratio at {{ value }}
+    {%- elif family == "Concentration" -%}Largest group exposure at {{ value }}%
+    {%- elif family == "Industry" -%}Industry stress score {{ value }}
+    {%- else -%}{{ family }}: {{ observation }}
+    {%- endif -%}
+  {%- endmacro %}
+
+  <section class="monitoring-strip" aria-label="Data freshness" data-monitoring-state="{{ monitoring.state }}">
+    <div><span class="monitoring-strip__label">Data last checked</span><strong>{% if monitoring.last_scan %}<time datetime="{{ monitoring.last_scan.isoformat() }}">{{ monitoring.last_scan.strftime('%d %b, %H:%M') }} UTC</time>{% else %}Not checked yet{% endif %}</strong></div>
+    <div><span class="monitoring-strip__label">Next check</span><strong><time datetime="{{ monitoring.next_scan.isoformat() }}">{{ monitoring.next_scan.strftime('%d %b, %H:%M') }} UTC</time></strong></div>
+    <div><span class="monitoring-strip__label">Market data sources</span><strong>{% if monitoring.sources_total %}{% if monitoring.sources_current == monitoring.sources_total %}All {{ monitoring.sources_total }} up to date{% else %}{{ monitoring.sources_current }} of {{ monitoring.sources_total }} up to date{% endif %}{% else %}Not available{% endif %}</strong></div>
+    <div><span class="monitoring-strip__label">Latest review</span><strong>{{ run_states.get(monitoring.state, monitoring.state|replace('_', ' ')|capitalize) }}{% if monitoring.processed is not none %} · {{ monitoring.processed }} borrower{{ "" if monitoring.processed == 1 else "s" }} reviewed{% endif %}</strong></div>
+    {% if principal.has('MANAGE_JOBS') %}<a href="/admin/jobs">Review details →</a>{% endif %}
+  </section>
+
+  <section class="monitoring-feed" aria-labelledby="monitoring-feed-title">
+    <div class="monitoring-feed__heading"><div><p class="monitoring-feed__eyebrow">Latest activity</p><h2 id="monitoring-feed-title">What's new in your portfolio</h2></div><span>Newest first</span></div>
+    {% if recent_changes %}
+      <ol class="monitoring-feed__list">
+      {% for change in recent_changes[:5] %}
+        <li data-change-id="{{ change.id }}"><time datetime="{{ change.ingested_at.isoformat() }}">{{ change.ingested_at.strftime('%d %b, %H:%M') }} UTC</time><div><strong>{{ change.borrower }}</strong><p><a href="{{ change.signal_href }}">{{ signal_sentence(change.family, change.observation) }}</a> <span aria-hidden="true">→</span> {% if change.status == 'Scored' %}<a href="{{ change.forecast_href }}">{% if change.band %}now rated {{ band_names.get(change.band, change.band|title) }}{% else %}risk re-scored{% endif %}</a>{% else %}will count in the next review{% endif %}{% if change.case_href %} <span aria-hidden="true">→</span> <a href="{{ change.case_href }}">case {{ change.case_state|lower }}</a>{% endif %}{% if change.change %}<span class="monitoring-feed__change">{{ change.change }}</span>{% endif %}</p>{% if change.synthetic %}<small>Demo data</small>{% endif %}</div></li>
+      {% endfor %}
+      </ol>
+    {% else %}<p>Nothing new in your portfolio yet. New warning signals will show up here as they arrive.</p>{% endif %}
+    {% if demo_enabled and can_run_demo and view.rows %}
+      <form method="post" action="/demo/signal" class="monitoring-demo">
+        <input type="hidden" name="csrf_token" value="{{ csrf_token }}">
+        <label for="demo-borrower">Try it: pick a borrower and simulate a late payment</label>
+        <select id="demo-borrower" name="borrower_reference">{% for row in view.rows %}<option value="{{ row.borrower_reference }}"{% if row.band == 'watch' %} data-watch="true"{% endif %}>{{ row.borrower_name }}</option>{% endfor %}</select>
+        <button class="button button--secondary" type="submit">Simulate a late payment</button>
+      </form>
+    {% endif %}
+  </section>
+
   <p class="queue-freshness">
     <span class="queue-freshness__rank">{{ labels.ranked_by }}</span>
     <span class="queue-freshness__separator" aria-hidden="true">·</span>
@@ -49,11 +98,12 @@
        {% if not filters.band %}aria-current="true" data-active="true"{% endif %}>
       <span class="queue-band-tile__label">{{ labels.summary_all }}</span>
       <strong class="queue-band-tile__value" data-live-value="total">{{ summary.total }}</strong>
+      <span class="queue-band-tile__hint">Everyone in your portfolio</span>
     </a>
-    {% for band, label, count in (
-         ("act", labels.summary_act, summary.act),
-         ("amber", labels.summary_amber, summary.amber),
-         ("watch", labels.summary_watch, summary.watch),
+    {% for band, label, count, hint in (
+         ("act", labels.summary_act, summary.act, "Highest risk. Open these first"),
+         ("amber", labels.summary_amber, summary.amber, "Risk is building. Keep close"),
+         ("watch", labels.summary_watch, summary.watch, "Lower risk. Routine monitoring"),
        ) %}
       <a class="queue-band-tile"
          href="{{ band_hrefs[band] }}"
@@ -65,6 +115,7 @@
          {% if filters.band == band %}aria-current="true" data-active="true"{% endif %}>
         {{ components.band_chip(band, label, variant="queue-summary-chip") }}
         <strong class="queue-band-tile__value" data-live-value="{{ band }}">{{ count }}</strong>
+        <span class="queue-band-tile__hint">{{ hint }}</span>
         {#
           Share of the book, sized by SVG attribute rather than an inline
           style: `style-src` carries only the empty-string hash, so a
@@ -87,7 +138,7 @@
     </div>
     <div>
       <dt>{{ labels.summary_changed }}</dt>
-      <dd data-live-value="changed">{{ summary.what_changed }}</dd>
+      <dd data-live-value="changed">{{ summary.what_changed if summary.what_changed else "None" }}</dd>
     </div>
   </dl>
 </section>

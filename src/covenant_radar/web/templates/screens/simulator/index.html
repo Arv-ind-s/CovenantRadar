@@ -81,10 +81,8 @@
                 hx-swap="outerHTML transition:true">
             <input type="hidden" name="csrf_token" value="{{ csrf_token }}">
             <input type="hidden" name="forecast_id" value="{{ view.forecast.id }}">
-            <label class="simulator-form__parameters" for="simulation-parameters">
-              <span>{{ labels.parameters }}</span>
-              <textarea id="simulation-parameters" name="parameters" rows="2">{{ view.parameters_json }}</textarea>
-            </label>
+            <input type="hidden" name="parameters" value="{{ view.parameters_json }}">
+            <p class="simulator__hint">Compare each action with doing nothing, using the same forecast date, horizons and risk weights. Each action's effect and assumptions are shown below.</p>
             <div class="simulator-options">
               {% for option in view.interventions %}
                 <article class="simulator-option" data-intervention-code="{{ option.code }}">

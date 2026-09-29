@@ -111,7 +111,7 @@ def build_nightly_runtime(
         statement_lines=_statement_lines_provider(session_factory),
         default_assignee_id=default_case_assignee(session_factory),
         predictor=predictor,
-        predictor_mode=_predictor_mode(settings, session_factory),
+        predictor_mode=_predictor_mode(settings, session_factory, predictor),
         model_version=(
             predictor.version
             if isinstance(predictor, SklearnForecastPredictor)
@@ -312,7 +312,11 @@ def _forecast_predictor(settings: Settings) -> ForecastPredictor | None:
         return None
 
 
-def _predictor_mode(settings: Settings, session_factory: SessionFactory) -> str:
+def _predictor_mode(
+    settings: Settings,
+    session_factory: SessionFactory,
+    predictor: ForecastPredictor | None = None,
+) -> str:
     """Resolve whether the challenger may replace the deterministic value.
 
     Shadow is the default and the only mode an artifact on disk can reach by
@@ -325,11 +329,14 @@ def _predictor_mode(settings: Settings, session_factory: SessionFactory) -> str:
 
     if settings.forecast.ml_mode != CHAMPION_PREDICTOR_MODE:
         return SHADOW_PREDICTOR_MODE
+    if not isinstance(predictor, SklearnForecastPredictor):
+        return SHADOW_PREDICTOR_MODE
+    if predictor.version.startswith("synthetic-reference-"):
+        _LOGGER.warning("Synthetic reference models are restricted to shadow comparison.")
+        return SHADOW_PREDICTOR_MODE
     session = session_factory()
     try:
-        record = SqlAlchemyModelRegistryRepository(session).get_by_component(
-            ML_FORECAST_COMPONENT
-        )
+        record = SqlAlchemyModelRegistryRepository(session).get_by_component(ML_FORECAST_COMPONENT)
     except Exception:
         _LOGGER.exception(
             "The model register could not be read; the ML challenger stays in shadow mode."
@@ -344,6 +351,12 @@ def _predictor_mode(settings: Settings, session_factory: SessionFactory) -> str:
             CHAMPION_PREDICTOR_MODE,
             ML_FORECAST_COMPONENT,
             "not on the model register" if record is None else f"in state {record.state!r}",
+        )
+        return SHADOW_PREDICTOR_MODE
+    if record.provider != "scikit-learn" or record.model_id != f"sha256:{predictor.checksum}":
+        _LOGGER.warning(
+            "Model approval does not identify the loaded artifact checksum; "
+            "the ML challenger stays in shadow mode."
         )
         return SHADOW_PREDICTOR_MODE
     return CHAMPION_PREDICTOR_MODE

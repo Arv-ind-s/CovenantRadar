@@ -315,11 +315,19 @@ class ModelClient:
 
         try:
             stage_value = _normalise_stage(stage)
-            if self.registry_guard is not None and call_context.component is not None:
-                self.registry_guard.ensure_permitted(call_context.component)
             expected_version = _validate_prompt_version(prompt_version)
             messages = _verify_masked_prompt(prompt, expected_version)
             model = self._model(call_context)
+            if self.registry_guard is not None:
+                component = "stage1_extraction" if stage_value == 1 else "stage7_memo"
+                if call_context.component is not None and call_context.component != component:
+                    raise ComponentNotApproved("Model component does not match the call stage.")
+                self.registry_guard.ensure_permitted(
+                    component,
+                    provider=provider_name,
+                    model_id=model,
+                    prompt_version=expected_version,
+                )
             request = CompletionRequest(
                 messages=messages,
                 model=model,

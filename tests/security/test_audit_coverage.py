@@ -135,6 +135,7 @@ _CLASSIFICATION: Final[dict[tuple[str, str], str]] = {
     ("RegistryService", "approve_covenant"): _AUDITED,
     ("RegistryService", "list_covenants"): _READ_ONLY,
     ("RegistryService", "get_covenant"): _READ_ONLY,
+    ("RegistryService", "get_facility"): _READ_ONLY,
     ("RegistryService", "list_versions"): _READ_ONLY,
     ("RegistryService", "pending_approvals"): _READ_ONLY,
     ("RegistryService", "live_at"): _READ_ONLY,

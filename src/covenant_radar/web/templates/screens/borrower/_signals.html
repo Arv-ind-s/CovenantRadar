@@ -13,7 +13,7 @@
       <details class="signal-card signal-card--{{ signal.status }}" role="listitem" data-signal-family="{{ signal.family }}">
         <summary class="signal-card__summary">
           <span class="signal-card__title"><span class="signal-card__dot" aria-hidden="true"></span>{{ signal.label }}</span>
-          <span class="signal-card__trend">{{ signal.trend_display }}</span>
+          <span class="signal-card__trend" data-trend="{{ signal.trend_display|lower }}">{{ signal.trend_display }}</span>
         </summary>
         <div class="signal-card__body">
           {% if signal.sparkline_svg %}

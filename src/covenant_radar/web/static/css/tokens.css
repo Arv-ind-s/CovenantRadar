@@ -140,6 +140,22 @@
   --dur-slow: var(--dur-page);
   --ease: cubic-bezier(0.2, 0, 0, 1);
   --ease-spring: cubic-bezier(0.16, 1, 0.3, 1);
+
+  /* Fixed dark sign-in illustration palette in both themes. */
+  --auth-fixed-stage: #14081A;
+  --auth-fixed-bloom: #6B1F55;
+  --auth-fixed-accent: #F5A8DC;
+  --auth-fixed-scene-ink: #B98FB8;
+  --auth-fixed-ink: #F4ECF3;
+  --auth-fixed-gradient-top: #1B0C20;
+  --auth-fixed-gradient-middle: #150819;
+  --auth-fixed-gradient-bottom: #0D050F;
+  --auth-fixed-white: #FFFFFF;
+  --auth-fixed-muted: #CDBBCB;
+  --auth-fixed-subtle: #C4AEC2;
+  --auth-fixed-button-top: #8E2A72;
+  --auth-fixed-button-bottom: #4E1440;
+
 }
 
 /* Plum-black. The accent inverts to a light plum so it stays legible as ink,

@@ -32,7 +32,9 @@ from covenant_radar.db.base import Base
 config = context.config
 
 if config.config_file_name is not None:
-    fileConfig(config.config_file_name)
+    # Migration checks also run inside the application process. The logging
+    # module's default disables existing request/audit loggers globally.
+    fileConfig(config.config_file_name, disable_existing_loggers=False)
 
 target_metadata = Base.metadata
 

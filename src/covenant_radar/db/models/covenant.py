@@ -250,7 +250,9 @@ def _install(table_event: str, dialect: str, statements: tuple[str, ...]) -> Non
         # SQLAlchemy's `DDL.__init__` carries no type annotations of its
         # own (`sqlalchemy.sql.ddl`), so this call is flagged under
         # `check_untyped_defs` regardless of the argument's own type.
-        ddl = DDL(statement)  # type: ignore[no-untyped-call]
+        # DDL interpolates a Python mapping before PostgreSQL sees its RAISE
+        # placeholder. Escape that percent sign for the DDL compilation layer.
+        ddl = DDL(statement.replace("%", "%%"))  # type: ignore[no-untyped-call]
         event.listen(CovenantVersion.__table__, table_event, ddl.execute_if(dialect=dialect))
 
 

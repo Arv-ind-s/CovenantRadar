@@ -114,6 +114,7 @@ function Set-DemoEnvironment {
         "COVENANT_RADAR_WEB__HOST" = "127.0.0.1"
         "COVENANT_RADAR_WEB__PORT" = "8000"
         "COVENANT_RADAR_WEB__WORKERS" = "1"
+        "COVENANT_RADAR_WEB__DEMO_WALKTHROUGH_ENABLED" = "true"
     }
     if (-not $UseLiveModel) {
         # Replayed cassettes, not the configured gateway. These overwrite rather

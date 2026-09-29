@@ -31,6 +31,15 @@
     {% set state_message = forecast_panel.degraded_message %}
     {% include "_states/degraded.html" %}
   {% else %}
+    <details class="forecast-explanation">
+      <summary>How to read this forecast</summary>
+      <div class="forecast-explanation__body">
+        <p><strong>Rules:</strong> the operational risk score combines distance to the covenant boundary, deterioration and sustained evidence. It is a prioritisation score, not a calibrated probability of covenant breach.</p>
+        <p><strong>Machine learning:</strong> when available, the challenger estimate is shown separately. A shadow model does not change the queue or case priority.</p>
+        <p><strong>Confidence:</strong> describes the support available from the input data. A projected crossing is a scenario based on the stored trend and assumptions, not a guaranteed event.</p>
+        <p><strong>Generative AI:</strong> drafts a separate memo from the stored evidence. It does not calculate the contractual covenant test.</p>
+      </div>
+    </details>
     <div class="forecast-panel" id="forecast-panel" data-tabs>
       {% if forecast_panel.covenants|length > 1 %}
         {% call components.tab_strip(labels.forecast_covenants_nav) %}
@@ -59,6 +68,46 @@
           </header>
           {% include "screens/borrower/_horizon.html" %}
           <div class="forecast-covenant__layout">
+            <div class="forecast-covenant__trajectory">
+              {% if covenant.trajectory_available %}
+                <figure
+                  class="trajectory"
+                  id="{{ covenant.trajectory_id }}"
+                  aria-labelledby="{{ covenant.trajectory_id }}-caption"
+                  aria-describedby="{{ covenant.trajectory_id }}-ledger"
+                >
+                  <figcaption class="trajectory__caption" id="{{ covenant.trajectory_id }}-caption">
+                    {{ labels.forecast_trajectory }}
+                  </figcaption>
+                  {{ covenant.trajectory_svg }}
+                  {# Day labels drawn in the page's own type rather than inside
+                     the plot, where they scaled with the chart. The grid
+                     places them on the renderer's 30-day gridlines, so it is
+                     only used for the standard ninety-day path. #}
+                  {% if covenant.maximum_day == 90 %}
+                    <div class="trajectory__axis" aria-hidden="true">
+                      <span>Today</span><span>30d</span><span>60d</span><span>90d</span>
+                    </div>
+                  {% endif %}
+                  <ul class="trajectory__legend" aria-hidden="true">
+                    <li class="trajectory__legend-item trajectory__legend-item--path">Projected path</li>
+                    {% for figure in covenant.ledger_figures if figure.label == "Threshold in force" %}
+                      <li class="trajectory__legend-item trajectory__legend-item--threshold">{{ figure.label }} {{ figure.value }}</li>
+                    {% endfor %}
+                    <li class="trajectory__legend-item trajectory__legend-item--selected">Selected day</li>
+                    {% set crossing_horizons = covenant.horizons|selectattr("crossing_date")|list %}
+                    {% if crossing_horizons %}
+                      <li class="trajectory__legend-item trajectory__legend-item--crossing">Projected crossing {{ crossing_horizons[0].crossing_date|ist_date }}</li>
+                    {% endif %}
+                  </ul>
+                </figure>
+              {% else %}
+                <div class="trajectory-state" role="status">
+                  {{ covenant.trajectory_svg }}
+                </div>
+              {% endif %}
+              <p class="forecast-covenant__reason">{{ covenant.trajectory_message }}</p>
+            </div>
             <div class="forecast-covenant__figures">
               <table class="forecast-covenant__table" id="{{ covenant.trajectory_id }}-ledger">
                 <caption>{{ labels.forecast_ledger }}</caption>
@@ -98,26 +147,6 @@
                   {% endfor %}
                 </tbody>
               </table>
-            </div>
-            <div class="forecast-covenant__trajectory">
-              {% if covenant.trajectory_available %}
-                <figure
-                  class="trajectory"
-                  id="{{ covenant.trajectory_id }}"
-                  aria-labelledby="{{ covenant.trajectory_id }}-caption"
-                  aria-describedby="{{ covenant.trajectory_id }}-ledger"
-                >
-                  <figcaption class="trajectory__caption" id="{{ covenant.trajectory_id }}-caption">
-                    {{ labels.forecast_trajectory }}
-                  </figcaption>
-                  {{ covenant.trajectory_svg }}
-                </figure>
-              {% else %}
-                <div class="trajectory-state" role="status">
-                  {{ covenant.trajectory_svg }}
-                </div>
-              {% endif %}
-              <p class="forecast-covenant__reason">{{ covenant.trajectory_message }}</p>
             </div>
           </div>
 

@@ -1,49 +1,66 @@
+{#
+  One toolbar row. A disabled action's reason used to sit inside the
+  action's own box, which stretched every box in the row to the height of
+  the longest reason. The reasons now follow the row as notes, each tied to
+  its control with `aria-describedby`.
+#}
+{% set unavailable = [] %}
 <section class="panel case-actions case-file__panel--wide" id="case-actions" aria-labelledby="case-actions-title">
-  <h2 class="panel__title" id="case-actions-title">{{ labels.actions_title }}</h2>
-  <div class="case-actions__row">
-    <div class="case-actions__control">
-      <a class="button" href="{{ view.actions.why_href }}" hx-get="{{ view.actions.why_href }}" hx-target="body" hx-swap="beforeend">{{ labels.actions_why }}</a>
+  <div class="case-actions__bar">
+    <h2 class="panel__title" id="case-actions-title">{{ labels.actions_title }}</h2>
+    <div class="case-actions__row">
+      <div class="case-actions__control">
+        <a class="button" href="{{ view.actions.why_href }}" hx-get="{{ view.actions.why_href }}" hx-target="body" hx-swap="beforeend">{{ labels.actions_why }}</a>
+      </div>
+
+      {% if view.actions.can_generate_memo %}
+        <div class="case-actions__control">
+          {% if view.actions.memo_href %}
+            {# An explanation is drafted, not navigated to: this posts and swaps
+               the visible result into #case-memo. Without JavaScript the same
+               form still submits and the block is returned on its own. #}
+            <form class="case-actions__form" method="post" action="{{ view.actions.memo_href }}"
+                  hx-post="{{ view.actions.memo_href }}" hx-target="#case-memo" hx-swap="outerHTML">
+              <input type="hidden" name="csrf_token" value="{{ csrf_token }}">
+              <input type="hidden" name="borrower_ref" value="{{ view.borrower_reference }}">
+              <button class="button" type="submit" aria-controls="case-memo">{{ labels.actions_memo }}</button>
+            </form>
+          {% else %}
+            <span class="button button--disabled" aria-disabled="true" aria-describedby="case-actions-reason-memo">{{ labels.actions_memo }}</span>
+            {% set _ = unavailable.append(("memo", labels.actions_memo, view.actions.memo_reason)) %}
+          {% endif %}
+        </div>
+      {% endif %}
+
+      {% if view.actions.can_simulate %}
+        <div class="case-actions__control">
+          {% if view.actions.simulator_href %}
+            <a class="button" href="{{ view.actions.simulator_href }}">{{ labels.actions_simulate }}</a>
+          {% else %}
+            <span class="button button--disabled" aria-disabled="true" aria-describedby="case-actions-reason-simulate">{{ labels.actions_simulate }}</span>
+            {% set _ = unavailable.append(("simulate", labels.actions_simulate, view.actions.simulate_reason)) %}
+          {% endif %}
+        </div>
+      {% endif %}
+
+      {% if view.actions.can_log_action %}
+        <div class="case-actions__control">
+          {% if view.actions.log_href %}
+            <a class="button" href="{{ view.actions.log_href }}">{{ labels.actions_log }}</a>
+          {% else %}
+            <span class="button button--disabled" aria-disabled="true" aria-describedby="case-actions-reason-log">{{ labels.actions_log }}</span>
+            {% set _ = unavailable.append(("log", labels.actions_log, view.actions.log_reason)) %}
+          {% endif %}
+        </div>
+      {% endif %}
     </div>
-
-    {% if view.actions.can_generate_memo %}
-      <div class="case-actions__control">
-        {% if view.actions.memo_href %}
-          {# An explanation is drafted, not navigated to: this posts and swaps
-             the visible result into #case-memo. Without JavaScript the same
-             form still submits and the block is returned on its own. #}
-          <form class="case-actions__form" method="post" action="{{ view.actions.memo_href }}"
-                hx-post="{{ view.actions.memo_href }}" hx-target="#case-memo" hx-swap="outerHTML">
-            <input type="hidden" name="csrf_token" value="{{ csrf_token }}">
-            <input type="hidden" name="borrower_ref" value="{{ view.borrower_reference }}">
-            <button class="button" type="submit" aria-controls="case-memo">{{ labels.actions_memo }}</button>
-          </form>
-        {% else %}
-          <span class="button button--disabled" aria-disabled="true">{{ labels.actions_memo }}</span>
-          <p class="case-actions__reason">{{ view.actions.memo_reason }}</p>
-        {% endif %}
-      </div>
-    {% endif %}
-
-    {% if view.actions.can_simulate %}
-      <div class="case-actions__control">
-        {% if view.actions.simulator_href %}
-          <a class="button" href="{{ view.actions.simulator_href }}">{{ labels.actions_simulate }}</a>
-        {% else %}
-          <span class="button button--disabled" aria-disabled="true">{{ labels.actions_simulate }}</span>
-          <p class="case-actions__reason">{{ view.actions.simulate_reason }}</p>
-        {% endif %}
-      </div>
-    {% endif %}
-
-    {% if view.actions.can_log_action %}
-      <div class="case-actions__control">
-        {% if view.actions.log_href %}
-          <a class="button" href="{{ view.actions.log_href }}">{{ labels.actions_log }}</a>
-        {% else %}
-          <span class="button button--disabled" aria-disabled="true">{{ labels.actions_log }}</span>
-          <p class="case-actions__reason">{{ view.actions.log_reason }}</p>
-        {% endif %}
-      </div>
-    {% endif %}
   </div>
+
+  {% if unavailable %}
+    <ul class="case-actions__notes">
+      {% for key, action_label, reason in unavailable %}
+        <li class="case-actions__reason" id="case-actions-reason-{{ key }}"><strong>{{ action_label }}:</strong> {{ reason }}</li>
+      {% endfor %}
+    </ul>
+  {% endif %}
 </section>

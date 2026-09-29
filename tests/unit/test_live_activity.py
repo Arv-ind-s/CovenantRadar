@@ -2,8 +2,9 @@
 
 from __future__ import annotations
 
+import base64
 from datetime import UTC, datetime
-from uuid import uuid4
+from uuid import UUID, uuid4
 
 from covenant_radar.notifications.inapp import InAppNotificationPage, InAppNotificationView
 from covenant_radar.security.permissions import Permission
@@ -38,7 +39,9 @@ def test_cursor_is_user_scoped_and_safe_notification_content_is_preserved() -> N
     )
     page = InAppNotificationPage((notification,), 1, 1, 1, 20, "all")
     service = LiveActivityService(
-        object(), _Notifications(page), cursor_secret=b"l" * 32  # type: ignore[arg-type]
+        object(),
+        _Notifications(page),
+        cursor_secret=b"l" * 32,  # type: ignore[arg-type]
     )
     principal = _principal()
 
@@ -50,6 +53,25 @@ def test_cursor_is_user_scoped_and_safe_notification_content_is_preserved() -> N
     assert second.items == ()
     assert service.updates(_principal(), cursor=first.cursor).items
     other_secret = LiveActivityService(
-        object(), _Notifications(page), cursor_secret=b"s" * 32  # type: ignore[arg-type]
+        object(),
+        _Notifications(page),
+        cursor_secret=b"s" * 32,  # type: ignore[arg-type]
     )
     assert other_secret.updates(principal, cursor=first.cursor).items
+
+
+def test_cursor_round_trip_when_binary_signature_contains_separator() -> None:
+    service = LiveActivityService(
+        object(),
+        _Notifications(InAppNotificationPage((), 0, 0, 1, 20, "all")),
+        cursor_secret=b"l" * 32,  # type: ignore[arg-type]
+    )
+    timestamp = "2026-09-01T12:00:00+00:00"
+    for value in range(1, 1000):
+        principal = Principal.user(UUID(int=value), (Permission.VIEW_QUEUE,))
+        cursor = service._encode_cursor(principal, timestamp)
+        raw = base64.urlsafe_b64decode(cursor + "=" * (-len(cursor) % 4))
+        if b"." in raw[-32:]:
+            assert service._decode_cursor(cursor, principal) == datetime.fromisoformat(timestamp)
+            return
+    raise AssertionError("Fixture must exercise a separator inside the binary signature")

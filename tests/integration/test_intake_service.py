@@ -4,7 +4,7 @@ abandonment, duplicate-document detection, amendment offering and audit —
 
 Uses the same self-contained, in-memory SQLite bundle
 `tests/integration/test_registry_service.py` already established for this
-area, rather than the `COVENANT_RADAR_DATABASE_URL`-requiring PostgreSQL
+area, rather than the `RADAR_TEST_DATABASE_URL`-requiring PostgreSQL
 fixture: `IntakeService` composes `RegistryService` directly, and neither
 depends on anything PostgreSQL-specific.
 """
@@ -342,9 +342,13 @@ def test_resubmitted_document_shows_prior_proposals() -> None:
         )
         assert [record.row.id for record in again] == [first.row.id]
 
-        count = bundle.session.execute(
-            select(CovenantProposal).where(CovenantProposal.document_id == document.id)
-        ).scalars().all()
+        count = (
+            bundle.session.execute(
+                select(CovenantProposal).where(CovenantProposal.document_id == document.id)
+            )
+            .scalars()
+            .all()
+        )
         assert len(count) == 1
 
         reextracted = bundle.service.propose_from_document(
@@ -358,9 +362,13 @@ def test_resubmitted_document_shows_prior_proposals() -> None:
         )
         assert reextracted[0].row.id != first.row.id
 
-        count_after = bundle.session.execute(
-            select(CovenantProposal).where(CovenantProposal.document_id == document.id)
-        ).scalars().all()
+        count_after = (
+            bundle.session.execute(
+                select(CovenantProposal).where(CovenantProposal.document_id == document.id)
+            )
+            .scalars()
+            .all()
+        )
         assert len(count_after) == 2
     finally:
         bundle.close()

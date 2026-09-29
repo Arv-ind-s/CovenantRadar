@@ -10,10 +10,8 @@ promotable) with nothing to show.
 
 Registrations are created through `ModelGovernanceService`, so the maker
 event, the maker-checker request and the audit trail are the real ones.  The
-evaluation runs are written as rows because they *are* records of an offline
-harness pass rather than the output of a request-time service; the numbers
-come from the checked-in ML reference manifests and floor ledger rather than
-being invented here.
+evaluation rows contain illustrative scenario scores, not measured harness
+results. Both the stored provenance and the screen disclose that distinction.
 """
 
 from __future__ import annotations
@@ -30,13 +28,13 @@ from sqlalchemy import select
 from sqlalchemy.orm import Session
 
 from covenant_radar.audit.record import AuditRecorder
+from covenant_radar.config.settings import get_settings
 from covenant_radar.core.clock import Clock, SystemClock
 from covenant_radar.core.context import new_request_id
 from covenant_radar.core.ids import new_id
 from covenant_radar.db.models.identity import AppUser
 from covenant_radar.db.models.operations import EvaluationRun
 from covenant_radar.db.repositories.audit import AuditRepository
-from covenant_radar.security.permissions import Permission
 from covenant_radar.security.rbac import Principal
 from covenant_radar.services.model_governance import (
     APPROVE_MODEL_REGISTRATION_PERMISSION,
@@ -153,12 +151,12 @@ def seed_governance_records(
     )
     registrations += 1
 
-    challenger_family, challenger_checksum = _challenger_identity()
+    _challenger_family, challenger_checksum = _challenger_identity()
     service.register(
         maker,
         component=CHALLENGER_COMPONENT,
         provider="scikit-learn",
-        model_id=f"{challenger_family}-{challenger_checksum[:12]}",
+        model_id=f"sha256:{challenger_checksum}",
         purpose=(
             "Shadow challenger. Scored alongside the champion for comparison only; "
             "it never supplies an operational probability while unapproved."
@@ -230,6 +228,7 @@ def _ensure_evaluation_runs(
             "deterministic-champion",
             True,
             {
+                "provenance": "illustrative_demo_fixture",
                 "false_escalation": "1.000",
                 "forecast_dating": "1.000",
                 "engine": "1.000",
@@ -242,6 +241,7 @@ def _ensure_evaluation_runs(
             "ml-challenger",
             False,
             {
+                "provenance": "illustrative_demo_fixture",
                 "false_escalation": str(_FALSE_ESCALATION_SCORE),
                 "forecast_dating": "0.910",
                 "engine": "1.000",
@@ -290,7 +290,12 @@ def _release_run_ids(session: Session) -> tuple[UUID | None, UUID | None]:
 def _challenger_identity() -> tuple[str, str]:
     """Read the challenger's family and checksum from its shipped manifest."""
 
-    path = _ML_REFERENCE_DIR / _CHALLENGER_MANIFEST
+    artifact_path = get_settings().forecast.ml_artifact_path
+    path = (
+        artifact_path.with_suffix(".manifest.json")
+        if artifact_path is not None
+        else _ML_REFERENCE_DIR / _CHALLENGER_MANIFEST
+    )
     try:
         manifest = json.loads(path.read_text(encoding="utf-8"))
     except (OSError, json.JSONDecodeError):

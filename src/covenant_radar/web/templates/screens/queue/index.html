@@ -3,7 +3,10 @@
 
 {% block page_title %}{{ labels.title }}{% endblock %}
 {% block h1 %}{{ labels.heading }}{% endblock %}
+{% block head %}<link rel="stylesheet" href="/static/css/queue-market.css">{% endblock %}
+{% block page_description %}<p>Every borrower in your portfolio, ranked by how soon they need your attention. Start at the top.</p>{% endblock %}
 
 {% block content %}
+  <p>How far commodity, rupee and rate moves since the last statements eat into each borrower’s interest-cover cushion: <a href="/intelligence">{{ tr("navigation.intelligence") }} →</a></p>
   {% include "screens/queue/_workspace.html" %}
 {% endblock %}

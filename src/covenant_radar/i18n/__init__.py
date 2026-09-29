@@ -168,6 +168,7 @@ class ContextTranslator(Translator):
 _HINDI_SHELL_MESSAGES: dict[str, str] = {
     "navigation.label": "मुख्य नेविगेशन",
     "navigation.queue": "पोर्टफोलियो कतार",
+    "navigation.intelligence": "बाज़ार संदर्भ",
     "navigation.cases": "मामले",
     "navigation.borrowers": "उधारकर्ता",
     "navigation.facilities": "ऋण सुविधाएँ",
@@ -222,6 +223,7 @@ _DEFAULT_MESSAGES: dict[str, str] = {
     "app.wordmark_secondary": "Radar",
     "navigation.label": "Primary navigation",
     "navigation.queue": "Portfolio queue",
+    "navigation.intelligence": "Market intelligence",
     "navigation.cases": "Cases",
     "navigation.borrowers": "Borrowers",
     "navigation.admin": "Administration",

@@ -158,3 +158,31 @@ def test_every_path_writes_one_record() -> None:
 def test_masking_marker_is_stable() -> None:
     assert MASKING_MARKER == "covenant-radar/masked/v1"
     assert _prompt().marker == MASKING_MARKER
+
+
+@pytest.mark.parametrize("changed", ["provider", "model_id", "prompt_version"])
+def test_registry_approval_cannot_be_reused_for_changed_ai_configuration(changed: str) -> None:
+    from types import SimpleNamespace
+    from unittest.mock import Mock
+
+    from covenant_radar.ai.registry import ComponentNotApproved, ModelRegistryGuard
+
+    approved = {
+        "is_approved": True,
+        "provider": "recorded",
+        "model_id": "fixture-model",
+        "prompt_version": "v1",
+    }
+    approved[changed] = "different-configuration"
+    repository = Mock()
+    repository.get_by_component.return_value = SimpleNamespace(**approved)
+    provider = _Provider([_response()])
+    writer = InMemoryModelCallWriter()
+    client = _client(provider, writer)
+    client.registry_guard = ModelRegistryGuard(repository, environment="production")
+    # Omitting context.component must not bypass the stage's registration.
+    with pytest.raises(ComponentNotApproved, match="approval does not match"):
+        client.call(7, _prompt(), "v1")
+    assert provider.requests == []
+    assert len(writer.records) == 1
+    repository.get_by_component.assert_called_once_with("stage7_memo")

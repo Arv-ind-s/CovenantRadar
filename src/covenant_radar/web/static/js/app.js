@@ -145,11 +145,19 @@
       if (target === selectAll) checkboxes().forEach((checkbox) => { checkbox.checked = target.checked; });
       if (target.matches("#select-all, .row-select")) update();
     });
+    ledger._radarClearSelection = () => {
+      checkboxes().forEach((checkbox) => { checkbox.checked = false; });
+      update();
+    };
     if (clear && clear.dataset.selectionInstalled !== "true") {
       clear.dataset.selectionInstalled = "true";
       clear.addEventListener("click", () => {
-        checkboxes().forEach((checkbox) => { checkbox.checked = false; });
-        update();
+        // Polling replaces the ledger while retaining this button. Resolve
+        // the current ledger instead of closing over detached checkboxes.
+        const activeLedger = document.getElementById("queue-ledger");
+        if (activeLedger && activeLedger._radarClearSelection) {
+          activeLedger._radarClearSelection();
+        }
       });
     }
     update();

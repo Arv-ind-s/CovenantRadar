@@ -1,0 +1,72 @@
+{# Market pressure macros; no top-level output so pages can import them. #}
+{%- macro meter(channel) -%}
+{# 100% of the cushion sits at the midpoint; the bar caps at twice the cushion. #}
+<svg class="mkt-meter" viewBox="0 0 100 8" preserveAspectRatio="none" role="img" aria-label="Move uses {{ channel.usage_display }}"><rect class="mkt-meter__track" width="100" height="8" rx="4"/><rect class="mkt-meter__fill mkt-meter__fill--{{ channel.status }}" width="{{ '%.1f'|format(channel.meter) }}" height="8" rx="4"/><line class="mkt-meter__mark" x1="50" x2="50" y1="0" y2="8"/></svg>
+{%- endmacro -%}
+
+{%- macro borrower_card(row, expanded=false, actions=true) -%}
+<article class="mkt-card mkt-card--{{ row.status }}" id="{{ row.anchor }}">
+  <header class="mkt-card__head">
+    <div class="mkt-card__who">
+      <span class="mkt-status mkt-status--{{ row.status }}">{{ row.label }}</span>
+      <h3><a href="{{ row.url }}">{{ row.name }}</a></h3>
+      <p class="mkt-card__meta">{{ row.reference }} · {{ row.sector }}{% if row.fy_label %} · {{ row.fy_label }}, quarter to {{ row.period_end }}{% endif %}</p>
+    </div>
+    <dl class="mkt-facts">
+      <div><dt>Interest cover</dt><dd>{{ row.icr }}<small>min {{ row.threshold }}</small></dd></div>
+      <div><dt>EBIT cushion</dt><dd>{{ row.cushion }}<small>{{ row.cushion_pct }}</small></dd></div>
+      <div><dt>Rate tolerance</dt><dd>{{ row.tolerance }}<small>all debt repricing</small></dd></div>
+    </dl>
+  </header>
+  <p class="mkt-card__headline">{{ row.headline }}</p>
+  <p class="mkt-card__implication">{{ row.implication }}</p>
+  {% if row.channels %}
+  <div class="mkt-channels">
+    {% for channel in row.channels %}
+    <section class="mkt-channel mkt-channel--{{ channel.status }}" aria-label="{{ channel.label }}">
+      <div class="mkt-channel__name"><strong>{{ channel.label }}</strong><small>{{ channel.summary }}{% if channel.share %} · {{ channel.share }}, assumed{% endif %}</small></div>
+      <dl class="mkt-channel__moves">
+        <div><dt>{{ row.next_quarter }} so far</dt><dd class="trend trend--{{ channel.qtd_trend }}">{{ channel.qtd }}</dd></div>
+        <div><dt>Latest{% if channel.latest_date %} · {{ channel.latest_date }}{% endif %}</dt><dd class="trend trend--{{ channel.latest_trend }}">{{ channel.latest }}</dd></div>
+        {% if channel.role != 'revenue' %}<div><dt>{{ 'Tolerance' if channel.role == 'rate' else 'Breakeven' }}</dt><dd>{{ channel.breakeven }}</dd></div>{% endif %}
+      </dl>
+      {% if channel.usage %}<div class="mkt-channel__usage">{{ meter(channel) }}<small>{{ channel.usage_display }}</small></div>{% endif %}
+    </section>
+    {% endfor %}
+  </div>
+  {% endif %}
+  <details class="mkt-card__more"{% if expanded %} open{% endif %}>
+    <summary>Series, sources and reporting</summary>
+    <div class="mkt-card__detail">
+      <table class="mkt-components">
+        <caption class="sr-only">Market series behind {{ row.name }}</caption>
+        <thead><tr><th scope="col">Series</th><th scope="col">Use</th><th scope="col">Quarter so far</th><th scope="col">Latest</th><th scope="col">Source</th></tr></thead>
+        <tbody>
+        {% for channel in row.channels %}{% for item in channel.components %}
+          <tr><th scope="row">{{ item.label }}{% if item.share %} <small>{{ item.share }} of revenue</small>{% endif %}</th><td>{{ item.note }}</td><td>{{ item.qtd }} <small>{{ item.qtd_label }}</small></td><td>{{ item.latest }} <small>{{ item.latest_date }}</small></td><td><a href="{{ item.url }}" target="_blank" rel="noopener noreferrer">{{ item.publisher }} ↗</a></td></tr>
+        {% endfor %}{% endfor %}
+        </tbody>
+      </table>
+      {% if row.news %}
+      <ul class="mkt-news mkt-news--compact">
+        {% for story in row.news %}<li><a href="{{ story.url }}" target="_blank" rel="noopener noreferrer">{{ story.title }} ↗</a><small>{{ story.publisher }} · {{ story.published }} · {{ story.driver_label }}</small></li>{% endfor %}
+      </ul>
+      {% endif %}
+    </div>
+  </details>
+  {% if actions %}
+  <footer class="mkt-card__actions">
+    {% if principal.has("VIEW_BORROWER") %}<a href="{{ row.url }}">Open borrower file →</a>{% endif %}
+    {% if principal.has("UPDATE_CASE") %}<a class="button" href="{{ row.review_url }}">Record market review in case</a>{% endif %}
+  </footer>
+  {% endif %}
+</article>
+{%- endmacro -%}
+
+{%- macro compact_row(row) -%}
+<li class="mkt-compact" id="{{ row.anchor }}">
+  <a href="{{ row.url }}"><strong>{{ row.name }}</strong><small>{{ row.sector }}</small></a>
+  <span class="mkt-compact__icr">{{ row.icr }} <small>min {{ row.threshold }} · cushion {{ row.cushion_pct or '—' }}</small></span>
+  <span class="mkt-compact__text">{{ row.headline }}</span>
+</li>
+{%- endmacro -%}

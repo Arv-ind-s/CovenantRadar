@@ -8,8 +8,8 @@
  */
 
 .auth-shell {
-  --hit-min: 48px;
-  --auth-card-radius: 20px;
+  --hit-min: var(--space-12);
+  --auth-card-radius: var(--space-5);
   background: var(--surface-sunken);
 }
 
@@ -20,22 +20,22 @@
    theme's brand plum darkened — the token would invert to pink under
    `[data-theme="dark"]` and take the stage with it. */
 .auth-shell .auth-story {
-  --auth-stage: #14081A;
-  --auth-stage-bloom: #6B1F55;
-  --auth-scene-accent: #F5A8DC;
-  --auth-scene-ink: #B98FB8;
+  --auth-stage: var(--auth-fixed-stage);
+  --auth-stage-bloom: var(--auth-fixed-bloom);
+  --auth-scene-accent: var(--auth-fixed-accent);
+  --auth-scene-ink: var(--auth-fixed-scene-ink);
 
   isolation: isolate;
   align-content: end;
   gap: var(--space-4);
-  color: #F4ECF3;
+  color: var(--auth-fixed-ink);
   background:
     /* Atmosphere banked along the horizon the scene converges to, so the
        glow reads as distance rather than as a corner wash. */
     radial-gradient(78% 26% at 50% 21%, color-mix(in srgb, var(--auth-stage-bloom) 62%, transparent) 0%, transparent 74%),
     radial-gradient(100% 58% at 84% -14%, color-mix(in srgb, var(--auth-stage-bloom) 46%, transparent) 0%, transparent 62%),
     radial-gradient(80% 56% at 4% 106%, color-mix(in srgb, var(--auth-stage-bloom) 34%, transparent) 0%, transparent 66%),
-    linear-gradient(178deg, #1B0C20 0%, #150819 30%, #0D050F 100%);
+    linear-gradient(178deg, var(--auth-fixed-gradient-top) 0%, var(--auth-fixed-gradient-middle) 30%, var(--auth-fixed-gradient-bottom) 100%);
 }
 
 /* A scrim under the copy only. It has to sit *above* the canvas to earn the
@@ -103,16 +103,16 @@
 
 .auth-shell .auth-story h2 {
   max-width: 14ch;
-  color: #FFFFFF;
+  color: var(--auth-fixed-white);
   font-weight: var(--weight-bold);
-  text-shadow: 0 2px 24px rgba(12, 5, 14, .55);
+  text-shadow: 0 calc(var(--space-1) / 2) var(--space-6) rgba(12, 5, 14, .55);
   text-wrap: balance;
 }
 
 .auth-shell .auth-story > p:last-child {
   max-width: 40ch;
   margin: 0;
-  color: #CDBBCB;
+  color: var(--auth-fixed-muted);
   font-size: var(--size-section);
   line-height: 1.5;
   text-wrap: pretty;
@@ -147,17 +147,17 @@
 .auth-shell .auth-brandbar .brand,
 .auth-shell .auth-brandbar .brand:hover,
 .auth-shell .auth-brandbar .brand__copy {
-  color: #FFFFFF;
+  color: var(--auth-fixed-white);
 }
 
 .auth-shell .auth-brandbar .brand__copy span {
-  color: #C4AEC2;
+  color: var(--auth-fixed-subtle);
 }
 
 .auth-shell .auth-brandbar .brand__mark {
-  background: linear-gradient(160deg, #8E2A72 0%, #4E1440 100%);
-  color: #FFFFFF;
-  box-shadow: 0 8px 24px rgba(107, 31, 85, .45);
+  background: linear-gradient(160deg, var(--auth-fixed-button-top) 0%, var(--auth-fixed-button-bottom) 100%);
+  color: var(--auth-fixed-white);
+  box-shadow: 0 var(--space-2) var(--space-6) rgba(107, 31, 85, .45);
 }
 
 /* ---- Right: the credential card ------------------------------------ */
@@ -173,7 +173,7 @@
    that edge deliberate rather than a rendering seam. */
 @media (min-width: 60.0625rem) {
   .auth-shell .auth-main {
-    box-shadow: -1px 0 0 rgba(0, 0, 0, .28), -24px 0 48px -24px rgba(0, 0, 0, .35);
+    box-shadow: -1px 0 0 rgba(0, 0, 0, .28), -24px 0 var(--space-12) -24px rgba(0, 0, 0, .35);
   }
 }
 
@@ -188,7 +188,7 @@
 
 .auth-shell .auth-main h1 {
   margin-block: var(--space-2) var(--space-6);
-  font-size: clamp(var(--size-screen-title), 3.4vw, 42px);
+  font-size: clamp(var(--size-screen-title), 3.4vw, calc(var(--space-10) + var(--space-1) / 2));
   font-weight: var(--weight-bold);
   letter-spacing: -0.035em;
   line-height: 1.05;
@@ -202,7 +202,7 @@
   border-radius: var(--auth-card-radius);
   background: var(--surface-raised);
   box-shadow:
-    0 1px 0 color-mix(in srgb, var(--surface-raised) 70%, #FFF) inset,
+    0 var(--border-width) 0 color-mix(in srgb, var(--surface-raised) 70%, var(--auth-fixed-white)) inset,
     var(--shadow-lg);
 }
 
@@ -212,7 +212,7 @@
   position: absolute;
   inset-block-start: 0;
   inset-inline: 12%;
-  height: 1px;
+  height: var(--border-width);
   background: linear-gradient(90deg, transparent, var(--accent), transparent);
   opacity: .6;
   content: "";
@@ -221,7 +221,7 @@
 .auth-shell .auth-panel:hover {
   border-color: color-mix(in srgb, var(--accent) 14%, var(--hairline));
   box-shadow:
-    0 1px 0 color-mix(in srgb, var(--surface-raised) 70%, #FFF) inset,
+    0 var(--border-width) 0 color-mix(in srgb, var(--surface-raised) 70%, var(--auth-fixed-white)) inset,
     var(--shadow-lg);
 }
 
@@ -241,7 +241,7 @@
 
 .auth-shell .field__control {
   padding: var(--space-3) var(--space-4);
-  border: 1px solid color-mix(in srgb, var(--hairline) 88%, var(--ink));
+  border: var(--border-width) solid color-mix(in srgb, var(--hairline) 88%, var(--ink));
   border-radius: var(--radius-md);
   background: color-mix(in srgb, var(--surface-subtle) 46%, var(--surface-raised));
   color: var(--ink);
@@ -261,7 +261,7 @@
   border-color: var(--accent);
   background: var(--surface-raised);
   outline: none;
-  box-shadow: 0 0 0 3px color-mix(in srgb, var(--accent) 22%, transparent);
+  box-shadow: 0 0 0 calc(var(--space-1) * .75) color-mix(in srgb, var(--accent) 22%, transparent);
 }
 
 .auth-shell .password-control__toggle {
@@ -285,25 +285,25 @@
   font-size: var(--size-section);
   letter-spacing: -0.01em;
   box-shadow:
-    0 1px 0 color-mix(in srgb, #FFF 22%, transparent) inset,
-    0 4px 14px color-mix(in srgb, var(--accent) 22%, transparent);
+    0 var(--border-width) 0 color-mix(in srgb, var(--auth-fixed-white) 22%, transparent) inset,
+    0 var(--space-1) calc(var(--space-4) - var(--space-1) / 2) color-mix(in srgb, var(--accent) 22%, transparent);
 }
 
 .auth-shell .auth-panel form .button:hover {
   filter: saturate(1.06) brightness(1.04);
   box-shadow:
-    0 1px 0 color-mix(in srgb, #FFF 22%, transparent) inset,
-    0 8px 22px color-mix(in srgb, var(--accent) 30%, transparent);
+    0 var(--border-width) 0 color-mix(in srgb, var(--auth-fixed-white) 22%, transparent) inset,
+    0 var(--space-2) calc(var(--space-6) - var(--space-1) / 2) color-mix(in srgb, var(--accent) 30%, transparent);
 }
 
 /* The dark accent is a pale plum, so the same glow that reads as depth on
    the light theme reads as a halo here. */
 [data-theme="dark"] .auth-shell .auth-panel form .button {
-  box-shadow: 0 4px 16px rgba(0, 0, 0, .5);
+  box-shadow: 0 var(--space-1) var(--space-4) rgba(0, 0, 0, .5);
 }
 
 [data-theme="dark"] .auth-shell .auth-panel form .button:hover {
-  box-shadow: 0 8px 24px rgba(0, 0, 0, .6);
+  box-shadow: 0 var(--space-2) var(--space-6) rgba(0, 0, 0, .6);
 }
 
 /* ---- Error state ----------------------------------------------------- */
@@ -325,7 +325,7 @@
 @keyframes auth-shake {
   0%, 100% { transform: translateX(0); }
   25% { transform: translateX(-4px); }
-  75% { transform: translateX(4px); }
+  75% { transform: translateX(var(--space-1)); }
 }
 
 /* ---- Motion and narrow viewports ------------------------------------- */

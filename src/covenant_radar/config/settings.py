@@ -127,6 +127,16 @@ class IngestionSettings(BaseModel):
     poll_interval_seconds: int = Field(ge=1)
 
 
+class IntelligenceSettings(BaseModel):
+    """Public, read-only market context; no customer data sent to providers."""
+
+    model_config = ConfigDict(extra="forbid", frozen=True)
+
+    enabled: bool = True
+    cache_path: Path = Path("var/market-intelligence.json")
+    refresh_seconds: int = Field(default=900, ge=60, le=86400)
+
+
 class ObservabilitySettings(BaseModel):
     """Logging, metrics and tracing settings."""
 
@@ -149,6 +159,7 @@ class WebSettings(BaseModel):
     # The live workspace is progressive enhancement and remains opt-in until
     # a deployment has verified its polling budget and operational workflow.
     live_workspace_enabled: bool = False
+    demo_walkthrough_enabled: bool = False
 
 
 class ForecastSettings(BaseModel):
@@ -182,6 +193,7 @@ class Settings(BaseModel):
     ai: AiSettings
     notifications: NotificationsSettings
     ingestion: IngestionSettings
+    intelligence: IntelligenceSettings = Field(default_factory=IntelligenceSettings)
     observability: ObservabilitySettings
     web: WebSettings
     forecast: ForecastSettings

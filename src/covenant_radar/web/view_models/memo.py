@@ -213,7 +213,7 @@ def build_persisted_memo_block(memo: Memo) -> MemoBlockView:
         state=MemoBlockState.GENERATED,
         title=_TITLES["generated"],
         memo_id=memo.id,
-        label="Drafted by model",
+        label=_draft_label(memo.provider),
         headline=_trim_drafted_numbers(prose[0]),
         summary=_trim_drafted_numbers(prose[1]),
         drivers=tuple(_trim_drafted_numbers(driver) for driver in drivers),
@@ -306,6 +306,12 @@ def _provider_label(value: str | None) -> str:
     return "Covenant Radar AI" if provider.lower() == "tcs" else provider
 
 
+def _draft_label(provider: str | None) -> str:
+    if provider and provider.strip().lower() == "recorded":
+        return "Recorded AI draft · offline replay"
+    return "Drafted by model"
+
+
 def _verdict_label(value: str | None) -> str:
     if not isinstance(value, str) or not value.strip():
         return "Not recorded"
@@ -343,7 +349,7 @@ def _generated(memo: Memo, draft: MemoDraft) -> MemoBlockView:
         state=MemoBlockState.GENERATED,
         title=_TITLES["generated"],
         memo_id=memo.id,
-        label=draft.label,
+        label=_draft_label(memo.provider),
         headline=_trim_drafted_numbers(draft.headline),
         summary=_trim_drafted_numbers(draft.summary),
         drivers=tuple(_trim_drafted_numbers(driver) for driver in draft.drivers),

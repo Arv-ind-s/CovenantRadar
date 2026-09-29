@@ -27,11 +27,13 @@ from uuid import UUID
 from fastapi import APIRouter, Depends, Query, Request
 from fastapi.responses import HTMLResponse, Response
 from jinja2 import Environment, FileSystemLoader, select_autoescape
+from sqlalchemy import select
 from sqlalchemy.orm import Session
 
 from covenant_radar.api.deps import requires
 from covenant_radar.core.errors import ExternalServiceError, NotFound, ValidationError
 from covenant_radar.db.models.borrower import Borrower
+from covenant_radar.db.models.signal import SignalEvent
 from covenant_radar.db.repositories.borrower import BorrowerRepository
 from covenant_radar.db.repositories.memo import MemoRepository
 from covenant_radar.db.scoping import Scope, resolve_scope
@@ -41,6 +43,7 @@ from covenant_radar.security.permissions import Permission
 from covenant_radar.security.rbac import Principal
 from covenant_radar.services.memo import MemoGenerationOutcome
 from covenant_radar.services.memo_records import collect_memo_records
+from covenant_radar.services.monitoring_pulse import borrower_risk_comparison
 from covenant_radar.web.preferences import theme_for_request
 from covenant_radar.web.view_models.borrower import load_borrower_case_file
 from covenant_radar.web.view_models.memo import (
@@ -351,6 +354,10 @@ def create_borrower_router(
         borrower = BorrowerRepository(session).by_reference(reference, scope=scope)
         assert borrower is not None
         memos = MemoRepository(session).for_borrower(borrower.id, scope=scope)
+        latest_signal = session.scalar(
+            select(SignalEvent).where(SignalEvent.borrower_id == borrower.id)
+            .order_by(SignalEvent.ingested_at.desc(), SignalEvent.id.desc()).limit(1)
+        )
         return _render(
             request,
             fallback_environment,
@@ -358,6 +365,11 @@ def create_borrower_router(
             view=view,
             selected_day=day,
             latest_memo=(build_persisted_memo_block(memos[0]) if memos else None),
+            monitoring_comparison=borrower_risk_comparison(session, borrower.id),
+            latest_signal=latest_signal,
+            forecast_mode=request.app.state.settings.forecast.ml_mode,
+            ai_provider=request.app.state.settings.ai.provider,
+            walkthrough_received=request.query_params.get("walkthrough") == "received",
         )
 
     @router.get(

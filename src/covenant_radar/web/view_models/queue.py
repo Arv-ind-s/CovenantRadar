@@ -20,11 +20,12 @@ repository layer has no message to attach to it.
 
 from __future__ import annotations
 
+import re
 from collections.abc import Mapping, Sequence
 from dataclasses import dataclass
 from datetime import date
 from decimal import ROUND_HALF_UP, Decimal
-from typing import Final, Literal
+from typing import Any, Final, Literal
 from uuid import UUID
 
 from markupsafe import Markup
@@ -41,6 +42,7 @@ from covenant_radar.db.scoping import Scope
 from covenant_radar.db.session import is_database_session
 from covenant_radar.domain.cases.lifecycle import CaseState
 from covenant_radar.domain.triage.views import QUEUE_EMPTY_MESSAGE, QueueEntry, QueuePage
+from covenant_radar.services.borrower_market import MarketAssessment, assess, load_positions
 from covenant_radar.web.svg.trajectory import (
     TrajectoryPoint,
     render_trajectory_sparkline_svg,
@@ -48,10 +50,10 @@ from covenant_radar.web.svg.trajectory import (
 from covenant_radar.web.view_models.case import SelectOption, path_grants
 
 NO_FORECAST_TEXT: Final[str] = "No covenant has been tested for this borrower yet."
-SUPPRESSED_TEXT: Final[str] = "Confidence fell below the floor required to show a probability."
+SUPPRESSED_TEXT: Final[str] = "Not enough reliable data to project this borrower yet."
 UNASSIGNED_TEXT: Final[str] = "Unassigned"
 NO_CASE_TEXT: Final[str] = "No case opened"
-NO_CHANGE_TEXT: Final[str] = "Not yet compared with a prior run."
+NO_CHANGE_TEXT: Final[str] = "First review, so there is nothing to compare against yet."
 NO_COMPLETE_RUN_TITLE: Final[str] = "No completed run yet"
 EMPTY_SCOPE_TITLE: Final[str] = "No borrowers rank in this view"
 EMPTY_SCOPE_MESSAGE: Final[str] = (
@@ -100,6 +102,7 @@ class QueueRowView:
     detail_id: str = ""
     case_reference: str = ""
     case_href: str = ""
+    market_impact: MarketAssessment | None = None
 
 
 @dataclass(frozen=True, slots=True)
@@ -131,6 +134,7 @@ def build_queue_view(
     session: Session,
     *,
     scope: Scope | None = None,
+    market_snapshot: dict[str, Any] | None = None,
 ) -> QueueScreenView:
     """Shape one scoped `QueuePage` into the queue screen's view model."""
     if not isinstance(page, QueuePage):
@@ -163,6 +167,17 @@ def build_queue_view(
     horizons = _queue_horizon_displays(session, page)
     drivers = _queue_dominant_drivers(session, page)
     forecast_ids = _queue_forecast_ids(session, page)
+    # Entries are already scoped by the triage query; positions add only their financials.
+    market = (
+        {
+            borrower_id: assess(position, market_snapshot)
+            for borrower_id, position in load_positions(
+                session, [entry.borrower_id for entry in page.entries]
+            ).items()
+        }
+        if market_snapshot is not None
+        else {}
+    )
     rows = tuple(
         _row_view(
             entry,
@@ -173,6 +188,7 @@ def build_queue_view(
             horizons,
             drivers,
             forecast_ids,
+            market.get(entry.borrower_id),
         )
         for entry in page.entries
     )
@@ -197,6 +213,7 @@ def _row_view(
     horizons: Mapping[UUID, tuple[str, ...]] | None = None,
     drivers: Mapping[tuple[UUID, int], str] | None = None,
     forecast_ids: Mapping[tuple[UUID, int], UUID] | None = None,
+    market_impact: MarketAssessment | None = None,
 ) -> QueueRowView:
     worst_covenant, probability_display, crossing_date, crossing_note = _risk_cells(
         entry, covenant_labels, crossing_dates
@@ -206,7 +223,7 @@ def _row_view(
         if trajectories is not None and entry.worst_covenant_version_id is not None
         else None
     )
-    trajectory_label = f"{entry.legal_name} stored risk trajectory"
+    trajectory_label = f"{entry.legal_name}: risk trend over the stored forecast"
     trajectory_svg = (
         render_trajectory_sparkline_svg(
             f"queue-trajectory-{entry.borrower_id}",
@@ -224,6 +241,7 @@ def _row_view(
         rank=entry.rank,
         case_reference=case_reference,
         case_href=f"/cases/{case_reference}" if case_reference else "",
+        market_impact=market_impact,
         href=f"/borrowers/{entry.borrower_reference}",
         borrower_name=entry.legal_name,
         borrower_reference=entry.borrower_reference,
@@ -243,14 +261,18 @@ def _row_view(
             if entry.case_state
             else NO_CASE_TEXT
         ),
-        what_changed=entry.what_changed or NO_CHANGE_TEXT,
-        horizon_displays=(horizons or {}).get(entry.worst_covenant_version_id, ()),
+        what_changed=humanise_what_changed(entry.what_changed) or NO_CHANGE_TEXT,
+        horizon_displays=(
+            (horizons or {}).get(entry.worst_covenant_version_id, ())
+            if entry.worst_covenant_version_id is not None
+            else ()
+        ),
         dominant_driver=(
             (drivers or {}).get((entry.worst_covenant_version_id, entry.worst_horizon), "")
             if entry.worst_covenant_version_id is not None and entry.worst_horizon is not None
             else ""
         ),
-        confidence_display=_fraction_display(entry.confidence, label="Confidence"),
+        confidence_display=_fraction_display(entry.confidence, label="Forecast confidence"),
         urgency_display=_urgency_display(entry.urgency),
         why_href=(
             f"/why/forecast/{forecast_ids[(entry.worst_covenant_version_id, entry.worst_horizon)]}"
@@ -263,18 +285,94 @@ def _row_view(
         crossing_note=crossing_note,
         trajectory_svg=trajectory_svg,
         trajectory_label=(
-            trajectory_label if trajectory is not None else "No stored trajectory is available."
+            trajectory_label if trajectory is not None else "No risk trend is stored yet."
         ),
     )
+
+
+_BAND_WORDS: Final[Mapping[str, str]] = {"act": "Act now", "amber": "Amber", "watch": "Watch"}
+_DRIVER_WORDS: Final[Mapping[str, str]] = {
+    "distance": "how close the covenant is to its limit",
+    "velocity": "how fast the covenant is moving toward its limit",
+    "pressure": "ongoing early-warning signals",
+}
+_CHANGE_PATTERNS: Final[tuple[tuple[re.Pattern[str], str], ...]] = (
+    (re.compile(r"^first run\b"), "First review, so there is nothing to compare against yet."),
+    (re.compile(r"^newly monitored\b"), "Newly added to monitoring."),
+    (re.compile(r"^newly unmonitored\b"), "Not included in the latest review."),
+    (
+        re.compile(r"^newly suppressed\b"),
+        "Too little reliable data this time, so no score is shown.",
+    ),
+    (re.compile(r"^newly unsuppressed\b"), "Enough reliable data again to show a score."),
+    (re.compile(r"^no change\b"), "No meaningful change since the last review."),
+)
+_BAND_MOVE = re.compile(r"^(new to act; )?band (worsened|improved) from (\w+) to (\w+)$")
+_SCORE_MOVE = re.compile(
+    r"^probability (increased|decreased) by [0-9.]+ from ([0-9.]+) to ([0-9.]+)$"
+)
+_DRIVER_TAIL = re.compile(r"^(?P<head>.*); dominant driver: (?P<name>.+) \((?P<share>[0-9.]+)\)$")
+
+
+def humanise_what_changed(summary: str | None) -> str:
+    """Reword a stored what-changed summary for a credit officer.
+
+    The summaries in `domain/triage/changes.py` are written for the audit
+    trail: lower-case band codes and probabilities as fractions. This only
+    rephrases a known shape with the same facts; anything it does not
+    recognise is returned as stored, so no fact can be lost in translation.
+    """
+
+    if not summary or not summary.strip():
+        return ""
+    text = summary.strip()
+    driver = ""
+    tail = _DRIVER_TAIL.match(text)
+    if tail is not None:
+        text = tail.group("head")
+        name = tail.group("name").strip()
+        driver = (
+            f" Biggest factor: {_DRIVER_WORDS.get(name.lower(), name)}"
+            f" ({_percent_text(tail.group('share'))})."
+        )
+    band_move = _BAND_MOVE.match(text)
+    score_move = _SCORE_MOVE.match(text)
+    if band_move is not None:
+        _, direction, before, after = band_move.groups()
+        before_word = _BAND_WORDS.get(before, before)
+        after_word = _BAND_WORDS.get(after, after)
+        head = (
+            f"Escalated to {after_word} (was {before_word})."
+            if after == "act"
+            else f"Risk band {direction} from {before_word} to {after_word}."
+        )
+    elif score_move is not None:
+        direction, before, after = score_move.groups()
+        verb = "rose" if direction == "increased" else "fell"
+        head = f"Risk score {verb} from {_percent_text(before)} to {_percent_text(after)}."
+    else:
+        head = next(
+            (words for pattern, words in _CHANGE_PATTERNS if pattern.search(text)),
+            text[:1].upper() + text[1:],
+        )
+    return head + driver
+
+
+def _percent_text(fraction: str) -> str:
+    try:
+        value = Decimal(fraction) * 100
+    except ArithmeticError:
+        return fraction
+    return f"{value.quantize(_PERCENT_QUANTUM, rounding=ROUND_HALF_UP)}%"
 
 
 def _fraction_display(value: Decimal | None, *, label: str) -> str:
     """Format a persisted fraction without inventing a fallback value."""
 
     if value is None:
-        return f"{label} unavailable"
+        return f"{label}: not available"
     percentage = (value * 100).quantize(_PERCENT_QUANTUM, rounding=ROUND_HALF_UP)
-    return f"{label} {percentage}%"
+    return f"{label}: {percentage}%"
 
 
 def _urgency_display(value: Decimal | None) -> str:
@@ -328,12 +426,10 @@ def _queue_horizon_displays(
     grouped: dict[UUID, list[str]] = {}
     for version_id, horizon, probability, suppressed in session.execute(statement).all():
         if suppressed or probability is None:
-            display = f"{horizon}d —"
+            display = f"Next {horizon} days: not shown, too little reliable data"
         else:
-            percentage = (probability * 100).quantize(
-                _PERCENT_QUANTUM, rounding=ROUND_HALF_UP
-            )
-            display = f"{horizon}d {percentage}%"
+            percentage = (probability * 100).quantize(_PERCENT_QUANTUM, rounding=ROUND_HALF_UP)
+            display = f"Next {horizon} days: {percentage}%"
         grouped.setdefault(version_id, []).append(display)
     return {version_id: tuple(values) for version_id, values in grouped.items()}
 
@@ -525,7 +621,7 @@ def _risk_cells(
     crossing_note = (
         ""
         if crossing_date is not None or entry.worst_horizon is None
-        else f"no crossing projected within {entry.worst_horizon}d"
+        else f"Not projected to cross a covenant limit within {entry.worst_horizon} days"
     )
     return worst_covenant, probability_display, crossing_date, crossing_note
 

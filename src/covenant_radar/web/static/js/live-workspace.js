@@ -14,6 +14,7 @@
   let bootstrapped = false;
   const seen = new Set();
   const activity = [];
+  const previousRows = new Map();
   const reduced = window.matchMedia && window.matchMedia("(prefers-reduced-motion: reduce)").matches;
 
   const pause = () => document.hidden || document.body.dataset.overlayOpen === "true"
@@ -81,7 +82,7 @@
       const envelope = await response.json();
       cursor = typeof envelope.cursor === "string" ? envelope.cursor : cursor;
       apply(Array.isArray(envelope.items) ? envelope.items : []);
-      document.querySelectorAll("[data-live-status]").forEach((node) => { node.textContent = "Live"; });
+      document.querySelectorAll("[data-live-status]").forEach((node) => { node.textContent = "Updates connected"; });
     } catch (_error) {
       document.querySelectorAll("[data-live-status]").forEach((node) => { node.textContent = "Live updates reconnecting"; });
     } finally { pending = false; schedule(); }
@@ -89,6 +90,25 @@
   const schedule = () => { window.clearTimeout(timer); timer = window.setTimeout(poll, cadence()); };
 
   toggle.addEventListener("click", () => { const open = drawer.hidden; drawer.hidden = !open; toggle.setAttribute("aria-expanded", String(open)); if (open) drawer.querySelector("button")?.focus(); });
+  document.body.addEventListener("htmx:beforeSwap", (event) => {
+    if (event.detail.target?.id !== "queue-ledger") return;
+    previousRows.clear();
+    event.detail.target.querySelectorAll("[data-borrower-id]").forEach((row) => {
+      previousRows.set(row.dataset.borrowerId, row.querySelector(".queue-row__probability")?.textContent?.trim());
+    });
+  });
+  document.body.addEventListener("htmx:afterSwap", (event) => {
+    if (event.detail.target?.id !== "queue-ledger") return;
+    event.detail.target.querySelectorAll("[data-borrower-id]").forEach((row) => {
+      const before = previousRows.get(row.dataset.borrowerId);
+      const after = row.querySelector(".queue-row__probability")?.textContent?.trim();
+      if (before && after && before !== after) {
+        row.classList.add("live-region--changed");
+        window.setTimeout(() => row.classList.remove("live-region--changed"), reduced ? 1 : 1400);
+      }
+    });
+    previousRows.clear();
+  });
   drawer.querySelector("[data-live-activity-close]")?.addEventListener("click", () => { drawer.hidden = true; toggle.setAttribute("aria-expanded", "false"); toggle.focus(); });
   document.addEventListener("visibilitychange", () => { if (!document.hidden) void poll(); });
   void poll();

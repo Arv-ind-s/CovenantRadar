@@ -34,7 +34,7 @@
     <div class="filter-group">
       <label for="band-filter">{{ labels.column_band }}</label>
       <select name="band" id="band-filter">
-        <option value="">All bands</option>
+        <option value="">Any risk band</option>
         <option value="act" {% if filters.band == 'act' %}selected{% endif %}>{{ labels.summary_act }}</option>
         <option value="amber" {% if filters.band == 'amber' %}selected{% endif %}>{{ labels.summary_amber }}</option>
         <option value="watch" {% if filters.band == 'watch' %}selected{% endif %}>{{ labels.summary_watch }}</option>
@@ -44,19 +44,18 @@
     <div class="filter-group">
       <label for="sma-band-filter">{{ labels.column_sma_band }}</label>
       <select name="sma_band" id="sma-band-filter">
-        <option value="">All SMA bands</option>
-        <option value="none" {% if filters.sma_band == 'none' %}selected{% endif %}>None</option>
-        <option value="SMA-0" {% if filters.sma_band == 'SMA-0' %}selected{% endif %}>SMA-0</option>
-        <option value="SMA-1" {% if filters.sma_band == 'SMA-1' %}selected{% endif %}>SMA-1</option>
-        <option value="SMA-2" {% if filters.sma_band == 'SMA-2' %}selected{% endif %}>SMA-2</option>
-        <option value="beyond" {% if filters.sma_band == 'beyond' %}selected{% endif %}>Beyond</option>
+        <option value="">Any repayment status</option>
+        {% set sma_names = sma_labels if sma_labels is defined else {} %}
+        {% for value in ("none", "SMA-0", "SMA-1", "SMA-2", "beyond") %}
+          <option value="{{ value }}" {% if filters.sma_band == value %}selected{% endif %}>{{ sma_names.get(value, value) }}</option>
+        {% endfor %}
       </select>
     </div>
 
     <div class="filter-group">
       <label for="case-state-filter">{{ labels.column_case_state }}</label>
       <select name="case_state" id="case-state-filter">
-        <option value="">All case states</option>
+        <option value="">Any case status</option>
         <option value="none" {% if filters.case_state == 'none' %}selected{% endif %}>{{ labels.no_case }}</option>
         <option value="open" {% if filters.case_state == 'open' %}selected{% endif %}>Open</option>
         <option value="in_progress" {% if filters.case_state == 'in_progress' %}selected{% endif %}>In progress</option>
@@ -69,14 +68,14 @@
     <div class="filter-group">
       <label for="signal-family-filter">{{ labels.signal_family }}</label>
       <select name="signal_family" id="signal-family-filter">
-        <option value="">All signal families</option>
+        <option value="">Any warning signal</option>
         <option value="account_activity" {% if filters.signal_family == 'account_activity' %}selected{% endif %}>Account activity</option>
         <option value="payment" {% if filters.signal_family == 'payment' %}selected{% endif %}>Payment behaviour</option>
         <option value="utilisation" {% if filters.signal_family == 'utilisation' %}selected{% endif %}>Facility utilisation</option>
         <option value="treasury" {% if filters.signal_family == 'treasury' %}selected{% endif %}>Treasury flows</option>
         <option value="concentration" {% if filters.signal_family == 'concentration' %}selected{% endif %}>Concentration exposure</option>
         <option value="industry" {% if filters.signal_family == 'industry' %}selected{% endif %}>Industry conditions</option>
-        <option value="news" {% if filters.signal_family == 'news' %}selected{% endif %}>News deterioration</option>
+        <option value="news" {% if filters.signal_family == 'news' %}selected{% endif %}>Negative news</option>
       </select>
     </div>
 
@@ -168,28 +167,28 @@
   <summary>{{ labels.glossary_title }}</summary>
   <dl class="queue-glossary__terms">
     <div>
-      <dt>Rank</dt>
-      <dd>Position by urgency — escalation probability multiplied by exposure and confidence. Row 1 is the borrower to open first.</dd>
+      <dt>Order</dt>
+      <dd>Row 1 is the borrower to look at first. The order weighs the risk score against the size of the exposure and how complete the data is, so a large loan with rising risk sits above a small one.</dd>
     </div>
     <div>
       <dt>{{ labels.column_band }}</dt>
-      <dd><strong>Act now</strong> is a 70% or higher chance of crossing a covenant threshold at the worst horizon; <strong>Amber</strong> is 40% or higher; <strong>Watch</strong> is everything below, listed but not escalated.</dd>
+      <dd><strong>Act now</strong> means a risk score of 70% or more on the covenant most at risk. <strong>Amber</strong> is 40% to 69%. <strong>Watch</strong> is below 40%: listed so nothing is missed, but not escalated.</dd>
     </div>
     <div>
       <dt>{{ labels.column_dated_risk }}</dt>
-      <dd>The probability at the worst covenant and horizon, with the date the projection crosses the threshold. Where confidence sits below the floor, the reason is shown instead of a number.</dd>
+      <dd>When the forecast projects a covenant crossing its limit, and the risk score behind that. The score sets priority; it is not a guarantee that a breach will happen. If there is too little reliable data to project, the row says so instead of showing a number.</dd>
     </div>
     <div>
-      <dt>30 / 60 / 90</dt>
-      <dd>The same probability at each forecast horizon, so a rising line is visible without opening the case file. A dash means the horizon was suppressed for low confidence.</dd>
+      <dt>Next 30, 60 and 90 days</dt>
+      <dd>The risk score at each point ahead, shown in a row's detail, so you can see whether risk is building. Where a period has too little reliable data, it is marked as not shown.</dd>
     </div>
     <div>
       <dt>{{ labels.column_sma_band }}</dt>
-      <dd>Special Mention Account classification carried from the borrower's account conduct, independent of the covenant forecast.</dd>
+      <dd>The RBI Special Mention Account class from the borrower's repayment record: SMA-0 is 1 to 30 days overdue, SMA-1 is 31 to 60 days, SMA-2 is 61 to 90 days. It is tracked separately from the covenant forecast.</dd>
     </div>
     <div>
       <dt>{{ labels.column_what_changed }}</dt>
-      <dd>What moved since the previous completed run, naming the prior band and the new one. A dash means this borrower has not yet been compared with a prior run.</dd>
+      <dd>How the borrower's band has moved since the previous review, for example from Watch to Amber. A borrower's first review has nothing to compare against yet.</dd>
     </div>
   </dl>
 </details>

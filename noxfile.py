@@ -23,6 +23,11 @@ def _skip(session: nox.Session, step: str, task: str) -> None:
     session.log(f"SKIP {step} — not yet implemented ({task})")
 
 
+def _install_application(session: nox.Session) -> None:
+    """Install the application and its test tools in each isolated session."""
+    _install(session, ".[dev]")
+
+
 @nox.session(name="format", python=PYTHON_VERSION)
 def format_check(session: nox.Session) -> None:
     """Check formatting without modifying working files."""
@@ -40,7 +45,7 @@ def lint(session: nox.Session) -> None:
 @nox.session(name="types", python=PYTHON_VERSION)
 def types(session: nox.Session) -> None:
     """Run the project's type checker."""
-    _install(session, "mypy", "pydantic", "structlog")
+    _install_application(session)
     session.run("mypy", "src")
 
 
@@ -55,8 +60,7 @@ def imports(session: nox.Session) -> None:
 @nox.session(name="tests", python=PYTHON_VERSION)
 def tests(session: nox.Session) -> None:
     """Run the unit and available property tests."""
-    _install(session, "hypothesis", "import-linter", "pydantic", "pytest", "structlog")
-    session.install("--no-deps", "--editable", ".")
+    _install_application(session)
     test_paths = ["tests/unit"]
     if (ROOT / "tests" / "property").is_dir():
         test_paths.append("tests/property")
@@ -71,16 +75,14 @@ def alembic_drift(session: nox.Session) -> None:
     if not (ROOT / "alembic.ini").is_file():
         _skip(session, "alembic-drift", "T-010")
         return
-    _install(session, "alembic", "pydantic", "structlog")
-    session.install("--no-deps", "--editable", ".")
+    _install_application(session)
     session.run("alembic", "check")
 
 
 @nox.session(name="integration", python=PYTHON_VERSION)
 def integration(session: nox.Session) -> None:
     """Run integration tests against the required PostgreSQL service."""
-    _install(session, "psycopg[binary]", "pytest")
-    session.install("--no-deps", "--editable", ".")
+    _install_application(session)
     session.run("pytest", "-q", "tests/integration")
 
 
@@ -89,14 +91,14 @@ def migration(session: nox.Session) -> None:
     """Run migration tests: dual-engine upgrade/downgrade, drift, and
     rollback proofs (`T-010`). The PostgreSQL half requires the same
     service `integration` does."""
-    _install(session, "alembic", "psycopg[binary]", "pydantic", "pytest", "structlog")
-    session.install("--no-deps", "--editable", ".")
+    _install_application(session)
     session.run("pytest", "-q", "tests/migration")
 
 
 @nox.session(name="contract", python=PYTHON_VERSION)
 def contract(session: nox.Session) -> None:
-    _skip(session, "contract-tests", "T-135")
+    _install_application(session)
+    session.run("pytest", "-q", "tests/contract")
 
 
 @nox.session(name="seed", python=PYTHON_VERSION)
@@ -123,12 +125,15 @@ def evaluation(session: nox.Session) -> None:
 
 @nox.session(name="e2e", python=PYTHON_VERSION)
 def e2e(session: nox.Session) -> None:
-    _skip(session, "end-to-end-tests", "T-073")
+    _install_application(session)
+    session.run("python", "-m", "playwright", "install", "--with-deps", "chromium")
+    session.run("pytest", "-q", "tests/e2e")
 
 
 @nox.session(name="a11y", python=PYTHON_VERSION)
 def a11y(session: nox.Session) -> None:
-    _skip(session, "accessibility-tests", "T-075")
+    _install_application(session)
+    session.run("pytest", "-q", "tests/a11y")
 
 
 @nox.session(name="security", python=PYTHON_VERSION)

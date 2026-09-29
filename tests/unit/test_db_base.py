@@ -18,7 +18,7 @@ from decimal import Decimal
 from uuid import UUID, uuid4
 
 import pytest
-from sqlalchemy import String, create_engine, select
+from sqlalchemy import MetaData, String, create_engine, select
 from sqlalchemy.dialects import postgresql, sqlite
 from sqlalchemy.orm import Mapped, Session, mapped_column
 
@@ -38,6 +38,7 @@ class _SampleRecord(Base, StandardColumns):
     together, exactly as a real model (`T-007` onward) will."""
 
     __tablename__ = "_test_db_base_sample_record"
+    metadata = MetaData(naming_convention=Base.metadata.naming_convention)
 
     label: Mapped[str] = mapped_column(String(50))
     amount: Mapped[Decimal] = mapped_column(MoneyAmount)
@@ -54,7 +55,7 @@ def _round_trip(type_, dialect, value):
 
 def _sqlite_engine():
     engine = create_engine("sqlite:///:memory:")
-    Base.metadata.create_all(engine, tables=[_SampleRecord.__table__])
+    _SampleRecord.metadata.create_all(engine)
     return engine
 
 

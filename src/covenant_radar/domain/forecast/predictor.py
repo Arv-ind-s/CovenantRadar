@@ -12,6 +12,7 @@ import json
 from collections.abc import Mapping, Sequence
 from dataclasses import dataclass
 from decimal import Decimal
+from types import MappingProxyType
 from typing import Protocol
 
 
@@ -42,7 +43,7 @@ class FeatureSnapshot:
             if not isinstance(value, Decimal) or not value.is_finite():
                 raise ValueError(f"Feature {name!r} must be a finite Decimal.")
             clean[name] = value
-        object.__setattr__(self, "values", clean)
+        object.__setattr__(self, "values", MappingProxyType(clean))
 
     @property
     def content_hash(self) -> str:
@@ -64,6 +65,7 @@ class Prediction:
     def __post_init__(self) -> None:
         valid_probability = (
             isinstance(self.probability, Decimal)
+            and self.probability.is_finite()
             and Decimal("0") <= self.probability <= Decimal("1")
         )
         if not valid_probability:

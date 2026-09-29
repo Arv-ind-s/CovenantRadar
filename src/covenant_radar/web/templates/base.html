@@ -30,6 +30,9 @@
     {# After modern.css: the financials tab's tables and charts layer over the
        shared ledger and trajectory rules rather than replacing them. #}
     <link rel="stylesheet" href="/static/css/financials.css">
+    {# Last of the signed-in sheets: the borrower case file's own layer,
+       scoped under `.case-file`, over everything above. #}
+    <link rel="stylesheet" href="/static/css/case-file.css">
     {# The unauthenticated shell only. Keeping it out of the signed-in pages
        is what lets it restyle the shared field/button components without
        reaching the application. #}
@@ -56,6 +59,7 @@
             <section class="shell-nav__group" aria-labelledby="nav-monitor">
               <h2 class="shell-nav__heading" id="nav-monitor">{{ tr("navigation.group_monitor") }}</h2>
               {{ nav_link("/", tr("navigation.queue"), "queue", current_path == "/") }}
+              {% if principal.has("VIEW_QUEUE") %}{{ nav_link("/intelligence", tr("navigation.intelligence"), "radar", current_path.startswith("/intelligence")) }}{% endif %}
               {% if principal.has("VIEW_CASE") %}{{ nav_link("/cases", tr("navigation.cases"), "case", current_path.startswith("/cases")) }}{% endif %}
               {% set notification_label = tr("navigation.notifications") %}
               {% set notification_aria_label = tr("navigation.notifications_unread", {"count": notification_unread_count(request, principal) if notification_unread_count is defined else 0}) %}

@@ -32,11 +32,14 @@ from covenant_radar.domain.triage.views import QueueFilters
 from covenant_radar.i18n.formatting import format_indian_currency
 from covenant_radar.security.permissions import Permission
 from covenant_radar.security.rbac import Principal
+from covenant_radar.services.market_intelligence import MarketIntelligenceService
+from covenant_radar.services.monitoring_pulse import monitoring_status, recent_changes
 from covenant_radar.web.preferences import theme_for_request
 from covenant_radar.web.view_models.queue import (
     assignable_users,
     build_queue_view,
     case_state_options,
+    humanise_what_changed,
 )
 
 _LOGGER = structlog.get_logger(__name__)
@@ -47,18 +50,18 @@ _READ_DEP = Depends(_READ)
 _LABELS = {
     "title": "Portfolio queue",
     "heading": "Portfolio queue",
-    "ranked_by": "Ranked by urgency",
+    "ranked_by": "Most urgent first",
     "column_rank": "#",
     "column_borrower": "Borrower",
     "column_exposure": "Exposure",
-    "column_worst_covenant": "Worst covenant",
-    "column_dated_risk": "Dated risk",
-    "column_trajectory": "Trajectory",
-    "column_band": "Band",
-    "column_sma_band": "SMA band",
+    "column_worst_covenant": "Covenant most at risk",
+    "column_dated_risk": "Outlook",
+    "column_trajectory": "Trend",
+    "column_band": "Risk band",
+    "column_sma_band": "Repayment status",
     "column_assignee": "Assignee",
-    "column_case_state": "Case state",
-    "column_what_changed": "What changed",
+    "column_case_state": "Case status",
+    "column_what_changed": "Since the last review",
     "by": "by",
     "loading": "Loading portfolio queue",
     "error_title": "Unable to load the portfolio queue",
@@ -67,22 +70,22 @@ _LABELS = {
     "degraded_capability": "Forecast display",
     "degraded_message": "Ranked rows and locally stored covenant facts remain available.",
     "snapshot_title": "Portfolio snapshot",
-    "summary_all": "All",
+    "summary_all": "All borrowers",
     "summary_act": "Act now",
     "summary_amber": "Amber",
     "summary_watch": "Watch",
-    "summary_changed": "Changed today",
-    "summary_exposure": "Exposure in view",
-    "summary_no_exposure": "Unavailable",
-    "summary_as_of": "Latest completed run",
-    "signal_family": "Signal family",
+    "summary_changed": "Band changes since the last review",
+    "summary_exposure": "Total exposure in this view",
+    "summary_no_exposure": "Not available",
+    "summary_as_of": "From the review of",
+    "signal_family": "Warning signal",
     # Freshness — one line, one fact.
-    "freshness_checked": "checked",
-    "freshness_check_now": "Check now",
-    "freshness_newer": "A newer run has finished.",
-    "freshness_review": "Review latest",
+    "freshness_checked": "updated",
+    "freshness_check_now": "Refresh",
+    "freshness_newer": "A newer review is ready.",
+    "freshness_review": "Show it",
     # Filters.
-    "filters_legend": "Narrow the queue",
+    "filters_legend": "Filter borrowers",
     "filters_apply": "Apply filters",
     "filters_active": "Active filters",
     "filters_clear": "Clear all",
@@ -96,25 +99,25 @@ _LABELS = {
     # Row detail and actions.
     "detail_show": "Show detail for",
     "detail_hide": "Hide detail for",
-    "detail_horizons": "Escalation probability by horizon",
-    "detail_covenant": "Worst covenant",
+    "detail_horizons": "Risk score over the next 30, 60 and 90 days",
+    "detail_covenant": "Covenant most at risk",
     "detail_case": "Case",
-    "detail_changed": "What changed",
+    "detail_changed": "Since the last review",
     "open_case": "Open case",
-    "open_borrower": "Open borrower",
+    "open_borrower": "Open case file",
     "ai_explanation": "AI explanation",
     "no_case": "No case opened",
-    "why": "Why this score",
+    "why": "See why",
     # Selection and bulk actions.
     "selection_label": "selected",
     "selection_clear": "Clear selection",
     "selection_assign": "Assign to",
     "selection_assign_submit": "Assign",
-    "selection_state": "Set state",
-    "selection_state_submit": "Set state",
+    "selection_state": "Set case status",
+    "selection_state_submit": "Update",
     "selection_watchlist": "Add to watchlist",
     "selection_export": "Export CSV",
-    "selection_none": "Select rows to assign, change state or export.",
+    "selection_none": "Tick borrowers to assign them, update their case status or export them.",
     # Glossary.
     "glossary_title": "How to read this queue",
 }
@@ -134,6 +137,14 @@ _CASE_STATE_LABELS: Final[Mapping[str, str]] = {
     "closed": "Closed",
     "none": "No case opened",
 }
+# RBI Special Mention Account classes, by days overdue (`domain/covenants/sma.py`).
+_SMA_LABELS: Final[Mapping[str, str]] = {
+    "none": "No overdues",
+    "SMA-0": "SMA-0, 1 to 30 days overdue",
+    "SMA-1": "SMA-1, 31 to 60 days overdue",
+    "SMA-2": "SMA-2, 61 to 90 days overdue",
+    "beyond": "Over 90 days overdue",
+}
 _SIGNAL_FAMILY_LABELS: Final[Mapping[str, str]] = {
     "account_activity": "Account activity",
     "payment": "Payment behaviour",
@@ -141,13 +152,13 @@ _SIGNAL_FAMILY_LABELS: Final[Mapping[str, str]] = {
     "treasury": "Treasury flows",
     "concentration": "Concentration exposure",
     "industry": "Industry conditions",
-    "news": "News deterioration",
+    "news": "Negative news",
 }
 _FILTER_FIELDS: Final[tuple[tuple[str, str, Mapping[str, str]], ...]] = (
-    ("band", "Band", _BAND_LABELS),
-    ("sma_band", "SMA band", {}),
-    ("case_state", "Case state", _CASE_STATE_LABELS),
-    ("signal_family", "Signal family", _SIGNAL_FAMILY_LABELS),
+    ("band", "Risk band", _BAND_LABELS),
+    ("sma_band", "Repayment status", _SMA_LABELS),
+    ("case_state", "Case status", _CASE_STATE_LABELS),
+    ("signal_family", "Warning signal", _SIGNAL_FAMILY_LABELS),
     ("portfolio", "Portfolio", {}),
     ("industry", "Industry", {}),
     ("assignee", "Assignee", {}),
@@ -159,6 +170,7 @@ def create_queue_router(
     *,
     template_directory: Path | str = _TEMPLATE_ROOT,
     cursor_secret: bytes | str | None = None,
+    intelligence: MarketIntelligenceService | None = None,
 ) -> APIRouter:
     """Build the protected portfolio queue route over one database session."""
     if not is_database_session(session):
@@ -215,7 +227,13 @@ def create_queue_router(
 
         # Query the triage repository with filters
         page = triage_repo.query(scope, filters=filters, cursor=cursor)
-        view = build_queue_view(page, session, scope=scope)
+        market_snapshot = intelligence.snapshot() if intelligence is not None else None
+        view = build_queue_view(
+            page,
+            session,
+            scope=scope,
+            market_snapshot=market_snapshot,
+        )
 
         # Prepare filter state for template
         filter_state = {
@@ -275,6 +293,20 @@ def create_queue_router(
             case_states=case_state_options(),
             can_update_case=principal.has(Permission.UPDATE_CASE),
             can_export=principal.has(Permission.EXPORT_EVIDENCE),
+            monitoring=monitoring_status(session, source_health=market_snapshot),
+            recent_changes=tuple(
+                {
+                    **change,
+                    "change": (
+                        humanise_what_changed(str(change["change"]))
+                        if isinstance(change.get("change"), str)
+                        else None
+                    ),
+                }
+                for change in recent_changes(session, scope)
+            ),
+            demo_enabled=request.app.state.settings.web.demo_walkthrough_enabled,
+            can_run_demo=True,
         )
 
     return router
@@ -335,8 +367,7 @@ def _band_shares(facet: object) -> dict[str, int]:
     if total <= 0:
         return {"act": 0, "amber": 0, "watch": 0}
     return {
-        band: int(getattr(facet, band, 0) or 0) * 100 // total
-        for band in ("act", "amber", "watch")
+        band: int(getattr(facet, band, 0) or 0) * 100 // total for band in ("act", "amber", "watch")
     }
 
 
@@ -448,6 +479,7 @@ def _render(
         "theme": theme,
         "text_direction": "ltr",
         "labels": _LABELS,
+        "sma_labels": _SMA_LABELS,
         "csrf_token": getattr(request.state, "csrf_token", ""),
         **context,
     }

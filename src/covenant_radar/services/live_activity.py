@@ -13,7 +13,12 @@ from typing import Final
 from sqlalchemy import select
 from sqlalchemy.orm import Session
 
+from covenant_radar.db.models.borrower import Borrower
 from covenant_radar.db.models.operations import JobRun
+from covenant_radar.db.models.portfolio import Portfolio
+from covenant_radar.db.models.signal import SignalEvent
+from covenant_radar.db.scoping import resolve_scope
+from covenant_radar.db.session import is_database_session
 from covenant_radar.notifications.inapp import InAppNotificationService
 from covenant_radar.security.permissions import Permission
 from covenant_radar.security.rbac import Principal
@@ -70,6 +75,8 @@ class LiveActivityService:
         since = self._decode_cursor(cursor, principal)
         items = list(self._notification_items(principal, since))
         items.extend(self._job_items(principal, since))
+        if is_database_session(self.session):
+            items.extend(self._signal_items(principal, since))
         items.sort(key=lambda item: (item.timestamp, item.id), reverse=True)
         items = items[:_MAX_ITEMS]
         newest = max(
@@ -119,6 +126,43 @@ class LiveActivityService:
             )
         return tuple(rows)
 
+    def _signal_items(
+        self, principal: Principal, since: datetime | None
+    ) -> tuple[LiveActivityItem, ...]:
+        scope = resolve_scope(principal, self.session)
+        if scope.is_empty:
+            return ()
+        statement = (
+            select(SignalEvent, Borrower)
+            .join(Borrower, Borrower.id == SignalEvent.borrower_id)
+            .join(Portfolio, Portfolio.id == Borrower.portfolio_id)
+            .where(scope.predicate(Portfolio.path))
+            .order_by(SignalEvent.ingested_at.desc())
+            .limit(_MAX_ITEMS)
+        )
+        rows: list[LiveActivityItem] = []
+        for event, borrower in self.session.execute(statement):
+            if since is not None and event.ingested_at <= since:
+                continue
+            synthetic = bool(
+                event.payload.get("synthetic_walkthrough") or event.payload.get("demo_version")
+            )
+            rows.append(
+                LiveActivityItem(
+                    id=f"signal:{event.id}",
+                    timestamp=event.ingested_at.astimezone(UTC).isoformat(),
+                    severity="attention" if event.family == "payment" else "info",
+                    category="signal",
+                    title=f"{borrower.legal_name}: {event.family.replace('_', ' ')} received",
+                    body=("Synthetic signal received; awaiting scoring." if synthetic
+                          else "New source observation received; review the stored evidence."),
+                    grouping_key=f"signal:{borrower.id}:{event.family}",
+                    deep_link=f"/borrowers/{borrower.reference}#case-signals",
+                    affected_regions=(f"queue-row-{borrower.id}", "queue-summary"),
+                )
+            )
+        return tuple(rows)
+
     def _job_items(
         self, principal: Principal, since: datetime | None
     ) -> tuple[LiveActivityItem, ...]:
@@ -137,7 +181,8 @@ class LiveActivityService:
             failed = run.state.lower() in {"failed", "dead_lettered"}
             rows.append(
                 LiveActivityItem(
-                    id=f"job:{run.id}", timestamp=run.finished_at.astimezone(UTC).isoformat(),
+                    id=f"job:{run.id}",
+                    timestamp=run.finished_at.astimezone(UTC).isoformat(),
                     severity="critical" if failed else "info",
                     category="operations",
                     title=f"{run.job_name} {'failed' if failed else 'completed'}",
@@ -169,7 +214,12 @@ class LiveActivityService:
             return None
         try:
             raw = base64.urlsafe_b64decode(value + "=" * (-len(value) % 4))
-            payload, signature = raw.rsplit(b".", 1)
+            # A binary SHA-256 signature can itself contain the separator.
+            # Locate it by the fixed digest length, never by splitting bytes.
+            digest_size = hashlib.sha256().digest_size
+            if len(raw) <= digest_size or raw[-digest_size - 1 : -digest_size] != b".":
+                return None
+            payload, signature = raw[: -digest_size - 1], raw[-digest_size:]
             expected = hmac.new(self.cursor_secret, payload, hashlib.sha256).digest()
             if not hmac.compare_digest(signature, expected):
                 return None

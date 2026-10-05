@@ -144,3 +144,18 @@ def test_dominant_driver_named_only_when_dominant() -> None:
     assert "cash flow pressure" in result[current_dominant.borrower_id].summary
     assert result[current_balanced.borrower_id].dominant_driver is None
     assert "cash flow pressure" not in result[current_balanced.borrower_id].summary
+
+
+def test_queue_wording_names_a_signal_driver_in_plain_words() -> None:
+    from covenant_radar.web.view_models.queue import humanise_what_changed
+
+    text = humanise_what_changed(
+        "band worsened from watch to amber; dominant driver: "
+        "evidence:01a0fbf7-54f9-7477-84f5-6ee88f08a45e (0.9999)"
+    )
+
+    assert text == (
+        "Risk band worsened from Watch to Amber. "
+        "Biggest factor: a sustained early-warning signal (100%)."
+    )
+    assert "01a0fbf7" not in text

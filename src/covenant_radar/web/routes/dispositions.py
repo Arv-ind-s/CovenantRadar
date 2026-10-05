@@ -103,8 +103,8 @@ def _render_form(
         "subject.subject_id, csrf_token=csrf_token, surface=surface, "
         "reason_codes=reason_codes, history=history) }}"
     )
-    locale = request.cookies.get("covenant_radar_locale", "en").lower()
-    if locale not in {"en", "hi"}:
+    locale = "en".lower()
+    if locale not in {"en"}:
         locale = "en"
     rendered = template.render(
         request=request,

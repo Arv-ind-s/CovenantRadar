@@ -155,7 +155,7 @@ def _render(
             can_propose=principal.has(Permission.PROPOSE_THRESHOLDS),
             can_approve=principal.has(Permission.APPROVE_THRESHOLDS),
             error=error,
-            locale=request.cookies.get("covenant_radar_locale", "en"),
+            locale="en",
             theme=theme_for_request(request),
             text_direction="ltr",
             csrf_token=getattr(request.state, "csrf_token", ""),

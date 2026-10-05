@@ -5,7 +5,7 @@
 from __future__ import annotations
 
 from collections.abc import Sequence
-from datetime import date
+from datetime import date, datetime
 from typing import Final, cast
 from uuid import UUID
 
@@ -22,6 +22,7 @@ from covenant_radar.db.scoping import Scope, ownership_path_for
 OPEN_CERTIFICATE_STATES: Final[frozenset[str]] = frozenset(
     {"requested", "received", "under_review", "overdue"}
 )
+SETTLED_CERTIFICATE_STATES: Final[frozenset[str]] = frozenset({"accepted", "rejected"})
 
 
 class CertificateRequestRepository(RepositoryBase[CertificateRequest]):
@@ -62,6 +63,18 @@ class CertificateRequestRepository(RepositoryBase[CertificateRequest]):
         """Return the one in-scope request anchored on `covenant_schedule_id`."""
         return self.find(scope=scope, covenant_schedule_id=covenant_schedule_id)
 
+    def settled_since(self, since: datetime, *, scope: Scope) -> Sequence[CertificateRequest]:
+        """Return every in-scope request accepted or rejected (cancellation
+        included) at or after `since`, most recently settled first."""
+        statement: Select[tuple[CertificateRequest]] = cast(
+            Select[tuple[CertificateRequest]], self._scoped_select(scope)
+        )
+        statement = statement.where(
+            CertificateRequest.state.in_(SETTLED_CERTIFICATE_STATES),
+            CertificateRequest.updated_at >= since,
+        ).order_by(CertificateRequest.updated_at.desc(), CertificateRequest.id)
+        return tuple(self.session.execute(statement).scalars().all())
+
     def due_before(self, cutoff: date, *, scope: Scope) -> Sequence[CertificateRequest]:
         """Return every in-scope, still-open request due strictly before
         `cutoff` — the candidate set an overdue sweep (`T-039`) reads."""
@@ -75,4 +88,8 @@ class CertificateRequestRepository(RepositoryBase[CertificateRequest]):
         return tuple(self.session.execute(statement).scalars().all())
 
 
-__all__ = ["OPEN_CERTIFICATE_STATES", "CertificateRequestRepository"]
+__all__ = [
+    "OPEN_CERTIFICATE_STATES",
+    "SETTLED_CERTIFICATE_STATES",
+    "CertificateRequestRepository",
+]

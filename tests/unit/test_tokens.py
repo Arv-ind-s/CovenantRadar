@@ -85,7 +85,7 @@ def test_no_design_literal_outside_tokens(tmp_path: Path) -> None:
     assert all("design literal" in item.describe() for item in violation)
 
 
-def test_rupee_and_devanagari_covered() -> None:
+def test_rupee_covered() -> None:
     coverage = checker.check_font_coverage(FONT_ROOT)
 
     assert coverage

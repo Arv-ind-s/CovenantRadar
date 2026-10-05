@@ -10,9 +10,10 @@ with a stored record behind every number on screen.
 - **Domain:** Commercial banking · credit risk · Indian lending conventions
 - **Shape:** A server-rendered web workspace, a REST API, a nightly batch
   pipeline and a command-line operations tool — all in one Python application
-- **Status:** Version 0.1.0. Runs against a synthetic 24-borrower demo portfolio,
-  with a live public-data workspace for official news and economic context.
-  The scoring workflow also runs offline.
+- **Status:** Version 0.1.0. The demo book is 24 NSE-listed Indian companies,
+  tested on the quarterly results they filed with the exchange, with a live
+  public-data workspace for official news and economic context. The scoring
+  workflow also runs offline.
 
 ---
 
@@ -88,7 +89,16 @@ normalized statement and compares it to the threshold in force **on that
 date** — honouring approved exceptions (a threshold changed for a range of
 periods), waivers (effective only after approval, for a date range), and cure
 periods (a failing test that a later passing retest inside the window
-resolves).
+resolves; a breach that continues keeps the window its first breach opened,
+and becomes a plain breach once that window has passed).
+
+A statement covenant is tested **once per statement period**, under that
+period's label, and again only when a retest is queued (a restatement, a
+waiver, an exception). Covenants that read daily facility conduct
+(utilisation, drawing-power headroom) are tested daily. When the next
+statement is overdue — a reporting period plus the filing grace
+(`forecast.statement_grace_days`, 60 days) after the last period end — the
+covenant is marked **stale** once.
 
 The library ships **24 covenant definitions**, each with its own formula,
 required statement lines, unit and plausible band:
@@ -126,35 +136,58 @@ two. Items are scored on:
 - **Materiality (T4)** — would this actually erode covenant headroom? Each
   affected covenant is evaluated separately; the largest projected 90-day
   headroom erosion becomes the item's score. Improvement scores zero.
-- **Decay** — older observations contribute less pressure, but *remain
-  visible in the ledger*. Weighting and retention are deliberately different
-  things.
+- **Decay** — older observations contribute less pressure (T3 `decay_rate`,
+  0.95 a day from the last adverse observation), but *remain visible in the
+  ledger*. Weighting and retention are deliberately different things.
+  Persistence is measured inside the current window, and a healthy
+  observation after the last adverse one retires the warning.
 - **Supersession** — when later evidence contradicts an earlier reading, a
   new item is written and the old one is marked superseded. Nothing is
   deleted or edited.
 
 **The forecast path.** A least-squares trend is fitted over the usable
-observations. Day zero is the latest real value; the fitted per-day drift is
-one term; the directional pressure from sustained evidence is the other. That
-gives a **daily projected value for 90 days**, stored as a path — not drawn on
-the fly in the browser.
+observations, each dated at the period end it describes. Day zero is the
+latest real value; the fitted per-day drift is one term; the directional
+pressure from sustained evidence is the other. Evidence materiality is
+dimensionless, so it is converted into the covenant's own units: sustained
+evidence at full materiality moves a covenant by `forecast.pressure_rate`
+(25%) of its threshold over one reporting period. That gives a **daily
+projected value for 90 days**, stored as a path — not drawn on the fly in the
+browser.
 
 **The crossing and the probability.** The path is walked for the first
 inclusive crossing of the contractual boundary, and that day offset is turned
 into a calendar date. Separately, three saturated signals — **distance** to
 the boundary, **velocity** of change, **pressure** from sustained evidence —
 are combined with configured weights (0.50 / 0.30 / 0.20, capped at 0.99) into
-a breach probability.
+a breach probability. The inputs are dimensionless, so a 3.0x leverage limit
+and an 85% utilisation cap are judged alike, and each is credited only for
+its own effect: distance is today's cushion as a fraction of the threshold
+(stretched by `forecast.distance_scale`, 2, so a flat covenant is amber on
+distance alone only inside about 12% headroom), velocity is the share of that
+cushion the financial trend uses up over the horizon, and pressure is the share
+sustained warning evidence uses up. "Today" is the trend carried forward from
+the last statement's period end to the scoring date, so the weeks since the
+last filing are not a blind spot. A projected crossing inside the horizon fixes
+the probability at the cap; a covenant already in breach on its latest test
+stays at the cap even when its statement is overdue. The
+intervention simulator reads the same inputs, so its do-nothing baseline is
+the stored forecast.
 
 **Confidence is separate from probability, and can suppress it.** A confidence
-product is computed from data completeness and related factors. Below the
-floor (T2), the number is *not shown at all* — the screen says the view is
+product is computed from data completeness and related factors, including
+staleness — the days the data is overdue past its expected reporting lag, so a
+current quarterly statement is not penalised for being a quarter old. Below
+the floor (T2), the number is *not shown at all* — the screen says the view is
 unsupported rather than displaying a figure the data cannot carry.
 
 **Driver attribution.** Every contribution is stored signed. Drivers at or
 above the T5 share are listed individually; smaller positive ones are folded
 into "other"; **negative (risk-reducing) drivers are always kept separate**,
-because hiding an improving factor would misrepresent the explanation.
+because hiding an improving factor would misrepresent the explanation. When a
+projected crossing fixes the probability at the cap, the lift above the raw
+score is credited to whatever moved the path across the limit — the trend and
+each sustained evidence item, in proportion to how far each moved it.
 
 **A shadow ML challenger.** A local scikit-learn model (calibrated logistic
 regression and gradient boosting, one per horizon) runs alongside the
@@ -171,7 +204,9 @@ Stage 6 reads the persisted forecast facts. It never calls a model, never
 recomputes a forecast, and **never silently drops a borrower**.
 
 Urgency combines probability, exposure and confidence. Borrowers are banded
-against T1 (`Act` ≥ 0.70, `Amber` ≥ 0.40, otherwise `Watch`). A forecast below
+against T1 (`Act` ≥ 0.70, `Amber` ≥ 0.40, otherwise `Watch`) and ordered band
+first — every act borrower before any amber one — then by urgency within the
+band, so a large amber exposure never sits above a borrower already in act. A forecast below
 the T2 confidence floor is kept as a **suppressed watch entry** — visible, but
 its probability is not used to manufacture urgency. A borrower with no usable
 forecast still appears, with an explicit state and reason, after the rankable
@@ -346,9 +381,9 @@ classification is a human regulated act.
 
 Recorded model responses ("cassettes") are a real provider adapter, not a test
 helper — same interface as a live provider, selected by configuration. They
-**never fall through to the network**. Combined with the deterministic
-synthetic portfolio, the full scoring, alerting and demo workflow runs
-air-gapped on a laptop.
+**never fall through to the network**. Combined with the committed snapshot of
+the demo companies' filed results, the full scoring, alerting and demo workflow
+runs air-gapped on a laptop.
 
 The market-intelligence workspace uses public endpoints when enabled. Set
 `COVENANT_RADAR_INTELLIGENCE__ENABLED=false` (or launch the Python demo with
@@ -587,7 +622,7 @@ beside the range input).
 | Documents out | WeasyPrint (PDF), python-docx (DOCX) | 63 / 1.1 |
 | Observability | structlog, prometheus-client, opentelemetry-sdk | — |
 | Resilience | tenacity | 9 |
-| Model providers | Anthropic, Azure OpenAI, TCS GenAI Lab, recorded (offline) | — |
+| Model providers | Google Gemini, recorded (offline) | — |
 
 **Quality tooling:** ruff, mypy (strict on `domain` and `services`),
 import-linter, pytest, hypothesis, playwright, bandit, pip-audit,
@@ -598,23 +633,64 @@ detect-secrets, mutmut, nox, pre-commit, cyclonedx (SBOM), and a hash-pinned
 
 ## 8. Data and the demo portfolio
 
-No live core-banking integration is required. The product ships its own
-deterministic synthetic Indian commercial-lending book, generated from a seed
-via SHA-256 — never from process randomness or the wall clock — so the same
-seed reproduces the same portfolio byte for byte.
+No live core-banking integration is required.
 
-**Reference portfolio (current demo default):** 24 borrowers, 28 facilities,
-8 financial quarters, borrower groups, contacts, and behavioural signals across
-all seven families. Larger portfolios can be generated with an explicit
-`ReferencePortfolioConfig`; the current default is sized for a laptop presentation.
-The demo launcher uses one day of base signals before adding the curated history.
+**The demo book is real companies on their real numbers.** The 24 demo
+borrowers are companies listed on the National Stock Exchange, one per demo
+industry, and every statement line the covenant engine tests comes from the
+quarterly results each company filed with NSE (XBRL): the profit and loss for
+the eight quarters from September 2024 to June 2026, and the balance sheets
+filed with each half-year and full-year result. The snapshot lives in
+[`src/covenant_radar/demo/data/indian_companies.json`](src/covenant_radar/demo/data/indian_companies.json),
+so the demo never fetches it at launch; `python scripts/fetch_indian_financials.py`
+refreshes it after each results season. Every seeded statement line keeps the
+link to the filing it came from.
 
-**Demo overlay:** the demo borrowers get three real covenants each — a
-leverage ratio at 3.00x (max), an interest-coverage ratio at 1.50x (min) and a
-current ratio at 1.20x (min) — built through the *real* registry and engine
-services, with real statement provenance, threshold snapshots and forecast
-history. The seed is safe to re-run: existing imports, borrowers, periods,
-covenant versions and tests are detected before insert.
+| Line | From the filing |
+|---|---|
+| Revenue, finance cost, depreciation | As filed for the quarter |
+| EBIT | Revenue + other income − total expenses + finance costs (before exceptional items and tax) |
+| Total debt | Current + non-current borrowings (lease liabilities are filed separately and excluded) |
+| Tangible net worth | Equity attributable to owners − goodwill − other intangible assets |
+| Current assets / liabilities | As filed |
+
+Listed companies publish a balance sheet only half-yearly, so a June or
+December quarter is tested against the balance sheet filed three months
+earlier; its provenance says so.
+
+**What is illustrative.** A lender's private data cannot be real in a public
+demo, so it is labelled illustrative and kept neutral:
+
+- **Covenants:** one standard package for every borrower — leverage (total
+  debt / tangible net worth) at most 3.00x, interest cover at least 1.50x and
+  current ratio at least 1.20x — built through the *real* registry and engine.
+  The roster only includes companies that met all three on their September
+  2024 results, as a lender requires at sanction, so a breach on screen is a
+  company's published numbers deteriorating since then. Nothing is tuned per
+  company.
+- **Facilities:** sized at 5% of each company's latest reported borrowings
+  (minimum ₹25 crore), as one lender in a consortium.
+- **Repayment conduct and behavioural signals:** every company has clean
+  repayment conduct. Only the five lender-side signal families (account
+  activity, payment, utilisation, treasury, concentration) are seeded, with
+  unremarkable values marked synthetic; no industry or news reading is invented
+  for a real company — real news and market data are on **Market
+  intelligence**. The demo never attributes an overdue, an SMA status or
+  adverse conduct to a real company. The walkthrough's **Simulate a signal**
+  scenarios are the only way one appears, and they are labelled synthetic.
+- **Contacts:** the company secretarial desk at a non-deliverable `.invalid`
+  address; no individual is named and no notification can reach a real inbox.
+
+The queue in the demo launcher states this in its header. The seed is safe to
+re-run: existing periods, covenant versions and tests are detected before
+insert, and identities and facility limits are only rewritten when they differ.
+
+**Reference portfolio.** Underneath the demo book, the product still ships its
+deterministic synthetic Indian commercial-lending generator (seeded via SHA-256,
+never process randomness or the wall clock). It provides the facility and
+master-data skeleton the demo seed renames, and it is what the ML challenger is
+trained on and the G1/G3 acceptance checks are scored against. Larger synthetic
+portfolios can be generated with an explicit `ReferencePortfolioConfig`.
 
 **External signals** come from a documented synthetic feed adapter, so feed
 polling, entity resolution and the review queue are all exercised before any
@@ -734,8 +810,9 @@ running during the presentation.
 
 Open **Market intelligence** in the sidebar to fetch real public data. The first
 visit fills within about 10–20 seconds, and no API key is needed. Market data is
-live, but borrower accounts remain synthetic; import actual statements through the
-existing financial-statement workflow to evaluate your own borrower figures.
+live, and borrower financials are the companies' own filed results; import
+statements through the existing financial-statement workflow to evaluate your own
+borrowers.
 Use `--offline-data` to disable public requests.
 
 Gen AI uses offline recordings. Only exact matching prompts can be replayed;
@@ -929,3 +1006,14 @@ number should not be presented as more than it is:
 ## License
 
 See [`LICENSE`](LICENSE).
+
+
+### Gemini configuration
+
+Set `GEMINI_API_KEY` in your environment or local `.env` to enable Gemini.
+The default model is `gemini-3.8-flash`; override it with
+`COVENANT_RADAR_AI__MODEL`. Requests go directly to Google’s
+[Gemini API](https://ai.google.dev/gemini-api/docs/openai), without a proxy.
+To explicitly select it, set `COVENANT_RADAR_AI__PROVIDER=gemini`.
+Without a key, the default configuration leaves AI disabled; recorded
+responses remain available for offline demos and tests.

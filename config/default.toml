@@ -48,3 +48,27 @@ ml_enabled = false
 # queue, the band and the case are built from. Promoting it to "champion" also
 # requires an approved model_registration row for forecast.ml_challenger.
 ml_mode = "shadow"
+# What-changed (spec R-14.d): the smallest probability movement the queue
+# reports, and the share above which a driver is named as dominant.
+what_changed_reporting_threshold = 0.05
+what_changed_dominant_driver_share = 0.50
+# Filing time allowed after a period's successor ends before its statement is
+# overdue (the covenant is marked stale and forecast staleness starts counting).
+statement_grace_days = 60
+# How far sustained warning evidence at full materiality moves a covenant over
+# one reporting period, as a fraction of its threshold.
+pressure_rate = 0.25
+# Stretch on the cushion before the probability mapping; at 2 a flat covenant is
+# amber on distance alone only inside ~12% headroom (docs/calibration).
+distance_scale = 2.0
+
+[certificates]
+# Compliance certificate cycle (spec R-09), run inside the nightly test step:
+# certificate-basis covenants get their calendar due dates, a request is raised
+# lead_time_days ahead of each, and one still unreceived grace_days after its
+# due date is marked overdue and recorded as a certificate_overdue evidence item.
+# lead_time_days must be shorter than every certificate covenant's testing
+# interval (30 days for a monthly covenant).
+enabled = true
+lead_time_days = 21
+grace_days = 15

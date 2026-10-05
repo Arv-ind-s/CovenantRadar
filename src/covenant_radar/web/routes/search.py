@@ -171,8 +171,8 @@ def _render(
         "_components/search_results.html" if is_fragment else "screens/search/index.html"
     )
     template = environment.get_template(template_name)
-    locale = request.cookies.get("covenant_radar_locale", "en").lower()
-    if locale not in {"en", "hi"}:
+    locale = "en".lower()
+    if locale not in {"en"}:
         locale = "en"
     values = {
         "request": request,

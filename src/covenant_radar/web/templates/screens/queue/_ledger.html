@@ -121,7 +121,8 @@
                 {% set days_out = (row.crossing_date - view.as_of_date).days if row.crossing_date and view.as_of_date else none %}
                 {% set note_words = row.crossing_note.split() if row.crossing_note else [] %}
                 <span class="queue-row__probability">
-                  {%- if row.crossing_date and days_out is not none and days_out <= 0 -%}At or past its limit now
+                  {%- if row.crossing_date and days_out is not none and days_out <= 0 and row.observed_breach -%}At or past its limit now
+                  {%- elif row.crossing_date and days_out is not none and days_out <= 0 -%}Projected past its limit already
                   {%- elif row.crossing_date -%}Could cross limit by {{ row.crossing_date|ist_date }}
                   {%- elif note_words|length > 1 and note_words[-1] == "days" and note_words[-2].isdigit() -%}No limit crossing within {{ note_words[-2] }} days
                   {%- elif row.crossing_note -%}{{ row.crossing_note }}
@@ -140,7 +141,7 @@
             <tr class="ledger-detail" id="{{ row.detail_id }}" hidden>
               <td class="ledger-detail__cell" colspan="8">
                 <div class="ledger-detail__grid">
-                  {% if row.market_impact is defined and row.market_impact and row.market_impact.status not in ('no_data', 'no_market') %}
+                  {% if row.market_impact is defined and row.market_impact and row.market_impact.status not in ('no_data', 'awaiting', 'no_market') %}
                     {% set impact = row.market_impact %}
                     <section class="queue-market-impact queue-market-impact--{{ impact.priority }}" aria-label="Market pressure on {{ row.borrower_name }}">
                       <div class="queue-market-impact__heading"><h3 class="ledger-detail__title">Market pressure: {{ impact.label|lower }}</h3><a href="/intelligence#b-{{ row.borrower_reference|lower }}">Full market view →</a></div>
@@ -156,7 +157,7 @@
                         {% for story in impact.news[:2] %}<li><a href="{{ story.url }}" target="_blank" rel="noopener noreferrer">{{ story.title }} ↗</a><small>{{ story.publisher }} · {{ story.published_at[:10] }}</small></li>{% endfor %}
                       </ul>
                       {% endif %}
-                      <p class="queue-market-impact__boundary">Separate from this borrower's rank and risk score. Market figures are observed public data since {{ impact.position.period_end.strftime('%d %b %Y') }}; breakevens use assumed sector cost shares.</p>
+                      <p class="queue-market-impact__boundary">Separate from this borrower's rank and risk score. Market figures are observed public data measured against the quarter to {{ impact.position.period_end.strftime('%d %b %Y') }}; breakevens use assumed sector cost shares.</p>
                       {% if can_update_case and row.case_reference %}<a href="/intelligence/review/{{ row.borrower_reference|urlencode }}?case={{ row.case_reference|urlencode }}">Record market review in case {{ row.case_reference }} →</a>{% endif %}
                     </section>
                   {% endif %}

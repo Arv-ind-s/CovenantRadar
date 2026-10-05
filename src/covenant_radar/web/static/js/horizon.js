@@ -117,7 +117,7 @@
 
   // The server writes "29 Sep 2026"; current ICU data gives "Sept" for
   // en-IN, so the same date read two ways on one screen.  English uses the
-  // server's three-letter months; Hindi keeps the locale's own format.
+  // server's three-letter months.
   const MONTHS = ["Jan", "Feb", "Mar", "Apr", "May", "Jun", "Jul", "Aug", "Sep", "Oct", "Nov", "Dec"];
 
   const displayDate = (value) => {

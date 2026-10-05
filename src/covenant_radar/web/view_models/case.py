@@ -38,6 +38,7 @@ from covenant_radar.db.repositories.case import CaseRepository
 from covenant_radar.db.scoping import Scope, grant_reaches_path
 from covenant_radar.db.session import is_database_session
 from covenant_radar.domain.cases.lifecycle import CASE_STATES, permitted_transitions
+from covenant_radar.domain.remediation import RECORD_SOURCE
 
 IST = ZoneInfo("Asia/Kolkata")
 _PERCENT_QUANTUM = Decimal("0.1")
@@ -579,9 +580,12 @@ def _simulation_view(
     text: str,
     run_date: object | None,
 ) -> CaseSimulationView:
+    parameters = simulation.parameters if isinstance(simulation.parameters, dict) else {}
+    wording = parameters.get("wording") if parameters.get("source") == RECORD_SOURCE else None
     return CaseSimulationView(
         intervention_code=code,
-        intervention_text=text,
+        # A recorded remediation step carries the borrower's own sized wording.
+        intervention_text=wording if isinstance(wording, str) and wording else text,
         projected_cross_date=_format_date(simulation.projected_cross_date),
         probability=_format_percent(simulation.probability),
         delta_days=str(simulation.delta_days) if simulation.delta_days is not None else "—",

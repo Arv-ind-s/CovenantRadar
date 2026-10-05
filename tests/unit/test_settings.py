@@ -63,10 +63,10 @@ def test_invalid_value_names_key_file_and_line(tmp_path: Path) -> None:
 def test_missing_secret_refuses_start(tmp_path: Path) -> None:
     config_file = _write_config(
         tmp_path / "settings.toml",
-        '[ai]\nprovider = "azure_openai"\nendpoint = "https://model.example"\nmodel = "credit"\n',
+        '[ai]\nprovider = "gemini"\nendpoint = "https://model.example"\nmodel = "credit"\n',
     )
 
-    with pytest.raises(SettingsError, match="COVENANT_RADAR_AI_API_KEY"):
+    with pytest.raises(SettingsError, match="GEMINI_API_KEY"):
         load_settings(config_file, environ={})
 
 

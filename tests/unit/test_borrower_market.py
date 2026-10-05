@@ -146,3 +146,80 @@ def test_real_markets_put_a_thin_aviation_cushion_under_pressure(tmp_path):
     assert result.news and all(story["publisher"] for story in result.news)
     comfortable = assess(_position("C24", ebit=40.0), snapshot)
     assert comfortable.status == "easing"
+
+
+def _just_closed(industry="H51", **extra):
+    """A quarter to 30 Sep 2026, assessed before anything after it is published."""
+    period = {"fy_label": "FY27Q2", "period_start": date(2026, 7, 1)}
+    return _position(industry, **period, period_end=date(2026, 9, 30), **extra)
+
+
+def _published_to_quarter_end():
+    # Daily Brent ends inside the quarter; monthly series hold only its first month.
+    return _snapshot(
+        DCOILBRENTEU=[["2026-07-10", 90.0], ["2026-08-10", 100.0], ["2026-09-25", 110.0]],
+        PIORECRUSDM=[["2026-06-01", 95.0], ["2026-07-01", 100.0]],
+        PCOALAUUSDM=[["2026-06-01", 95.0], ["2026-07-01", 100.0]],
+        IRSTCI01INM156N=[["2026-06-01", 5.5], ["2026-07-01", 5.5]],
+    )
+
+
+def test_a_quarter_just_closed_is_sized_on_its_exit_prices():
+    result = assess(_just_closed(), _published_to_quarter_end())
+    assert result.status == "exceeds" and result.priority == "now"
+    lead = result.lead
+    assert lead.lens == "latest" and lead.qtd is None
+    assert lead.latest == pytest.approx(10)
+    assert "25 Sep 2026 prices" in result.headline
+    assert "No Dec 2026 quarter prices are published yet" in result.implication
+    assert "should benefit" not in result.implication
+
+
+def test_series_not_yet_published_past_the_quarter_await_rather_than_vanish():
+    snapshot = _published_to_quarter_end()
+    metals = assess(_just_closed("C24", ebit=40.0), snapshot)
+    assert metals.status == "awaiting" and metals.priority == "none"
+    assert all(channel.status == "no_data" for channel in metals.channels)
+    assert "Jul 2026" in metals.headline and "30 Sep 2026" in metals.headline
+    assert assess(_just_closed("G47", ebit=40.0), snapshot).status == "awaiting"
+    # A source that never answered is still reported as unavailable.
+    assert assess(_just_closed("C24", ebit=40.0), _snapshot()).status == "no_market"
+
+
+def test_a_partly_published_basket_is_sized_on_the_inputs_observed():
+    # Construction: iron ore (12%) awaits its next print; diesel (5%) has moved.
+    result = assess(_just_closed("F41", ebit=40.0, revenue=400.0), _published_to_quarter_end())
+    inputs = next(channel for channel in result.channels if channel.key == "inputs")
+    assert inputs.summary == "Brent crude"
+    assert inputs.latest == pytest.approx(10)
+    assert inputs.share == pytest.approx(0.05)
+    assert inputs.breakeven == pytest.approx(25 / (400 * 0.05) * 100)
+    assert inputs.usage == pytest.approx(10 / 125)
+    assert result.status == "watch"
+
+
+def test_flat_tracked_drivers_are_not_called_unmapped():
+    snapshot = _snapshot(
+        DEXINUS=[["2026-07-15", 90.0], ["2026-09-25", 90.1]],
+        IRSTCI01INM156N=[["2026-07-01", 5.5]],
+    )
+    result = assess(_just_closed("J62", ebit=30.0), snapshot)
+    assert result.status == "unexposed"
+    assert result.headline == (
+        "Tracked market moves are flat, and borrowing-rate data is not yet published "
+        "past the quarter."
+    )
+
+
+def test_inputs_that_cancel_out_are_flat_not_adverse():
+    # Construction: diesel +10% (5% share) against iron ore -4% (12% share).
+    snapshot = _snapshot(
+        DCOILBRENTEU=[["2026-05-01", 100.0], ["2026-07-15", 110.0]],
+        PIORECRUSDM=[["2026-05-01", 100.0], ["2026-07-01", 96.0]],
+        IRSTCI01INM156N=[["2026-05-01", 5.5], ["2026-07-01", 5.5]],
+    )
+    result = assess(_position("F41", ebit=40.0, revenue=400.0), snapshot)
+    inputs = next(channel for channel in result.channels if channel.key == "inputs")
+    assert abs(inputs.qtd) < 0.5
+    assert inputs.status == "flat" and result.status == "unexposed"
+    assert result.headline.startswith("Tracked market moves are flat")

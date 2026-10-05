@@ -1,0 +1,18 @@
+{% extends "base.html" %}
+{% import "_components/icon.html" as icons %}
+
+{% block head %}<link rel="stylesheet" href="/static/css/remediation.css">{% endblock %}
+{% block page_title %}{{ borrower_name }} — Remediation planner{% endblock %}
+{% block page_eyebrow %}Remediation planner · {{ borrower_reference }}{% endblock %}
+{% block h1 %}{{ borrower_name }}{% endblock %}
+{% block breadcrumb %}<a class="shell-breadcrumb__link" href="/borrowers">{{ tr("navigation.borrowers") }}</a>{{ icons.icon("chevron") }}<a class="shell-breadcrumb__link" href="/borrowers/{{ borrower_reference|urlencode }}">{{ borrower_reference }}</a>{{ icons.icon("chevron") }}Remediation{% endblock %}
+{% block page_actions %}<a class="button button--secondary" href="/borrowers/{{ borrower_reference|urlencode }}">Back to case file</a>{% endblock %}
+
+{% block content %}
+  {% set state_id = "remedy-empty" %}
+  {% set state_title = "No quarterly filings to plan from" %}
+  {% set state_message = "The remediation planner sizes every lever from the borrower's own quarterly statements. None are filed for this borrower yet; import a quarterly statement and the planner will use it." %}
+  {% set state_action_label = "Back to case file" %}
+  {% set state_action_href = "/borrowers/" ~ (borrower_reference|urlencode) %}
+  {% include "_states/empty.html" %}
+{% endblock %}

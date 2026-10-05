@@ -130,9 +130,7 @@ def test_historical_rerun_does_not_claim_a_future_signal_was_scored() -> None:
         _signal(fixture, borrower.id, ingested_at=_NOW, number=42)
         fixture.session.flush()
 
-        changes = recent_changes(
-            fixture.session, resolve_scope(fixture.principal, fixture.session)
-        )
+        changes = recent_changes(fixture.session, resolve_scope(fixture.principal, fixture.session))
         assert changes[0]["status"] == "Awaiting next scan"
         assert changes[0]["band"] is None
     finally:
@@ -146,13 +144,18 @@ def _demo_request(*, enabled: bool, borrower_reference: str) -> Request:
         return {"type": "http.request", "body": body, "more_body": False}
 
     app = SimpleNamespace(
-        state=SimpleNamespace(settings=SimpleNamespace(
-            web=SimpleNamespace(demo_walkthrough_enabled=enabled)
-        ))
+        state=SimpleNamespace(
+            settings=SimpleNamespace(web=SimpleNamespace(demo_walkthrough_enabled=enabled))
+        )
     )
     return Request(
-        {"type": "http", "method": "POST", "path": "/demo/signal",
-         "headers": [(b"content-type", b"application/x-www-form-urlencoded")], "app": app},
+        {
+            "type": "http",
+            "method": "POST",
+            "path": "/demo/signal",
+            "headers": [(b"content-type", b"application/x-www-form-urlencoded")],
+            "app": app,
+        },
         receive,
     )
 
@@ -167,16 +170,22 @@ def test_demo_trigger_is_disabled_and_privileged_even_with_queue_access() -> Non
         )
         handler = router.routes[0].endpoint
         with pytest.raises(HTTPException) as disabled:
-            asyncio.run(handler(
-                _demo_request(enabled=False, borrower_reference="B-1"),
-                BackgroundTasks(), fixture.principal,
-            ))
+            asyncio.run(
+                handler(
+                    _demo_request(enabled=False, borrower_reference="B-1"),
+                    BackgroundTasks(),
+                    fixture.principal,
+                )
+            )
         assert disabled.value.status_code == 404
         with pytest.raises(HTTPException) as forbidden:
-            asyncio.run(handler(
-                _demo_request(enabled=True, borrower_reference="B-1"),
-                BackgroundTasks(), fixture.principal,
-            ))
+            asyncio.run(
+                handler(
+                    _demo_request(enabled=True, borrower_reference="B-1"),
+                    BackgroundTasks(),
+                    fixture.principal,
+                )
+            )
         assert forbidden.value.status_code == 403
     finally:
         fixture.close()
@@ -210,20 +219,52 @@ def test_demo_trigger_rejects_out_of_scope_and_ingests_only_scoped_borrower() ->
         )
         handler = router.routes[0].endpoint
         with pytest.raises(HTTPException) as denied:
-            asyncio.run(handler(
-                _demo_request(enabled=True, borrower_reference=outside.reference),
-                BackgroundTasks(), fixture.principal,
-            ))
+            asyncio.run(
+                handler(
+                    _demo_request(enabled=True, borrower_reference=outside.reference),
+                    BackgroundTasks(),
+                    fixture.principal,
+                )
+            )
         assert denied.value.status_code == 404
-        response = asyncio.run(handler(
-            _demo_request(enabled=True, borrower_reference=borrower.reference),
-            BackgroundTasks(), fixture.principal,
-        ))
+        response = asyncio.run(
+            handler(
+                _demo_request(enabled=True, borrower_reference=borrower.reference),
+                BackgroundTasks(),
+                fixture.principal,
+            )
+        )
         assert response.status_code == 303
         assert response.headers["location"].startswith("/borrowers/B-DEMO")
         assert len(captured["events"]) == 3
         assert all(event.borrower_id == borrower.id for event in captured["events"])
         assert captured["actor"].id == fake_nightly.system_actor_id
         assert captured["scope"].paths == resolve_scope(fixture.principal, fixture.session).paths
+
+        # The repayment-status band reads facility conduct: the simulation
+        # records today's days past due, once per facility per day.
+        from datetime import UTC, datetime
+
+        from sqlalchemy import select
+
+        from covenant_radar.db.models.facility import FacilityConduct
+
+        asyncio.run(
+            handler(
+                _demo_request(enabled=True, borrower_reference=borrower.reference),
+                BackgroundTasks(),
+                fixture.principal,
+            )
+        )
+        rows = (
+            fixture.session.execute(
+                select(FacilityConduct).where(
+                    FacilityConduct.as_of_date == datetime.now(UTC).date()
+                )
+            )
+            .scalars()
+            .all()
+        )
+        assert [row.days_past_due for row in rows] == [40]
     finally:
         fixture.close()

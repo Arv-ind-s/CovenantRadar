@@ -40,6 +40,7 @@ from covenant_radar.domain.forecast import (
     probability,
     project,
 )
+from covenant_radar.domain.forecast.inputs import probability_inputs
 from covenant_radar.domain.interventions.applicability import (
     normalize_covenant_class,
 )
@@ -57,7 +58,9 @@ _ACCEPTED_PARAMETER_NAMES: Final[frozenset[str]] = frozenset(
         "covenant_class",
         "covenant_type",
         "current_date",
+        "distance_scale",
         "horizon_days",
+        "observed_breach",
         "probability",
         "probability_weights",
         "threshold_changes",
@@ -356,6 +359,8 @@ class _SimulationParameters:
     as_of_date: CalendarDate | None
     threshold_changes: tuple[ThresholdChange | Mapping[str, object] | Sequence[object], ...]
     persisted: Mapping[str, object]
+    distance_scale: Decimal = Decimal("1")
+    observed_breach: bool = False
 
 
 def simulate(
@@ -427,7 +432,9 @@ def _simulate_with_context(
         context.horizon_days,
     )
     counter_crossing = _crossing(counterfactual, context)
-    counter_probability = _probability(counterfactual, counter_crossing, context.weights)
+    counter_probability = _probability(
+        counterfactual, counter_crossing, context.weights, distance_scale=context.distance_scale
+    )
     assumptions = intervention.assumptions
     if context.baseline.crossing.crossing_day == 0:
         assumptions = _append_assumption(
@@ -491,6 +498,7 @@ class _SimulationContext:
     as_of_date: CalendarDate | None
     threshold_changes: tuple[ThresholdChange | Mapping[str, object] | Sequence[object], ...]
     persisted: Mapping[str, object]
+    distance_scale: Decimal = Decimal("1")
 
 
 def _context(projection: Projection, parameters: Mapping[str, object]) -> _SimulationContext:
@@ -507,7 +515,15 @@ def _context(projection: Projection, parameters: Mapping[str, object]) -> _Simul
         )
     )
     baseline_crossing = _crossing(baseline_projection, options)
-    baseline_probability = _probability(baseline_projection, baseline_crossing, options.weights)
+    # A tested breach is a fact for the do-nothing baseline (`spec §R-12.f`),
+    # as it is for the stored forecast; an intervention may still cure it.
+    baseline_probability = _probability(
+        baseline_projection,
+        baseline_crossing,
+        options.weights,
+        distance_scale=options.distance_scale,
+        observed_breach=options.observed_breach,
+    )
     return _SimulationContext(
         source_projection=projection,
         baseline=BaselineResult(
@@ -521,6 +537,7 @@ def _context(projection: Projection, parameters: Mapping[str, object]) -> _Simul
         as_of_date=options.as_of_date,
         threshold_changes=options.threshold_changes,
         persisted=options.persisted,
+        distance_scale=options.distance_scale,
     )
 
 
@@ -558,6 +575,15 @@ def _parameters(projection: Projection, raw: Mapping[str, object]) -> _Simulatio
 
     changes_value = _aliased_value(raw, "threshold_changes", "threshold_schedule")
     changes = _normalise_changes(changes_value)
+    raw_scale = raw.get("distance_scale", Decimal("1"))
+    if isinstance(raw_scale, bool) or raw_scale is None:
+        raise ValueError("distance_scale must be a positive number.")
+    distance_scale = Decimal(str(raw_scale))
+    if not distance_scale.is_finite() or distance_scale <= 0:
+        raise ValueError("distance_scale must be a positive number.")
+    observed_breach = raw.get("observed_breach", False)
+    if not isinstance(observed_breach, bool):
+        raise ValueError("observed_breach must be a boolean.")
     persisted = MappingProxyType(
         {
             "covenant_class": covenant_class,
@@ -565,6 +591,8 @@ def _parameters(projection: Projection, raw: Mapping[str, object]) -> _Simulatio
             "horizon_days": raw_horizon,
             "as_of_date": as_of_date,
             "threshold_changes": tuple(_change_mapping(item) for item in changes),
+            "distance_scale": distance_scale,
+            "observed_breach": observed_breach,
         }
     )
     return _SimulationParameters(
@@ -574,6 +602,8 @@ def _parameters(projection: Projection, raw: Mapping[str, object]) -> _Simulatio
         as_of_date=as_of_date,
         threshold_changes=changes,
         persisted=persisted,
+        distance_scale=distance_scale,
+        observed_breach=observed_breach,
     )
 
 
@@ -630,6 +660,7 @@ def _recompute_projection(
             inputs.threshold,
             inputs.direction,
             period_days=period_days,
+            pressure_scale=source.pressure_scale,
         )
 
     if len(observations) == 1:
@@ -646,6 +677,7 @@ def _recompute_projection(
             horizon_days,
             inputs.threshold,
             inputs.direction,
+            pressure_scale=source.pressure_scale,
         )
 
     return project(
@@ -654,6 +686,7 @@ def _recompute_projection(
         horizon_days,
         inputs.threshold,
         inputs.direction,
+        pressure_scale=source.pressure_scale,
     )
 
 
@@ -672,33 +705,28 @@ def _probability(
     projection: Projection,
     crossing: CrossingResult,
     weights: Weights,
+    *,
+    distance_scale: Decimal = Decimal("1"),
+    observed_breach: bool = False,
 ) -> ProbabilityResult | None:
-    endpoint = projection.path[-1].value if projection.path else None
-    if endpoint is None:
+    # The scorer's own inputs (`domain.forecast.inputs`), so the do-nothing
+    # baseline reproduces the stored forecast exactly.
+    inputs = probability_inputs(
+        projection,
+        threshold=crossing.threshold_path[-1].threshold if crossing.threshold_path else None,
+        distance_scale=distance_scale,
+    )
+    if inputs is None:
         return None
-    threshold = (
-        crossing.threshold_path[-1].threshold if crossing.threshold_path else projection.threshold
-    )
-    distance = _distance_to_boundary(endpoint, threshold, projection.direction)
-    velocity = (
-        projection.net_per_day_drift
-        if projection.direction is Direction.MAX
-        else -projection.net_per_day_drift
-    )
     return probability(
-        distance,
-        velocity,
-        projection.pressure,
+        inputs.distance,
+        inputs.velocity,
+        inputs.pressure,
         projection.horizon_days,
         weights,
-        already_breached=crossing.crossing_day == 0,
+        already_breached=observed_breach,
+        projected_crossing=inputs.projected_crossing,
     )
-
-
-def _distance_to_boundary(value: Decimal, threshold: Decimal, direction: Direction) -> Decimal:
-    if direction is Direction.MAX:
-        return max(_ZERO, threshold - value)
-    return max(_ZERO, value - threshold)
 
 
 def _crossing_delta(

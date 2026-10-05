@@ -760,8 +760,8 @@ def _render_detail(
 def _template_values(
     request: Request, principal: Principal, *, csrf_token: str
 ) -> dict[str, object]:
-    locale = request.cookies.get("covenant_radar_locale", "en").lower()
-    if locale not in {"en", "hi"}:
+    locale = "en".lower()
+    if locale not in {"en"}:
         locale = "en"
     return {
         "request": request,

@@ -29,7 +29,7 @@
         <select name="template" id="notification-template">
           <option value="">{{ labels.all_templates }}</option>
           {% for option in template_options %}
-            <option value="{{ option }}" {% if view.template == option %}selected{% endif %}>{{ option }}</option>
+            <option value="{{ option }}" {% if view.template == option %}selected{% endif %}>{{ (template_labels|default({})).get(option, option) }}</option>
           {% endfor %}
         </select>
       </div>

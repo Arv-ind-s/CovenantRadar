@@ -45,7 +45,6 @@ from covenant_radar.api.v1.routers import (
 )
 from covenant_radar.api.v1.routers import create_cases_router as create_api_cases_router
 from covenant_radar.api.v1.routers import create_covenants_router as create_api_covenants_router
-from covenant_radar.asgi import create_app
 from covenant_radar.audit.record import AuditRecorder
 from covenant_radar.config.settings import (
     Settings,
@@ -114,6 +113,7 @@ from covenant_radar.services.registry import RegistryService
 from covenant_radar.services.simulation import SimulationService
 from covenant_radar.services.statements import StatementImportService
 from covenant_radar.services.views import ViewService
+from covenant_radar.web.app import create_app
 from covenant_radar.web.preferences import create_preferences_router
 from covenant_radar.web.routes.admin import create_admin_users_router
 from covenant_radar.web.routes.audit import create_audit_router
@@ -139,6 +139,7 @@ from covenant_radar.web.routes.master_data import create_master_data_router
 from covenant_radar.web.routes.notifications import create_notifications_router
 from covenant_radar.web.routes.overrides import create_overrides_router
 from covenant_radar.web.routes.queue import create_queue_router
+from covenant_radar.web.routes.remediation import create_remediation_router
 from covenant_radar.web.routes.search import create_search_router
 from covenant_radar.web.routes.simulator import create_simulator_router
 from covenant_radar.web.routes.statements import create_statements_router
@@ -390,6 +391,7 @@ def create_production_app(settings: Settings | None = None) -> FastAPI:
             filename=result.filename,
             integrity_hash=result.integrity_hash,
         )
+
     # Derived from the session secret rather than stored separately: the API's
     # pagination cursors need a stable signing key across restarts and
     # workers, and inventing a second secret to configure would be one more
@@ -461,6 +463,7 @@ def create_production_app(settings: Settings | None = None) -> FastAPI:
         cache_path=resolved.intelligence.cache_path,
         enabled=resolved.intelligence.enabled,
         refresh_seconds=resolved.intelligence.refresh_seconds,
+        news_refresh_seconds=resolved.intelligence.news_refresh_seconds,
     )
 
     routers = (
@@ -486,6 +489,7 @@ def create_production_app(settings: Settings | None = None) -> FastAPI:
             memo_exporter=memo_exporter,
         ),
         create_why_router(sessions),
+        create_remediation_router(cast(Session, sessions)),
         create_simulator_router(
             sessions,
             simulation_service=simulation,
@@ -514,7 +518,7 @@ def create_production_app(settings: Settings | None = None) -> FastAPI:
         ),
         create_demo_walkthrough_router(sessions, ingestion=signal_ingestion, nightly=nightly),
         create_cases_router(sessions, case_service=cases, audit_writer=audit),
-        create_certificates_router(certificates),
+        create_certificates_router(certificates, documents=document_service),
         create_dispositions_router(dispositions),
         create_statements_router(statement_imports),
         create_views_router(sessions, service=views),
@@ -568,6 +572,11 @@ def create_production_app(settings: Settings | None = None) -> FastAPI:
     app.state.database_circuit_breaker = circuit_breaker
     lifecycle = _build_lifecycle(resolved, engine, circuit_breaker, document_store, nightly)
     install_lifecycle(app, lifecycle)
+    # Market data is fetched from the moment the process is up, not on the
+    # first page view, and keeps refreshing whether or not anyone is looking.
+    app.router.on_event("startup")(market_intelligence.start)
+    app.router.on_event("shutdown")(market_intelligence.stop)
+    app.state.market_intelligence = market_intelligence
     return app
 
 

@@ -64,9 +64,7 @@ class ModelGovernanceBlocked(RuntimeError):
 
 
 VALID_PROVIDER_NAMES: Final[tuple[str, ...]] = (
-    "tcs",
-    "azure_openai",
-    "anthropic",
+    "gemini",
     "recorded",
 )
 

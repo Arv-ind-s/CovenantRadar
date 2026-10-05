@@ -307,6 +307,79 @@ def test_suppressed_row_shows_text_not_number() -> None:
         fixture.close()
 
 
+def test_borrower_without_a_forecast_is_listed_with_its_reason() -> None:
+    """`spec §R-14.c`: never omitted, and the row says why there is no number."""
+
+    from covenant_radar.web.view_models.queue import NO_FORECAST_TEXT
+
+    fixture = _Fixture()
+    try:
+        portfolio = fixture.portfolio("NOFORECAST")
+        fixture.grant_scope(portfolio)
+        run = fixture.run(date(2026, 8, 30))
+        scored = fixture.borrower(portfolio, "B-SCORED")
+        version = fixture.covenant_version(scored, "CV-SCORED")
+        fixture.entry(run, scored, 1, worst_covenant_version_id=version.id, worst_horizon=90)
+        missing = fixture.borrower(portfolio, "B-NO-DATA")
+        fixture.entry(run, missing, 2, probability=None)
+
+        with fixture.client() as client:
+            response = client.get("/")
+
+        assert response.status_code == 200
+        assert "B-NO-DATA" in response.text
+        assert NO_FORECAST_TEXT in response.text
+        assert "None%" not in response.text
+    finally:
+        fixture.close()
+
+
+def test_a_tested_breach_and_a_projected_one_read_differently() -> None:
+    fixture = _Fixture()
+    try:
+        portfolio = fixture.portfolio("PASTLIMIT")
+        fixture.grant_scope(portfolio)
+        as_of = date(2026, 8, 30)
+        run = fixture.run(as_of)
+        for rank, (reference, observed) in enumerate(
+            (("B-TESTED", True), ("B-PROJECTED", False)), start=1
+        ):
+            borrower = fixture.borrower(portfolio, reference)
+            version = fixture.covenant_version(borrower, f"CV-{reference}")
+            forecast = fixture.forecast(run, version, 30, crossing=as_of)
+            forecast.formula_inputs = {"probability": {"already_breached": observed}}
+            fixture.entry(
+                run,
+                borrower,
+                rank,
+                band="act",
+                worst_covenant_version_id=version.id,
+                worst_horizon=30,
+            )
+        fixture.session.flush()
+
+        with fixture.client() as client:
+            text = client.get("/").text
+
+        tested = text.split("B-TESTED", 1)[1].split("B-PROJECTED", 1)[0]
+        assert "At or past its limit now" in tested
+        assert "Projected past its limit already" in text.split("B-PROJECTED", 1)[1]
+    finally:
+        fixture.close()
+
+
+def test_the_old_queue_path_redirects_with_its_filters() -> None:
+    fixture = _Fixture()
+    try:
+        with fixture.client() as client:
+            response = client.get("/queue?band=act", follow_redirects=False)
+
+        assert response.status_code == 307
+        assert response.headers["location"] == "/?band=act"
+    finally:
+        fixture.close()
+
+
 def test_empty_scope_designed_state() -> None:
     fixture = _Fixture()
     try:

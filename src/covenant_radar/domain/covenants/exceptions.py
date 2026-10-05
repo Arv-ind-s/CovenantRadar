@@ -17,7 +17,7 @@ from __future__ import annotations
 import re
 from collections.abc import Iterable, Mapping
 from dataclasses import dataclass
-from datetime import date, datetime
+from datetime import date, datetime, timedelta
 from decimal import Decimal
 from typing import Final
 from uuid import UUID
@@ -116,6 +116,52 @@ def normalise_period(value: object) -> str:
     if len(period) > _PERIOD_MAX_LENGTH or _PERIOD_PATTERN.fullmatch(period) is None:
         raise ValueError("Financial period must use the FYyyQn format, for example FY27Q2.")
     return period
+
+
+#: The Indian financial year, April to March, which the bank's own calendar
+#: (`organisation.fiscal_year_start_month`, seeded from `calendar.json`) sets.
+DEFAULT_FISCAL_YEAR_START_MONTH: Final[int] = 4
+
+
+def period_label_for_date(
+    value: date, *, fiscal_year_start_month: int = DEFAULT_FISCAL_YEAR_START_MONTH
+) -> str:
+    """Return the canonical ``FYyyQn`` label for the fiscal quarter of ``value``.
+
+    The year is the one the fiscal year ends in and the quarter counts from
+    the fiscal year's first month: with an April start, April to June 2026 is
+    ``FY27Q1``.  This is the form `i18n.formatting.format_fy_label` renders
+    and covenant intake writes into exception windows.
+    """
+
+    _validate_calendar_date(value, "value")
+    start = _fiscal_start(fiscal_year_start_month)
+    months_in = (value.month - start) % 12
+    start_year = value.year if value.month >= start else value.year - 1
+    end_year = start_year if start == 1 else start_year + 1
+    return f"FY{end_year % 100:02d}Q{months_in // 3 + 1}"
+
+
+def period_bounds_for_label(
+    value: object, *, fiscal_year_start_month: int = DEFAULT_FISCAL_YEAR_START_MONTH
+) -> tuple[date, date]:
+    """The first and last calendar day of a ``FYyyQn`` label's fiscal quarter,
+    the inverse of :func:`period_label_for_date`."""
+
+    start = _fiscal_start(fiscal_year_start_month)
+    end_year, quarter = period_key(value)
+    start_year = end_year if start == 1 else end_year - 1
+    first_index = (start - 1) + 3 * (quarter - 1)
+    after_index = first_index + 3
+    first = date(start_year + first_index // 12, first_index % 12 + 1, 1)
+    following = date(start_year + after_index // 12, after_index % 12 + 1, 1)
+    return first, following - timedelta(days=1)
+
+
+def _fiscal_start(value: object) -> int:
+    if isinstance(value, bool) or not isinstance(value, int) or not 1 <= value <= 12:
+        raise ValueError("fiscal_year_start_month must be an integer from 1 to 12.")
+    return value
 
 
 def period_key(value: object) -> tuple[int, int]:
@@ -392,7 +438,10 @@ __all__ = [
     "WaiverFacts",
     "exception_windows_overlap",
     "normalise_period",
+    "DEFAULT_FISCAL_YEAR_START_MONTH",
+    "period_bounds_for_label",
     "period_key",
+    "period_label_for_date",
     "resolve_exception",
     "resolve_waiver",
     "to_exception_facts",

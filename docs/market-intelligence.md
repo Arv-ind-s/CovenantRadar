@@ -31,7 +31,8 @@ The screen answers three questions:
 News comes from Google News RSS searches for market terms such as "crude oil
 price", "rupee dollar" and "RBI repo rate", limited to the last 14 days. Each
 headline keeps its publisher and date. Social reposts and chart widgets are
-dropped, and established business and trade press ranks first.
+dropped. Headlines are stored newest first for the live feed. Established
+business and trade press is flagged, and case notes cite it first.
 
 Queries name markets only. **Borrower names and financials never leave the
 application.** No API keys are needed.
@@ -54,7 +55,11 @@ the rate tolerance is sized on one quarter's finance cost.
   - *Quarter so far* averages everything since the quarter ended. This is what
     the next, unreported quarter is absorbing.
   - *Latest* is the most recent observation. This is what the following quarter
-    absorbs if prices hold.
+    absorbs if prices hold. It counts even when it falls inside the reported
+    quarter. Right after a quarter closes, nothing has been published after it,
+    but a quarter that exited above its average still passes that rise on. No
+    move is claimed when the latest observation *is* the base, for example a
+    monthly series published only to the quarter's first month.
 - **Rupee terms.** Dollar-priced commodities are converted with USD/INR over the
   same windows.
 - **Input-cost basket.** Each sector maps to the commodities it buys, with an
@@ -62,7 +67,10 @@ the rate tolerance is sized on one quarter's finance cost.
   `services/market_intelligence.py`). The basket move is the share-weighted
   average, so a fall in steel can offset a rise in rubber.
 - **Breakeven**: `cushion / (revenue × basket share)`. This is the basket rise
-  that would use the whole cushion if nothing is passed through.
+  that would use the whole cushion if nothing is passed through. When only part
+  of a basket has a move (daily Brent has one, monthly iron ore does not yet),
+  the basket and its breakeven use only the inputs observed. An unpublished
+  input is assumed neither to move with the others nor to stay flat.
 - **Revenue exposures.** For exporters such as IT services, pharma and textiles,
   a weaker rupee is supportive and a stronger rupee is adverse. No breakeven is
   claimed for these.
@@ -74,8 +82,9 @@ the rate tolerance is sized on one quarter's finance cost.
 | Move uses most of cushion | At least 50% of the breakeven |
 | Adverse, within cushion | An adverse move below 50% |
 | Moves easing | Costs have fallen, or revenue exposures have improved |
-| No tracked exposure | No mapped market driver, and rates are flat |
-| Market data unavailable | The series have no data for the period; nothing is inferred |
+| No tracked pressure | No mapped market driver, or tracked moves are flat; rates flat or not yet published |
+| Awaiting newer market data | The series exist but none is published past the reported quarter yet (monthly IMF and OECD prices lag about two months); nothing is inferred |
+| Market data unavailable | The sources returned no data; nothing is inferred |
 
 ### What this is not
 
@@ -93,7 +102,17 @@ the rate tolerance is sized on one quarter's finance cost.
 
 - `GET /intelligence` shows the full screen. `?driver=brent` (or any driver key)
   filters to exposed borrowers. HTMX polls every 5 seconds while sources load,
-  then at the refresh interval.
+  then every minute with the data version it was drawn from. Until a series
+  gains an observation the answer is `204` and nothing is redrawn, so open
+  panels stay open.
+- **Live market news** sits under the headline. It lists the latest headlines
+  for the markets the book is exposed to, newest first, with each story's
+  markets, publisher and age. `static/js/market-feed.js` polls
+  `GET /intelligence/feed?drivers=…` every 30 seconds (every 5 while the first
+  headlines load, and at once when the tab regains focus). New stories appear
+  at the top marked **New** without a reload, and screen readers hear "N new
+  headlines". The feed endpoint reads only the shared cache and does no
+  database work. Without JavaScript, the server-rendered list remains.
 - `GET /intelligence/data` returns the same briefing as JSON.
 - `POST /intelligence/refresh` forces a refresh, with a 60-second floor per
   source.
@@ -108,10 +127,16 @@ triage repositories. The shared cache holds public data only.
 
 ## Fetching and caching
 
+- **Fetching starts with the process.** `create_production_app` starts a feed
+  loop on ASGI startup, so data is fetched before anyone opens a page and keeps
+  refreshing whether or not a page is open. News is due every 2 minutes and
+  series every 15. The loop checks every 15 seconds which sources are due.
 - Requests never wait on the network. When a source is due, one background
   refresh starts, and the page is served from the cache until it finishes.
 - Each source fails on its own. After a failure, the last good data stays in
-  use, labelled Stale.
+  use, labelled Stale. Retries back off from 1 minute, doubling up to the
+  source's own cadence, so a throttling provider is not hammered. Each failure
+  is logged with the source key and error type, never the error message.
 - Snapshots are written atomically to disk and survive restarts. Older cache
   formats are ignored.
 - If a series has never loaded, its tile says so. **No synthetic or estimated
@@ -123,12 +148,18 @@ triage repositories. The shared cache holds public data only.
 | --- | --- |
 | `COVENANT_RADAR_INTELLIGENCE__ENABLED` | `true` |
 | `COVENANT_RADAR_INTELLIGENCE__CACHE_PATH` | `var/market-intelligence.json` |
-| `COVENANT_RADAR_INTELLIGENCE__REFRESH_SECONDS` | `900` |
+| `COVENANT_RADAR_INTELLIGENCE__REFRESH_SECONDS` | `900` (series) |
+| `COVENANT_RADAR_INTELLIGENCE__NEWS_REFRESH_SECONDS` | `120` (headlines) |
 
 `python scripts/demo_up.py --without-ml --port 8001` starts a demo with live
-data. Add `--offline-data` to disable public requests. The cache lock is
-process-local, so a multi-worker deployment should move fetching to a shared
-worker.
+data. It keeps the market cache in `var/market-intelligence.json` across
+launches, so a restart shows the last headlines at once while the boot fetch
+refreshes them. Add `--offline-data` to disable public requests.
+
+"Live" means within one news cadence of Google News indexing a story,
+typically a few minutes. Google News RSS is polled, not pushed. Each worker
+process runs its own feed loop, so `--workers 2` doubles the outbound fetches.
+A larger deployment should move fetching to one shared worker.
 
 ## Tests
 

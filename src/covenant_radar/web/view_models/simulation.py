@@ -50,7 +50,7 @@ _ONE_HUNDRED: Final[Decimal] = Decimal("100")
 _PERCENT_QUANTUM: Final[Decimal] = Decimal("0.01")
 _MAX_PARAMETERS_JSON_LENGTH: Final[int] = 16 * 1024
 _UNCHANGED_OUTCOME_REASON: Final[str] = (
-    "The option applies, but the projected crossing date and probability are unchanged at "
+    "The option applies, but the projected crossing date and risk score are unchanged at "
     "every stored horizon; its effect does not change the outcome for this forecast."
 )
 
@@ -341,7 +341,11 @@ def build_simulation_projection(
 
     formula = _mapping(forecast.formula_inputs)
     candidate = _mapping(formula.get("candidate_inputs"))
-    threshold = context.covenant_version.threshold
+    # The limit in force on the scoring date (an exception may relax it); a
+    # row from before it was recorded used the version's own threshold.
+    threshold = (
+        _first_decimal(formula, ("threshold_in_force",)) or context.covenant_version.threshold
+    )
     direction = forecast.direction or context.covenant_version.direction
     horizon = forecast.horizon_days
     pressure = _first_decimal(
@@ -349,10 +353,14 @@ def build_simulation_projection(
         ("pressure", "requested_pressure", "evidence_pressure"),
     )
     if pressure is None:
+        # The scorer records the evidence materiality it projected with.  A
+        # row from before it did kept that number as the probability input.
+        pressure = _first_decimal(formula, ("requested_pressure",))
+    if pressure is None:
         probability_inputs = _mapping(formula.get("probability"))
         pressure = _first_decimal(probability_inputs, ("pressure",))
     if pressure is None:
-        pressure = _first_decimal(formula, ("requested_pressure", "pressure"))
+        pressure = _first_decimal(formula, ("pressure",))
     if pressure is None:
         # The original scorer permits a zero pressure candidate.  When an
         # older row did not retain either candidate or probability formula
@@ -361,6 +369,10 @@ def build_simulation_projection(
         pressure = _ZERO
     if pressure < _ZERO:
         raise ValueError("Persisted forecast pressure cannot be negative.")
+
+    # The scorer converts evidence materiality into a daily drift with the
+    # covenant's own scale; a re-projection must use the same one.
+    pressure_scale = _first_decimal(formula, ("pressure_scale",))
 
     candidate_series = _candidate_series(candidate)
     if candidate_series:
@@ -374,6 +386,7 @@ def build_simulation_projection(
             period_days=_optional_positive_decimal(
                 candidate, ("period_days", "period_length_days")
             ),
+            pressure_scale=pressure_scale,
         )
 
     rows = tuple(
@@ -397,6 +410,7 @@ def build_simulation_projection(
             horizon,
             threshold,
             direction,
+            pressure_scale=pressure_scale,
         )
 
     first = rows[0]
@@ -410,7 +424,8 @@ def build_simulation_projection(
     assert first.projected_value is not None
     assert last.projected_value is not None
     net_drift = (last.projected_value - first.projected_value) / Decimal(day_gap)
-    signed_pressure = pressure if direction == "max" else -pressure
+    pressure_drift = pressure * pressure_scale if pressure_scale is not None else pressure
+    signed_pressure = pressure_drift if direction == "max" else -pressure_drift
     trend_drift = net_drift - signed_pressure
     as_of = forecast.data_as_of or context.run.as_of_date
     previous_date = as_of - timedelta(days=day_gap)
@@ -425,6 +440,7 @@ def build_simulation_projection(
         threshold,
         direction,
         period_days=day_gap,
+        pressure_scale=pressure_scale,
     )
 
 

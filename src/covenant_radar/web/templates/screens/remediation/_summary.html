@@ -1,0 +1,23 @@
+{#
+  The forecast drawer's tailored summary, loaded when the drawer opens.
+  It names the borrower's own package — sized in rupees from its filings —
+  and links to the planner, where every figure behind it is shown.
+#}
+{% set focus = view.covenants | selectattr("reference", "equalto", covenant_reference) | list %}
+<section class="remedy-summary" data-status="{{ view.status }}">
+  <p class="remedy-summary__eyebrow">Tailored to {{ view.borrower_name }} · from filings to {{ view.as_of_label }}</p>
+  <p class="remedy-summary__title">{{ view.status_title }}</p>
+  {% if focus %}
+    {% set covenant = focus[0] %}
+    <p class="remedy-summary__covenant">{{ covenant.name }}: filed {{ covenant.filed_display }} against {{ covenant.test_display }} · simulated breach risk <span class="remedy-chip" data-tone="{{ covenant.baseline.tone }}">{{ covenant.baseline.display }}</span>{% if covenant.at_risk %} → <span class="remedy-chip" data-tone="{{ covenant.package.tone }}">{{ covenant.package.display }}</span> with the package{% endif %}</p>
+  {% endif %}
+  {% if view.steps %}
+    <ol class="remedy-summary__steps">
+      {% for step in view.steps %}
+        <li><strong>{{ step.title }}</strong> <span class="remedy-size">{{ step.size_display }}</span> <span class="remedy-owner">{{ step.owner }}{% if step.lender_decision %} · lender decision{% endif %}</span></li>
+      {% endfor %}
+    </ol>
+  {% endif %}
+  <p class="remedy-summary__message">{{ view.status_message }}</p>
+  <a class="button" href="{{ view.reset_href }}">Open the remediation planner</a>
+</section>

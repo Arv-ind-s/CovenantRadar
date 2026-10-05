@@ -196,3 +196,18 @@ def test_confidence_floor_is_inclusive_for_ranking() -> None:
 def test_threshold_store_is_read_for_t1_and_t2() -> None:
     configured = TriageThresholds.from_store(_ThresholdStore())
     assert configured == _THRESHOLDS
+
+
+def test_act_band_comes_before_a_larger_amber_exposure() -> None:
+    """The queue promises "act now — open these first": urgency orders
+    borrowers inside a band, never across bands."""
+
+    act = _borrower("B-ACT", exposure="10", forecasts=(_forecast("0.95"),))
+    amber = _borrower("B-AMBER", exposure="1000", forecasts=(_forecast("0.50"),))
+
+    ranked = rank([amber, act], _THRESHOLDS)
+
+    assert [entry.reference for entry in ranked] == ["B-ACT", "B-AMBER"]
+    assert ranked[1].urgency is not None and ranked[0].urgency is not None
+    assert ranked[1].urgency > ranked[0].urgency, "the amber urgency is the larger number"
+    assert ranked[0].why["applied_tie_break"] == "band, then urgency descending"

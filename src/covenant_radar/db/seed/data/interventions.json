@@ -1,5 +1,5 @@
 {
-  "taxonomy_version": "1.1",
+  "taxonomy_version": "1.2",
   "interventions": [
     {
       "code": "RM-REVIEW-CONDUCT",
@@ -91,6 +91,174 @@
         "coverage",
         "liquidity",
         "net_worth"
+      ],
+      "requires_approval": true,
+      "is_active": true
+    },
+    {
+      "code": "WORKING-CAPITAL-RELEASE",
+      "role_tag": "relationship_manager",
+      "text": "Release working capital toward the borrower's best filed level, agreed with the borrower and monitored by the RM.",
+      "effect_model": "level_shift",
+      "effect_parameters": {
+        "amount": "0",
+        "_assumptions": [
+          "Sized for each borrower by the remediation planner from its filed quarterly lines; the fixed-effect simulator does not offer this entry and applies no effect."
+        ]
+      },
+      "applicable_covenant_classes": [
+        "leverage",
+        "coverage",
+        "liquidity",
+        "net_worth",
+        "working_capital"
+      ],
+      "requires_approval": false,
+      "is_active": true
+    },
+    {
+      "code": "PREPAY-FROM-SURPLUS-CASH",
+      "role_tag": "credit",
+      "text": "Prepay borrowings from cash held above the operating buffer, subject to the bank's approval process.",
+      "effect_model": "level_shift",
+      "effect_parameters": {
+        "amount": "0",
+        "_assumptions": [
+          "Sized for each borrower by the remediation planner from its filed quarterly lines; the fixed-effect simulator does not offer this entry and applies no effect."
+        ]
+      },
+      "applicable_covenant_classes": [
+        "leverage",
+        "coverage",
+        "liquidity",
+        "net_worth",
+        "working_capital"
+      ],
+      "requires_approval": true,
+      "is_active": true
+    },
+    {
+      "code": "REPRICE-BORROWINGS",
+      "role_tag": "credit",
+      "text": "Refinance borrowings priced above the reference rate, subject to the bank's approval process.",
+      "effect_model": "level_shift",
+      "effect_parameters": {
+        "amount": "0",
+        "_assumptions": [
+          "Sized for each borrower by the remediation planner from its filed quarterly lines; the fixed-effect simulator does not offer this entry and applies no effect."
+        ]
+      },
+      "applicable_covenant_classes": [
+        "leverage",
+        "coverage",
+        "liquidity",
+        "net_worth",
+        "working_capital"
+      ],
+      "requires_approval": true,
+      "is_active": true
+    },
+    {
+      "code": "CAP-NEW-BORROWING",
+      "role_tag": "credit",
+      "text": "Hold back the growth in borrowings as a facility condition, subject to the bank's approval process.",
+      "effect_model": "level_shift",
+      "effect_parameters": {
+        "amount": "0",
+        "_assumptions": [
+          "Sized for each borrower by the remediation planner from its filed quarterly lines; the fixed-effect simulator does not offer this entry and applies no effect."
+        ]
+      },
+      "applicable_covenant_classes": [
+        "leverage",
+        "coverage",
+        "liquidity",
+        "net_worth",
+        "working_capital"
+      ],
+      "requires_approval": true,
+      "is_active": true
+    },
+    {
+      "code": "OPERATING-COST-PROGRAMME",
+      "role_tag": "relationship_manager",
+      "text": "Agree a monitored operating-cost programme with the borrower.",
+      "effect_model": "level_shift",
+      "effect_parameters": {
+        "amount": "0",
+        "_assumptions": [
+          "Sized for each borrower by the remediation planner from its filed quarterly lines; the fixed-effect simulator does not offer this entry and applies no effect."
+        ]
+      },
+      "applicable_covenant_classes": [
+        "leverage",
+        "coverage",
+        "liquidity",
+        "net_worth",
+        "working_capital"
+      ],
+      "requires_approval": false,
+      "is_active": true
+    },
+    {
+      "code": "TERM-OUT-SHORT-TERM-DEBT",
+      "role_tag": "credit",
+      "text": "Term out short-term borrowings into longer-dated facilities, subject to the lenders' approval.",
+      "effect_model": "level_shift",
+      "effect_parameters": {
+        "amount": "0",
+        "_assumptions": [
+          "Sized for each borrower by the remediation planner from its filed quarterly lines; the fixed-effect simulator does not offer this entry and applies no effect."
+        ]
+      },
+      "applicable_covenant_classes": [
+        "leverage",
+        "coverage",
+        "liquidity",
+        "net_worth",
+        "working_capital"
+      ],
+      "requires_approval": true,
+      "is_active": true
+    },
+    {
+      "code": "EQUITY-TO-RETIRE-DEBT",
+      "role_tag": "relationship_manager",
+      "text": "Negotiate a promoter equity raise to retire borrowings.",
+      "effect_model": "level_shift",
+      "effect_parameters": {
+        "amount": "0",
+        "_assumptions": [
+          "Sized for each borrower by the remediation planner from its filed quarterly lines; the fixed-effect simulator does not offer this entry and applies no effect."
+        ]
+      },
+      "applicable_covenant_classes": [
+        "leverage",
+        "coverage",
+        "liquidity",
+        "net_worth",
+        "working_capital"
+      ],
+      "requires_approval": false,
+      "is_active": true
+    },
+    {
+      "code": "COVENANT-RESET",
+      "role_tag": "risk",
+      "text": "Reset a covenant test by documented amendment, subject to credit committee approval.",
+      "effect_model": "threshold_relaxation",
+      "effect_parameters": {
+        "amount": "0",
+        "_assumptions": [
+          "Sized for each borrower by the remediation planner from its filed quarterly lines; the fixed-effect simulator does not offer this entry and applies no effect."
+        ]
+      },
+      "applicable_covenant_classes": [
+        "leverage",
+        "coverage",
+        "liquidity",
+        "net_worth",
+        "working_capital"
       ],
       "requires_approval": true,
       "is_active": true

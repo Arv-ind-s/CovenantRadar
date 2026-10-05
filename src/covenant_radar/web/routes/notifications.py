@@ -38,7 +38,10 @@ _WRITE_DEP = Depends(_READ)
 _LABELS = {
     "title": "Notifications",
     "heading": "Notification centre",
-    "subheading": "Durable notices for the work in your queue.",
+    "subheading": (
+        "Band changes and the morning summary for the portfolios you cover, alerts on "
+        "cases assigned to you, SLA breaches, mentions, approvals and job failures."
+    ),
     "unread_count": "Unread notifications",
     "status": "Status",
     "all": "All",
@@ -55,13 +58,33 @@ _LABELS = {
     "type": "Type",
     "open": "Open",
     "empty_title": "No notifications in this view",
-    "empty_message": "New scoped warnings and workflow notices will appear here.",
+    "empty_message": (
+        "Nothing for you yet. After each nightly review you receive a summary of your "
+        "portfolios, a notice when a borrower you cover moves into amber or act, and "
+        "alerts on cases assigned to you."
+    ),
     "no_access_message": (
         "This notice is retained, but its subject is no longer in your access scope."
     ),
     "previous": "Previous",
     "next": "Next",
     "page": "Page",
+}
+
+# What each notice is called on screen; a code without an entry shows as is.
+_TEMPLATE_LABELS = {
+    "band_change": "Band change",
+    "morning_queue": "Morning summary",
+    "sla_breach": "SLA breach",
+    "assignee_fallback": "Assignment fallback",
+    "comment_mention": "Mention",
+    "case_sla_breach": "Case SLA breach",
+    "case_assignee_fallback": "Case assignment fallback",
+    "case_comment_mention": "Case mention",
+    "certificate_due": "Certificate due",
+    "job_failure": "Job failure",
+    "security_alert": "Security alert",
+    "system_failure": "System failure",
 }
 
 
@@ -118,6 +141,7 @@ def create_notifications_router(
             principal=principal,
             view=view,
             template_options=tuple(item.name for item in service.template_registry),
+            template_labels=_TEMPLATE_LABELS,
             query=_query_string(view.status, view.template, filter_value, view.page_size),
         )
 
@@ -182,8 +206,8 @@ def _render(
         else "screens/notifications/index.html"
     )
     template = environment.get_template(template_name)
-    locale = request.cookies.get("covenant_radar_locale", "en").lower()
-    if locale not in {"en", "hi"}:
+    locale = "en".lower()
+    if locale not in {"en"}:
         locale = "en"
     values = {
         "request": request,

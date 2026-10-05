@@ -52,7 +52,6 @@ EXPECTED_TOKENS: Final[tuple[str, ...]] = (
     "--font-editorial",
     "--font-data",
     "--font-ui",
-    "--font-deva",
     "--font-heading",
     "--size-caption",
     "--size-data",
@@ -148,7 +147,7 @@ COLOUR_TOKENS: Final[tuple[str, ...]] = (
     "--breach-bg",
 )
 
-REQUIRED_GLYPHS: Final[tuple[str, ...]] = ("₹", "अ")
+REQUIRED_GLYPHS: Final[tuple[str, ...]] = ("₹",)
 ALLOWED_SELECTORS: Final[frozenset[str]] = frozenset({":root", '[data-theme="dark"]'})
 FONT_GLYPH_REQUIREMENTS: Final[dict[str, tuple[str, ...]]] = {
     "radar-serif.ttf": ("₹",),
@@ -156,7 +155,6 @@ FONT_GLYPH_REQUIREMENTS: Final[dict[str, tuple[str, ...]]] = {
     "radar-mono-semibold.ttf": ("₹",),
     "radar-mono-bold.ttf": ("₹",),
     "radar-sans.ttf": ("₹",),
-    "radar-devanagari.ttf": REQUIRED_GLYPHS,
 }
 
 
@@ -486,10 +484,8 @@ def font_contains_codepoint(path: Path, codepoint: int) -> bool:
 def check_font_coverage(font_root: Path = FONT_ROOT) -> tuple[FontCoverage, ...]:
     """Require every local stack to cover its required glyphs.
 
-    The data, heading, and UI stacks require the rupee sign. Hindi content is
-    explicitly assigned the dedicated Devanagari stack, whose local face must
-    supply both required glyphs; platform fallbacks remain valid for characters
-    outside those declared responsibilities.
+    The data, heading, and UI stacks require the rupee sign. Platform
+    fallbacks remain valid for other characters.
     """
     fonts = tuple(
         sorted(path for path in font_root.iterdir() if path.suffix.lower() in _FONT_SUFFIXES)

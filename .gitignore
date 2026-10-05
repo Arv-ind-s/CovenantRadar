@@ -19,3 +19,7 @@ evidence/
 *.db
 playwright-report/
 var/
+.playwright-mcp/
+.ug-jpg/
+.test-tmp/
+/*.png

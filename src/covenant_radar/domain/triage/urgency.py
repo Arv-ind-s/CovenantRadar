@@ -8,12 +8,17 @@ suppressed watch entry; its probability is not used to manufacture urgency.
 
 The total ordering is, in order:
 
-1. rankable urgency descending;
-2. exposure descending;
-3. borrower reference ascending.
+1. band: act, then amber, then watch;
+2. rankable urgency descending;
+3. exposure descending;
+4. borrower reference ascending.
 
-Non-rankable entries have no urgency and are placed after rankable entries,
-while the same exposure/reference tie-break keeps their order deterministic.
+The band leads because the queue promises "act now — open these first": a
+large amber exposure must not sit above a borrower already in the act band,
+however the urgency product compares.  Urgency orders borrowers within a
+band.  Non-rankable entries have no urgency and are placed after the
+rankable entries of their band, while the same exposure/reference tie-break
+keeps their order deterministic.
 The rule and the rule actually needed for each row are retained in ``why``
 for the later why-panel.
 """
@@ -41,8 +46,10 @@ NO_FORECAST_STATE: Final[str] = "no_forecast"
 UNRANKABLE_STATE: Final[str] = "unrankable"
 
 TIE_BREAK_RULE: Final[str] = (
-    "urgency descending, then exposure descending, then borrower reference ascending"
+    "band (act, amber, watch), then urgency descending, then exposure descending, "
+    "then borrower reference ascending"
 )
+_BAND_RANK: Final[Mapping[str, int]] = MappingProxyType({ACT_BAND: 0, AMBER_BAND: 1, WATCH_BAND: 2})
 WORST_HORIZON_RULE: Final[str] = (
     "highest probability at a covenant horizon; ties use higher confidence, "
     "then shorter horizon, then covenant version id"
@@ -643,10 +650,11 @@ def _suppression_reason(forecast: ForecastFact, floor: Decimal) -> str:
     return "forecast suppressed: probability is unavailable; the borrower remains watch"
 
 
-def _sort_key(item: _RankedFacts) -> tuple[int, Decimal, int, Decimal, str]:
-    # An absent urgency is explicitly after every computable urgency.  Within
-    # each group the documented exposure/reference tie-break is total.
+def _sort_key(item: _RankedFacts) -> tuple[int, int, Decimal, int, Decimal, str]:
+    # Band first; within a band an absent urgency is after every computable
+    # urgency, and the documented exposure/reference tie-break is total.
     return (
+        _BAND_RANK[item.band],
         0 if item.urgency is not None else 1,
         -(item.urgency if item.urgency is not None else _ZERO),
         1 if item.exposure is None else 0,
@@ -655,20 +663,24 @@ def _sort_key(item: _RankedFacts) -> tuple[int, Decimal, int, Decimal, str]:
     )
 
 
-def _urgency_counts(items: Sequence[_RankedFacts]) -> Mapping[Decimal, int]:
-    counts: dict[Decimal, int] = {}
+def _urgency_counts(items: Sequence[_RankedFacts]) -> Mapping[tuple[str, Decimal], int]:
+    counts: dict[tuple[str, Decimal], int] = {}
     for item in items:
         if item.urgency is not None:
-            counts[item.urgency] = counts.get(item.urgency, 0) + 1
+            key = (item.band, item.urgency)
+            counts[key] = counts.get(key, 0) + 1
     return counts
 
 
-def _applied_tie_break(item: _RankedFacts, counts: Mapping[Decimal, int]) -> str:
+def _applied_tie_break(item: _RankedFacts, counts: Mapping[tuple[str, Decimal], int]) -> str:
     if item.urgency is None:
-        return "exposure descending, then borrower reference ascending (urgency unavailable)"
-    if counts.get(item.urgency, 0) > 1:
-        return "exposure descending, then borrower reference ascending (urgency tied)"
-    return "urgency descending"
+        return (
+            "band, then exposure descending, then borrower reference ascending "
+            "(urgency unavailable)"
+        )
+    if counts.get((item.band, item.urgency), 0) > 1:
+        return "band, then exposure descending, then borrower reference ascending (urgency tied)"
+    return "band, then urgency descending"
 
 
 def _why(

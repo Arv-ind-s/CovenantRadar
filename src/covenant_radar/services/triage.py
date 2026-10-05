@@ -9,7 +9,7 @@ from types import MappingProxyType
 from typing import Final, Protocol
 from uuid import UUID
 
-from sqlalchemy import Select, select, tuple_
+from sqlalchemy import Select, exists, select, tuple_
 from sqlalchemy.orm import Session
 
 from covenant_radar.audit.events import AuditEventType
@@ -287,9 +287,12 @@ class TriageService:
         return run
 
     def _latest_prior_complete_run(self, current: ForecastRun) -> ForecastRun | None:
+        # Only a run that was ranked is a queue the desk actually saw; a run
+        # that completed scoring but was never ranked has nothing to compare.
         statement: Select[tuple[ForecastRun]] = select(ForecastRun).where(
             ForecastRun.state == _COMPLETE,
             ForecastRun.id != current.id,
+            exists(select(1).where(TriageEntryModel.run_id == ForecastRun.id)),
         )
         if current.finished_at is not None:
             statement = statement.where(ForecastRun.finished_at < current.finished_at)

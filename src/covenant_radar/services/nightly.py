@@ -37,20 +37,14 @@ snapshot changing mid-run stays pinned: the snapshot id embedded in that first
 `ForecastRun` row is reused verbatim by every later attempt, never
 re-resolved against whatever is active by then.
 
-**Single-borrower runs.** `borrower_id` on `JobRunContext` scopes every step
-to one borrower's own data: `nightly.test` tests only their covenants,
-`nightly.score`/`nightly.rank` create a `ForecastRun` and `TriageEntry` rows
-that reference only their forecasts, and `nightly.update_cases`/
-`nightly.dispatch` act only on cases opened from that run. A single-borrower
-trigger's `run_id` is never the nightly batch's own, so its `ForecastRun` is
-never linked from the batch's `job_run` rows — it does not extend or touch
-the portfolio-wide run the batch produced. Existing repositories that read
-"the newest complete run for today" (`ForecastRepository.latest_complete_run`,
-`TriageRepository`) do not further distinguish a batch run from an ad hoc
-one; an operator running a single-borrower recheck after the nightly batch
-has already completed for the day should treat it as an off-cycle review,
-not a substitute for the next full run — extending those read paths with a
-run-kind distinction is follow-on work, not this task's to make.
+**Single-borrower runs.** `borrower_id` on `JobRunContext` scopes the
+work to one borrower: `nightly.test` tests only their covenants,
+`nightly.score` forecasts only them, and `nightly.update_cases`/
+`nightly.dispatch` act only on them.  `nightly.rank` re-ranks the whole book —
+that borrower from this run, everyone else carried forward from the queue it
+replaces — because the newest ranked run is what the queue serves, and a
+one-borrower queue would hide the rest of the book.  The queue resolves a
+carried row's forecast details from the earlier run that produced them.
 
 **No connector yet.** `signal_source` and `statement_lines` are the seams
 `nightly.ingest` and `nightly.test` use to reach real source data; both
@@ -64,12 +58,13 @@ here once a real provider exists — only a constructor argument.
 from __future__ import annotations
 
 from collections.abc import Callable, Iterable, Mapping, Sequence
-from datetime import date
+from dataclasses import dataclass
+from datetime import date, datetime
 from decimal import Decimal
 from typing import Final, Protocol, runtime_checkable
 from uuid import UUID
 
-from sqlalchemy import func, or_, select
+from sqlalchemy import exists, func, or_, select
 from sqlalchemy.orm import Session
 
 from covenant_radar.audit.record import AuditRecorder, AuditSubject
@@ -81,6 +76,7 @@ from covenant_radar.db.models.audit import AuditEvent
 from covenant_radar.db.models.borrower import Borrower
 from covenant_radar.db.models.covenant import (
     Covenant,
+    CovenantException,
     CovenantSchedule,
     CovenantTest,
     CovenantVersion,
@@ -88,7 +84,9 @@ from covenant_radar.db.models.covenant import (
 from covenant_radar.db.models.facility import Facility, FacilityConduct
 from covenant_radar.db.models.forecast import Forecast, ForecastRun
 from covenant_radar.db.models.forecast import TriageEntry as TriageEntryModel
+from covenant_radar.db.models.identity import AppUser, Role, UserRole
 from covenant_radar.db.models.operations import JobRun
+from covenant_radar.db.models.organisation import Organisation
 from covenant_radar.db.models.portfolio import Portfolio
 from covenant_radar.db.models.signal import (
     EvidenceItem,
@@ -97,24 +95,48 @@ from covenant_radar.db.models.signal import (
 from covenant_radar.db.models.signal import (
     SignalEvent as SignalEventModel,
 )
+from covenant_radar.db.models.statements import FinancialPeriod
 from covenant_radar.db.models.workflow import Case, Notification
 from covenant_radar.db.repositories.audit import SqlAlchemyAuditStore
 from covenant_radar.db.repositories.evidence import EvidenceRepository
 from covenant_radar.db.repositories.forecast import COMPLETE as COMPLETE_FORECAST_RUN_STATE
 from covenant_radar.db.repositories.trace import TraceRepository
-from covenant_radar.db.scoping import Scope
+from covenant_radar.db.repositories.triage import TriageRepository
+from covenant_radar.db.scoping import Scope, resolve_scope
 from covenant_radar.db.session import SessionFactory
+from covenant_radar.domain.cases.sla import derive_sla
+from covenant_radar.domain.certificates.requirements import CERTIFICATE_TEST_BASIS
 from covenant_radar.domain.covenants.calendar import ScheduleState
+from covenant_radar.domain.covenants.cure import FREQUENCY_WINDOW_DAYS
+from covenant_radar.domain.covenants.evaluate import PeriodFacts
+from covenant_radar.domain.covenants.exceptions import (
+    DEFAULT_FISCAL_YEAR_START_MONTH,
+    normalise_period,
+    period_bounds_for_label,
+    period_label_for_date,
+)
 from covenant_radar.domain.covenants.sma import derive_borrower_sma
-from covenant_radar.domain.forecast import Observation, Weights, evidence_pressure
+from covenant_radar.domain.forecast import (
+    Observation,
+    ThresholdChange,
+    Weights,
+    evidence_pressure,
+)
 from covenant_radar.domain.forecast.predictor import ForecastPredictor
 from covenant_radar.domain.signals import SignalEvent
+from covenant_radar.domain.signals.decay import DecayThresholds
+from covenant_radar.domain.signals.decay import decay_factor as signal_decay_factor
 from covenant_radar.domain.signals.evidence import EvidenceFacts
 from covenant_radar.domain.signals.persistence import PersistenceThresholds
 from covenant_radar.domain.triage.banding import ACT_BAND, TriageThresholds
+from covenant_radar.domain.triage.changes import ChangeThresholds, ChangeType
 from covenant_radar.domain.triage.urgency import ForecastFact, TriageInput
 from covenant_radar.domain.triage.urgency import rank as rank_triage_entries
-from covenant_radar.notifications.templates import BAND_CHANGE_TEMPLATE
+from covenant_radar.notifications.templates import (
+    BAND_CHANGE_TEMPLATE,
+    JOB_FAILURE_TEMPLATE,
+    MORNING_QUEUE_TEMPLATE,
+)
 from covenant_radar.ports.notifier import NotificationChannel
 from covenant_radar.scheduler.jobs import JobHandler, JobRunContext
 from covenant_radar.scheduler.ledger import FAILED, SUCCEEDED
@@ -126,6 +148,7 @@ from covenant_radar.scheduler.pipeline import (
     STEP_SCORE,
     STEP_TEST,
     STEP_UPDATE_CASES,
+    PipelineRunResult,
 )
 from covenant_radar.scheduler.policy import (
     DEFAULT_RECURRING_FAILURE_THRESHOLD,
@@ -136,15 +159,23 @@ from covenant_radar.scheduler.policy import (
 )
 from covenant_radar.security.permissions import Permission
 from covenant_radar.security.rbac import Principal, PrincipalKind
-from covenant_radar.services.engine import EngineService
+from covenant_radar.services.cases import CaseService
+from covenant_radar.services.certificates import (
+    CERTIFICATE_EVIDENCE_TYPES,
+    CertificateCyclePolicy,
+    CertificateService,
+)
+from covenant_radar.services.engine import EngineService, reads_facility_conduct
 from covenant_radar.services.ingestion import SignalIngestionService
 from covenant_radar.services.ledger import LedgerService, _stage3_trace
+from covenant_radar.services.notifications import NotificationService
 from covenant_radar.services.scoring import (
     PREDICTOR_MODES,
     SHADOW_PREDICTOR_MODE,
     ForecastCandidate,
     ForecastScoringService,
 )
+from covenant_radar.services.triage import TriageService
 
 
 @runtime_checkable
@@ -208,10 +239,30 @@ class _AuditWriterAdapter:
 #: means no connector is configured yet, so the step honestly ingests nothing.
 SignalSourceProvider = Callable[[], Iterable[SignalEvent | Mapping[str, object]]]
 
-#: Resolves the normalized statement lines to test one covenant version as of
-#: one date; `None` means "no statement data available for this covenant yet"
-#: — the step leaves it untested rather than inventing a result.
-StatementLinesProvider = Callable[[CovenantVersion, date], Mapping[str, Decimal] | None]
+
+@dataclass(frozen=True, slots=True)
+class StatementSnapshot:
+    """The latest complete statement period behind one covenant, with its lines.
+
+    Carrying the period is what lets the test step test each statement once,
+    apply the exception written for that period, date the observation at the
+    period end and notice when the next statement is overdue.
+    """
+
+    lines: Mapping[str, Decimal]
+    period_id: UUID
+    period_label: str
+    period_end: date
+
+
+#: Resolves the statement behind one covenant version as of one date.  A
+#: `StatementSnapshot` names its period; a bare mapping of lines is treated as
+#: data current on the run date (a source that does not know its period).
+#: `None` means "no statement data available for this covenant yet" — the
+#: step leaves it untested rather than inventing a result.
+StatementLinesProvider = Callable[
+    [CovenantVersion, date], StatementSnapshot | Mapping[str, Decimal] | None
+]
 
 _MODEL_VERSION: Final[str] = "nightly.pipeline.v1"
 # Must name a template the in-app registry knows
@@ -227,6 +278,22 @@ _ACT_ALERT_TEMPLATE: Final[str] = BAND_CHANGE_TEMPLATE.name
 _NOTIFICATION_CHANNEL: Final[str] = NotificationChannel.IN_APP.value
 _BREACH_VERDICTS: Final[frozenset[str]] = frozenset({"breach", "breach_cure_open"})
 _TEST_HISTORY_LIMIT: Final[int] = 366
+#: Filing time allowed after a period's successor ends before its statement
+#: is overdue.  The runtime passes `forecast.statement_grace_days`.
+_DEFAULT_STATEMENT_GRACE_DAYS: Final[int] = 60
+#: The runtime passes `forecast.pressure_rate`; see `pressure_scale` below.
+_DEFAULT_PRESSURE_RATE: Final[Decimal] = Decimal("0.25")
+#: The runtime passes `forecast.distance_scale`; see `probability_inputs`.
+_DEFAULT_DISTANCE_SCALE: Final[Decimal] = Decimal("2")
+#: Two statements of the same value closer together than this cannot be two
+#: periods (the shortest reporting period is monthly), so the later one is a
+#: nightly copy of the first.
+_MIN_STATEMENT_GAP_DAYS: Final[int] = 28
+#: Reporting period assumed for an `on_event` covenant's pressure scale.
+_DEFAULT_PERIOD_DAYS: Final[int] = 90
+_VALUED_VERDICTS: Final[frozenset[str]] = frozenset(
+    {"pass", "warning", "breach", "breach_cure_open"}
+)
 #: `Facility` money columns are denominated in ₹ crore; `TriageEntry.exposure`
 #: is in rupees.  See `_borrower_exposure`.
 _RUPEES_PER_CRORE: Final[Decimal] = Decimal("10000000")
@@ -276,6 +343,11 @@ class NightlyPipelineService:
         predictor: ForecastPredictor | None = None,
         predictor_mode: str = SHADOW_PREDICTOR_MODE,
         model_version: str = _MODEL_VERSION,
+        what_changed_thresholds: ChangeThresholds | None = None,
+        statement_grace_days: int = _DEFAULT_STATEMENT_GRACE_DAYS,
+        pressure_rate: Decimal = _DEFAULT_PRESSURE_RATE,
+        distance_scale: Decimal = _DEFAULT_DISTANCE_SCALE,
+        certificate_policy: CertificateCyclePolicy | None = None,
     ) -> None:
         if not callable(session_factory):
             raise TypeError("NightlyPipelineService requires a callable session_factory.")
@@ -292,8 +364,7 @@ class NightlyPipelineService:
             raise TypeError("system_actor_id must be a UUID.")
         if predictor_mode not in PREDICTOR_MODES:
             raise ValueError(
-                f"predictor_mode must be one of {sorted(PREDICTOR_MODES)}, "
-                f"not {predictor_mode!r}."
+                f"predictor_mode must be one of {sorted(PREDICTOR_MODES)}, not {predictor_mode!r}."
             )
         self.session_factory = session_factory
         self.threshold_store = threshold_store
@@ -307,6 +378,33 @@ class NightlyPipelineService:
         self.predictor = predictor
         self.predictor_mode = predictor_mode
         self.model_version = model_version
+        #: `spec §R-14.d`'s what-changed policy.  The runtime always supplies
+        #: it from settings; a caller that omits it ranks without summaries.
+        self.what_changed_thresholds = what_changed_thresholds
+        if isinstance(statement_grace_days, bool) or statement_grace_days < 0:
+            raise ValueError("statement_grace_days must be a non-negative integer.")
+        #: Days after a period's expected successor before a statement counts
+        #: as overdue (filing time for the next period's statement).
+        self.statement_grace_days = int(statement_grace_days)
+        if (
+            not isinstance(pressure_rate, Decimal)
+            or not pressure_rate.is_finite()
+            or pressure_rate < 0
+        ):
+            raise ValueError("pressure_rate must be a non-negative Decimal.")
+        #: Fraction of a covenant's threshold that sustained evidence at full
+        #: materiality moves it over one reporting period.
+        self.pressure_rate = pressure_rate
+        if not isinstance(distance_scale, Decimal) or not distance_scale > 0:
+            raise ValueError("distance_scale must be a positive Decimal.")
+        self.distance_scale = distance_scale
+        if certificate_policy is not None and not isinstance(
+            certificate_policy, CertificateCyclePolicy
+        ):
+            raise TypeError("certificate_policy must be a CertificateCyclePolicy.")
+        #: `spec §R-09`'s daily certificate cycle, run by `nightly.test`;
+        #: `None` leaves the certificate workflow to be driven by hand.
+        self.certificate_policy = certificate_policy
 
     def handlers(self) -> Mapping[str, JobHandler]:
         """The six `JobHandler`s, keyed by the step name each answers to."""
@@ -319,6 +417,61 @@ class NightlyPipelineService:
             STEP_UPDATE_CASES: self._run_update_cases,
             STEP_DISPATCH: self._run_dispatch,
         }
+
+    # -- job failure notice ---------------------------------------------
+
+    def notify_pipeline_failure(self, result: PipelineRunResult) -> int:
+        """Tell the administrators that a pipeline run halted, once per run.
+
+        Runs in its own transaction: the failed step has already rolled back
+        its own work, and the notice must persist even so.
+        """
+
+        session = self.session_factory()
+        try:
+            run_id = str(result.run_id)
+            failed = result.failed_step or "unknown step"
+            admins = self._users_with_roles(session, _FAILURE_NOTICE_ROLES)
+            error = next(
+                (run.error for run in reversed(result.runs) if run.error),
+                None,
+            )
+            pending = [
+                person
+                for person in admins
+                if not any(
+                    (payload or {}).get("run_id") == run_id
+                    for payload in session.execute(
+                        select(Notification.payload).where(
+                            Notification.recipient_id == person,
+                            Notification.template == JOB_FAILURE_TEMPLATE.name,
+                        )
+                    ).scalars()
+                )
+            ]
+            if pending:
+                NotificationService(
+                    session, audit=self._audit(session, new_request_id()), clock=self.clock
+                ).queue(
+                    JOB_FAILURE_TEMPLATE,
+                    {
+                        "job_name": failed,
+                        "summary": (
+                            f"The nightly pipeline stopped at {failed}; the previous queue "
+                            "is still being served." + (f" Error: {error[:300]}" if error else "")
+                        ),
+                        "run_id": run_id,
+                    },
+                    recipient_ids=pending,
+                    actor_id=self.system_actor_id,
+                )
+            session.commit()
+            return len(pending)
+        except Exception:
+            session.rollback()
+            raise
+        finally:
+            session.close()
 
     # -- T12: batch completion deadline --------------------------------
 
@@ -545,10 +698,13 @@ class NightlyPipelineService:
                 scope_resolver=lambda _principal: scope,
             )
             principal = self._system_principal()
+            certificates = self._run_certificate_cycle(session, scope, as_of_date, context)
             due = self._live_covenant_versions(session, scope, as_of_date, borrower_id)
+            fiscal = _fiscal_start_month(session)
             tested = 0
             already_tested = 0
             skipped_no_data = 0
+            marked_stale = 0
             tracker = IsolationTracker()
             for version, _covenant in due:
                 if self._already_tested(session, version.id, as_of_date):
@@ -558,32 +714,82 @@ class NightlyPipelineService:
                 # statement source itself is unavailable for every covenant
                 # behind it, which is `spec §R-28.a`'s halt-the-step case, not
                 # one borrower's own bad data.
-                lines = (
+                supplied = (
                     self.statement_lines(version, as_of_date)
                     if self.statement_lines is not None
                     else None
                 )
-                if lines is None:
+                if supplied is None:
                     skipped_no_data += 1
                     continue
+                pending = self._pending_retests(session, version, as_of_date)
+                snapshot: StatementSnapshot | None
+                lines: Mapping[str, Decimal]
+                if isinstance(supplied, StatementSnapshot):
+                    snapshot, lines = supplied, supplied.lines
+                else:
+                    snapshot, lines = None, supplied
+                stale = False
+                if snapshot is not None and not reads_facility_conduct(version.definition_ref):
+                    # A statement covenant is tested once per statement period
+                    # (and again only when a retest is queued).  Re-testing an
+                    # unchanged statement every night restamped old data as
+                    # today's, flattened the trend and reopened the cure window.
+                    label = _canonical_label(snapshot.period_label, snapshot.period_end, fiscal)
+                    # A cure window that has run out without a new statement
+                    # is re-tested on the statement it was opened on, so the
+                    # verdict becomes a plain breach the day the window ends.
+                    retest = bool(pending) or self._cure_lapsed(session, version.id, as_of_date)
+                    if self._statement_overdue(version, snapshot.period_end, as_of_date):
+                        if not retest and self._stale_marked(session, version.id, snapshot):
+                            already_tested += 1
+                            continue
+                        stale = True
+                        period = PeriodFacts(
+                            period_label=label,
+                            is_complete=False,
+                            last_complete_period=label,
+                            period_id=snapshot.period_id,
+                            as_of_date=as_of_date,
+                        )
+                    elif not retest and self._period_tested(session, version.id, snapshot):
+                        already_tested += 1
+                        continue
+                    else:
+                        period = PeriodFacts(
+                            period_label=label,
+                            period_id=snapshot.period_id,
+                            as_of_date=as_of_date,
+                        )
+                else:
+                    # Conduct-based covenants read daily facility data, so
+                    # they are tested daily against the quarter they fall in.
+                    period = PeriodFacts(
+                        period_label=period_label_for_date(
+                            as_of_date, fiscal_year_start_month=fiscal
+                        ),
+                        as_of_date=as_of_date,
+                    )
                 # `spec §R-28.b`: one covenant's own test failure is isolated
                 # in its own savepoint so the rest of the book still gets
                 # tested tonight.
                 try:
                     with session.begin_nested():
-                        engine.test(
+                        row = engine.test(
                             principal,
                             covenant_version_id=version.id,
-                            period=as_of_date,
+                            period=period,
                             lines=lines,
                             as_of_date=as_of_date,
                             scope=scope,
                         )
+                        self._resolve_retests(pending, row)
                 except Exception as error:  # noqa: BLE001 - isolated and recorded, not swallowed
                     tracker.record_failure(version.id, error)
                     continue
                 tracker.record_success()
                 tested += 1
+                marked_stale += int(stale)
             session.commit()
             report = tracker.report()
             return {
@@ -591,6 +797,8 @@ class NightlyPipelineService:
                 "tested": tested,
                 "already_tested": already_tested,
                 "skipped_no_data": skipped_no_data,
+                "marked_stale": marked_stale,
+                **certificates,
                 **report.as_metrics(),
             }
         except Exception:
@@ -598,6 +806,149 @@ class NightlyPipelineService:
             raise
         finally:
             session.close()
+
+    def _run_certificate_cycle(
+        self,
+        session: Session,
+        scope: Scope,
+        as_of_date: date,
+        context: JobRunContext,
+    ) -> Mapping[str, object]:
+        """`spec §R-09`: put certificate due dates on the calendar, raise the
+        requests now inside their lead time and mark the ones past grace
+        overdue, so tonight's scoring already reads any overdue evidence.
+
+        Isolated in its own savepoint (`spec §R-28.b`): a certificate failure
+        is reported in this step's metrics and never stops the book being
+        tested.
+        """
+        if self.certificate_policy is None:
+            return {}
+        audit = self._audit(session, context.request_id)
+        try:
+            with session.begin_nested():
+                service = CertificateService(
+                    session,
+                    audit=audit,
+                    clock=self.clock,
+                    request_id=context.request_id,
+                    scope_resolver=lambda _principal: scope,
+                    ledger=LedgerService(
+                        session,
+                        audit=audit,
+                        clock=self.clock,
+                        request_id=context.request_id,
+                        threshold_store=self.threshold_store,
+                    ),
+                )
+                result = service.run_cycle(
+                    self._system_principal(),
+                    as_of=as_of_date,
+                    policy=self.certificate_policy,
+                    scope=scope,
+                )
+        except Exception as error:  # noqa: BLE001 - isolated and recorded, not swallowed
+            return {"certificate_cycle_error": f"{type(error).__name__}: {error}"}
+        return result.as_metrics()
+
+    def _decay_rate(self) -> Decimal | None:
+        """T3's daily evidence retention factor, or `None` for a threshold
+        snapshot written before decay was configured (no decay is applied;
+        the windowed persistence rule still retires old warnings)."""
+
+        try:
+            section = self.threshold_store.get("T3")
+        except KeyError:
+            return None
+        value = section.get("decay_rate") if isinstance(section, Mapping) else None
+        if value is None:
+            return None
+        return DecayThresholds(decay_rate=Decimal(str(value))).decay_rate
+
+    def _statement_allowance_days(self, version: CovenantVersion) -> int | None:
+        """Days after a period end before its successor's statement is overdue,
+        or `None` for a covenant with no reporting rhythm (`on_event`)."""
+
+        period_days = FREQUENCY_WINDOW_DAYS.get(version.frequency)
+        if period_days is None:
+            return None
+        return period_days + max(version.grace_days or 0, self.statement_grace_days)
+
+    def _statement_overdue(self, version: CovenantVersion, period_end: date, as_of: date) -> bool:
+        allowance = self._statement_allowance_days(version)
+        return allowance is not None and (as_of - period_end).days > allowance
+
+    def _period_tested(
+        self, session: Session, version_id: UUID, snapshot: StatementSnapshot
+    ) -> bool:
+        statement = (
+            select(CovenantTest.id)
+            .where(
+                CovenantTest.covenant_version_id == version_id,
+                CovenantTest.period_id == snapshot.period_id,
+                CovenantTest.verdict != "stale",
+            )
+            .limit(1)
+        )
+        return session.execute(statement).scalar() is not None
+
+    def _cure_lapsed(self, session: Session, version_id: UUID, as_of_date: date) -> bool:
+        latest = session.execute(
+            select(CovenantTest.verdict, CovenantTest.cure_ends_on)
+            .where(
+                CovenantTest.covenant_version_id == version_id,
+                CovenantTest.as_of_date <= as_of_date,
+                CovenantTest.verdict.in_(_VALUED_VERDICTS),
+            )
+            .order_by(CovenantTest.as_of_date.desc(), CovenantTest.computed_at.desc())
+            .limit(1)
+        ).first()
+        return (
+            latest is not None
+            and latest.verdict == "breach_cure_open"
+            and latest.cure_ends_on is not None
+            and latest.cure_ends_on < as_of_date
+        )
+
+    def _stale_marked(
+        self, session: Session, version_id: UUID, snapshot: StatementSnapshot
+    ) -> bool:
+        statement = (
+            select(CovenantTest.id)
+            .where(
+                CovenantTest.covenant_version_id == version_id,
+                CovenantTest.period_id == snapshot.period_id,
+                CovenantTest.verdict == "stale",
+            )
+            .limit(1)
+        )
+        return session.execute(statement).scalar() is not None
+
+    def _pending_retests(
+        self, session: Session, version: CovenantVersion, as_of_date: date
+    ) -> list[CovenantSchedule]:
+        """Queued retests up to today.  Certificate-basis schedules belong to
+        the certificate workflow and are left for it to resolve."""
+
+        if version.test_basis == CERTIFICATE_TEST_BASIS:
+            return []
+        statement = select(CovenantSchedule).where(
+            CovenantSchedule.covenant_version_id == version.id,
+            CovenantSchedule.due_date <= as_of_date,
+            CovenantSchedule.state == ScheduleState.DUE.value,
+        )
+        return list(session.execute(statement).scalars().all())
+
+    def _resolve_retests(self, pending: Sequence[CovenantSchedule], test: CovenantTest) -> None:
+        now = self.clock.now()
+        for schedule in pending:
+            if schedule.state != ScheduleState.DUE.value:
+                continue  # the engine already linked the occurrence dated today
+            schedule.state = ScheduleState.TESTED.value
+            schedule.test_id = test.id
+            schedule.updated_at = now
+            schedule.updated_by_id = self.system_actor_id
+            schedule.version += 1
 
     # -- score (projection, probability and driver attribution) -----------
 
@@ -689,6 +1040,7 @@ class NightlyPipelineService:
             return 0
 
         persistence = PersistenceThresholds.from_store(self.threshold_store)
+        decay_rate = self._decay_rate()
         evidence = EvidenceRepository(session, audit=self._audit(session, context.request_id))
         principal = self._system_principal()
         total = 0
@@ -758,6 +1110,11 @@ class NightlyPipelineService:
             for event in event_rows:
                 grouped.setdefault((event.family, event.event_type), []).append(event)
             for item in rows:
+                if item.evidence_type in CERTIFICATE_EVIDENCE_TYPES:
+                    # Written by the certificate workflow, not derived from
+                    # signal events: there is nothing here to re-score it from.
+                    total += 1
+                    continue
                 events = grouped.get((item.family, item.evidence_type), [])
                 # Persistence is calculated from adverse observations only.
                 # A stream of healthy observations must not make a warning
@@ -767,21 +1124,39 @@ class NightlyPipelineService:
                     for event in events
                     if bool((event.payload or {}).get("is_adverse", False))
                 ]
-                dates = sorted({event.event_date for event in adverse})
                 observed_dates = sorted({event.event_date for event in events})
-                consecutive = _longest_consecutive_days(dates)
+                # Only the current window counts: a streak from months ago is
+                # history, not a warning that is still running.
                 window_start = as_of_date.fromordinal(
                     as_of_date.toordinal() - persistence.event_window_days + 1
                 )
-                window_count = len(
-                    {value for value in dates if window_start <= value <= as_of_date}
+                dates = sorted(
+                    {event.event_date for event in adverse if window_start <= event.event_date}
                 )
-                sustained = (
+                consecutive = _longest_consecutive_days(dates)
+                window_count = len(dates)
+                last_adverse = max((event.event_date for event in adverse), default=None)
+                # A healthy observation after the last adverse one means the
+                # signal has recovered (payments current again, say).
+                recovered = last_adverse is not None and any(
+                    event.event_date > last_adverse
+                    and not bool((event.payload or {}).get("is_adverse", False))
+                    for event in events
+                )
+                sustained = not recovered and (
                     consecutive >= persistence.sustained_days
                     or window_count >= persistence.sustained_events
                 )
                 materiality_pct = (
                     _signal_materiality_pct(item.family, adverse) if sustained else Decimal("0")
+                )
+                # Geometric decay from the last adverse day (`domain.signals.decay`),
+                # so a warning that has stopped recurring fades rather than
+                # weighing on the forecast at full strength.
+                decay = (
+                    signal_decay_factor((as_of_date - last_adverse).days, decay_rate)
+                    if decay_rate is not None and last_adverse is not None
+                    else Decimal("1")
                 )
                 next_state = "sustained" if sustained else "transient"
                 source_event_ids = [str(event.id) for event in events if event.id is not None]
@@ -792,6 +1167,7 @@ class NightlyPipelineService:
                     or item.event_count_window != window_count
                     or item.state != next_state
                     or item.materiality_pct != materiality_pct
+                    or item.decay_factor != decay
                     or item.counts_toward_pressure != (sustained and materiality_pct > 0)
                     or list(item.source_event_ids or []) != source_event_ids
                 )
@@ -806,7 +1182,7 @@ class NightlyPipelineService:
                 item.event_count_window = window_count
                 item.state = next_state
                 item.materiality_pct = materiality_pct
-                item.decay_factor = Decimal("1")
+                item.decay_factor = decay
                 item.counts_toward_pressure = sustained and materiality_pct > 0
                 item.source_event_ids = source_event_ids
                 item.last_scored_at = self.clock.now()
@@ -897,7 +1273,19 @@ class NightlyPipelineService:
                 session.commit()
                 return {"ranked": len(existing_entries), "resumed": True}
 
-            borrower_ids = self._borrowers_with_forecasts(session, forecast_run.id, borrower_id)
+            # `spec §R-14.c`: every borrower in the book is ranked, including one
+            # with no forecast (no statement yet, every covenant not
+            # computable), which `rank` places after the rankable rows with
+            # its reason.  A single-borrower run re-scores one borrower and
+            # carries everyone else forward from the queue it replaces, so
+            # the queue it becomes never shrinks to that one borrower.
+            carried = (
+                self._carried_forward_facts(session, forecast_run, borrower_id)
+                if borrower_id is not None
+                else {}
+            )
+            borrower_ids = self._borrowers_to_rank(session, forecast_run.id, borrower_id)
+            borrower_ids.extend(b_id for b_id in carried if b_id not in set(borrower_ids))
             thresholds = TriageThresholds.from_store(self.threshold_store)
             # `spec §R-28.b`: one borrower's own bad exposure or forecast
             # data (a negative outstanding balance, a malformed fact) is
@@ -910,15 +1298,18 @@ class NightlyPipelineService:
                 if borrower is None:
                     continue
                 try:
+                    forecasts = (
+                        carried[borrower.id]
+                        if borrower.id in carried
+                        else self._forecast_facts(session, forecast_run.id, borrower.id)
+                    )
                     triage_inputs.append(
                         TriageInput(
                             borrower_id=borrower.id,
                             reference=borrower.reference,
                             exposure=self._borrower_exposure(session, borrower.id, as_of_date),
-                            forecasts=self._forecast_facts(session, forecast_run.id, borrower.id),
-                            sma_band=self._borrower_sma_band(
-                                session, borrower.id, as_of_date
-                            ),
+                            forecasts=forecasts,
+                            sma_band=self._borrower_sma_band(session, borrower.id, as_of_date),
                         )
                     )
                 except Exception as error:  # noqa: BLE001 - isolated and recorded, not swallowed
@@ -960,9 +1351,30 @@ class NightlyPipelineService:
                         request_id=context.request_id,
                     )
                 )
+            # `spec §R-14.d`: what-changed is written in the same transaction
+            # as the entries, so the queue never serves a run without it.
+            changed = 0
+            if self.what_changed_thresholds is not None:
+                session.flush()
+                comparison = TriageService(
+                    session,
+                    self.what_changed_thresholds,
+                    audit=self._audit(session, context.request_id),
+                    request_id=context.request_id,
+                ).persist_what_changed(forecast_run.id)
+                changed = sum(
+                    1
+                    for change in comparison.current
+                    if change.kind not in (ChangeType.NO_CHANGE, ChangeType.FIRST_RUN)
+                )
             session.commit()
             report = tracker.report()
-            return {"ranked": len(ranked), "resumed": False, **report.as_metrics()}
+            return {
+                "ranked": len(ranked),
+                "resumed": False,
+                "what_changed": changed,
+                **report.as_metrics(),
+            }
         except Exception:
             session.rollback()
             raise
@@ -985,7 +1397,9 @@ class NightlyPipelineService:
                 .where(
                     Facility.borrower_id == borrower_id,
                     Facility.effective_from <= as_of_date,
-                    or_(Facility.effective_to.is_(None), Facility.effective_to >= as_of_date),
+                    # Half-open, like exposure and the engine: a facility
+                    # closed today is no longer effective today.
+                    or_(Facility.effective_to.is_(None), Facility.effective_to > as_of_date),
                 )
                 .order_by(Facility.id)
             ).all()
@@ -1020,16 +1434,16 @@ class NightlyPipelineService:
                 session.commit()
                 return {"opened": 0}
 
-            act_entries = (
-                session.execute(
-                    select(TriageEntryModel).where(
-                        TriageEntryModel.run_id == forecast_run.id,
-                        TriageEntryModel.band == ACT_BAND,
-                    )
-                )
-                .scalars()
-                .all()
+            act_statement = select(TriageEntryModel).where(
+                TriageEntryModel.run_id == forecast_run.id,
+                TriageEntryModel.band == ACT_BAND,
             )
+            # A single-borrower recheck re-ranks the whole book but acts only
+            # on the borrower it was asked about.
+            target = _parse_uuid(context.borrower_id)
+            if target is not None:
+                act_statement = act_statement.where(TriageEntryModel.borrower_id == target)
+            act_entries = session.execute(act_statement).scalars().all()
             now = self.clock.now()
             opened = 0
             already_open = 0
@@ -1064,6 +1478,9 @@ class NightlyPipelineService:
                 # rest of tonight's act band still gets a case.
                 try:
                     with session.begin_nested():
+                        # `spec §R-18`: the band sets the case's SLA (T11), so
+                        # an act case left untouched escalates on schedule.
+                        due_at, sla_hours = self._case_sla(entry.band or ACT_BAND, now)
                         session.add(
                             Case(
                                 id=new_id(),
@@ -1073,6 +1490,8 @@ class NightlyPipelineService:
                                 state="open",
                                 band_at_open=entry.band,
                                 assignee_id=self.default_assignee_id,
+                                due_at=due_at,
+                                sla_hours=sla_hours,
                                 created_at=now,
                                 updated_at=now,
                                 created_by_id=self.system_actor_id,
@@ -1086,9 +1505,21 @@ class NightlyPipelineService:
                     continue
                 tracker.record_success()
                 opened += 1
+            # The overdue sweep runs with the full book, never on a recheck of
+            # one borrower.
+            escalated = (
+                self._escalate_overdue_cases(session, context.request_id, now)
+                if target is None
+                else 0
+            )
             session.commit()
             report = tracker.report()
-            return {"opened": opened, "already_open": already_open, **report.as_metrics()}
+            return {
+                "opened": opened,
+                "already_open": already_open,
+                "escalated_overdue": escalated,
+                **report.as_metrics(),
+            }
         except Exception:
             session.rollback()
             raise
@@ -1110,6 +1541,28 @@ class NightlyPipelineService:
                 .scalars()
                 .all()
             )
+            # A borrower whose case is already open (a monitoring case, say)
+            # and who moves back into the act band tonight gets no new case,
+            # but the assignee still has to hear about it.
+            escalated_cases = self._re_escalated_cases(
+                session, forecast_run, _parse_uuid(context.borrower_id)
+            )
+            alerts = [
+                (
+                    case,
+                    f"Moved into the {case.band_at_open} band; "
+                    f"case {case.reference} is open for review.",
+                    False,
+                )
+                for case in new_cases
+            ] + [
+                (
+                    case,
+                    f"Moved back into the act band; case {case.reference} is already open.",
+                    True,
+                )
+                for case in escalated_cases
+            ]
             now = self.clock.now()
             # The band_change template requires the borrower's own reference,
             # not the case reference, so resolve them once for the batch.
@@ -1117,26 +1570,36 @@ class NightlyPipelineService:
                 borrower_id: reference
                 for borrower_id, reference in session.execute(
                     select(Borrower.id, Borrower.reference).where(
-                        Borrower.id.in_({case.borrower_id for case in new_cases})
+                        Borrower.id.in_({case.borrower_id for case, _summary, _re in alerts})
                     )
                 ).all()
             }
+            run_marker = str(forecast_run.id)
             dispatched = 0
             skipped_unassigned = 0
             already_notified = 0
             tracker = IsolationTracker()
-            for case in new_cases:
+            for case, summary, re_escalation in alerts:
                 if case.assignee_id is None:
                     skipped_unassigned += 1
                     continue
-                existing = session.execute(
-                    select(Notification.id).where(
-                        Notification.subject_type == "case",
-                        Notification.subject_id == case.id,
-                        Notification.template == _ACT_ALERT_TEMPLATE,
+                previous = (
+                    session.execute(
+                        select(Notification.payload).where(
+                            Notification.subject_type == "case",
+                            Notification.subject_id == case.id,
+                            Notification.template == _ACT_ALERT_TEMPLATE,
+                        )
                     )
-                ).scalar()
-                if existing is not None:
+                    .scalars()
+                    .all()
+                )
+                # A new case is announced once.  A re-escalation is announced
+                # once per run, so a later return to act is not silenced by
+                # the alert that announced the case originally.
+                if (not re_escalation and previous) or any(
+                    (payload or {}).get("forecast_run_id") == run_marker for payload in previous
+                ):
                     already_notified += 1
                     continue
                 # `spec §R-28.b`: one case's notification failing to send
@@ -1156,12 +1619,10 @@ class NightlyPipelineService:
                                     "borrower_reference": borrower_references.get(
                                         case.borrower_id, case.reference
                                     ),
-                                    "summary": (
-                                        f"Moved into the {case.band_at_open} band; "
-                                        f"case {case.reference} is open for review."
-                                    ),
+                                    "summary": summary,
                                     "details": f"Case {case.reference}",
                                     "case_reference": case.reference,
+                                    "forecast_run_id": run_marker,
                                 },
                                 state="pending",
                                 created_at=now,
@@ -1177,9 +1638,18 @@ class NightlyPipelineService:
                     continue
                 tracker.record_success()
                 dispatched += 1
+            desk_notices, summaries = self._notify_risk_desk(
+                session,
+                forecast_run,
+                context.request_id,
+                target=_parse_uuid(context.borrower_id),
+                already_alerted={case.borrower_id for case, _summary, _re in alerts},
+            )
             session.commit()
             report = tracker.report()
             return {
+                "desk_notices": desk_notices,
+                "morning_summaries": summaries,
                 "dispatched": dispatched,
                 "skipped_unassigned": skipped_unassigned,
                 "already_notified": already_notified,
@@ -1190,6 +1660,267 @@ class NightlyPipelineService:
             raise
         finally:
             session.close()
+
+    def _notify_risk_desk(
+        self,
+        session: Session,
+        forecast_run: ForecastRun,
+        request_id: str,
+        *,
+        target: UUID | None,
+        already_alerted: set[UUID],
+    ) -> tuple[int, int]:
+        """`spec §10`/`§R-27`: a band change reaches the people responsible
+        for the borrower — the risk desk and relationship managers whose
+        portfolios hold it — and each of them gets one morning summary.
+
+        `NotificationService` applies each recipient's portfolio scope and
+        preferences, so nobody hears about a borrower outside their book.
+        A first review has nothing to compare against: it sends only the
+        summary, not one notice per borrower already in the act band.
+        """
+
+        service = NotificationService(
+            session,
+            audit=self._audit(session, request_id),
+            clock=self.clock,
+            request_id=request_id,
+        )
+        marker = str(forecast_run.id)
+        people = self._users_with_roles(session, _BAND_NOTICE_ROLES)
+        entries = self._entries_for_run(session, forecast_run.id)
+        previous = self._previous_serving_run(session, forecast_run)
+        notices = 0
+        if previous is not None and people:
+            before = {
+                entry.borrower_id: entry.band
+                for entry in self._entries_for_run(session, previous.id)
+            }
+            scopes = {
+                person: resolve_scope(Principal.user(person, ()), session) for person in people
+            }
+            paths: dict[UUID, str] = {
+                borrower_id: path
+                for borrower_id, path in session.execute(
+                    select(Borrower.id, Portfolio.path)
+                    .join(Portfolio, Portfolio.id == Borrower.portfolio_id)
+                    .where(Borrower.id.in_({entry.borrower_id for entry in entries}))
+                )
+            }
+            references: dict[UUID, str] = {
+                borrower_id: reference
+                for borrower_id, reference in session.execute(
+                    select(Borrower.id, Borrower.reference).where(
+                        Borrower.id.in_({entry.borrower_id for entry in entries})
+                    )
+                )
+            }
+            for entry in entries:
+                if target is not None and entry.borrower_id != target:
+                    continue
+                prior = before.get(entry.borrower_id)
+                if not _band_worsened(prior, entry.band):
+                    continue
+                if self._already_sent(
+                    session, BAND_CHANGE_TEMPLATE.name, entry.borrower_id, marker
+                ):
+                    continue
+                # Only people whose portfolios hold the borrower; the case
+                # assignee already heard through the case alert.
+                path = paths.get(entry.borrower_id)
+                recipients = [
+                    person
+                    for person in people
+                    if path is not None
+                    and _in_scope(scopes[person], path)
+                    and not (
+                        entry.borrower_id in already_alerted and person == self.default_assignee_id
+                    )
+                ]
+                if not recipients:
+                    continue
+                service.queue(
+                    BAND_CHANGE_TEMPLATE,
+                    {
+                        "borrower_reference": references.get(entry.borrower_id, ""),
+                        "summary": (
+                            f"Moved from {_BAND_WORDS.get(prior or '', 'not monitored')} to "
+                            f"{_BAND_WORDS.get(entry.band or 'watch', 'Watch')} in the review "
+                            f"of {forecast_run.as_of_date:%d %b %Y}."
+                        ),
+                        "details": "Open the borrower to see what changed and why.",
+                        "forecast_run_id": marker,
+                    },
+                    recipient_ids=recipients,
+                    subject_type="borrower",
+                    subject_id=entry.borrower_id,
+                    actor_id=self.system_actor_id,
+                )
+                notices += 1
+        summaries = 0
+        review_date = forecast_run.as_of_date.isoformat()
+        if target is None:
+            for person in self._users_with_roles(session, _SUMMARY_ROLES):
+                # One summary per review date: a re-run or a walkthrough
+                # signal later the same day is covered by its band notices.
+                if self._already_sent(
+                    session,
+                    MORNING_QUEUE_TEMPLATE.name,
+                    None,
+                    review_date,
+                    recipient_id=person,
+                    key="review_date",
+                ):
+                    continue
+                scope = resolve_scope(Principal.user(person, ()), session)
+                summary = TriageRepository(session).summary(scope)
+                if summary.total == 0:
+                    continue
+                changes = summary.what_changed
+                service.queue(
+                    MORNING_QUEUE_TEMPLATE,
+                    {
+                        "summary": (
+                            f"Review of {forecast_run.as_of_date:%d %b %Y}: "
+                            f"{summary.act} act now, {summary.amber} amber and "
+                            f"{summary.watch} watch across {summary.total} borrowers in "
+                            "your portfolios."
+                        ),
+                        "entries": (
+                            "This is the first review, so there is nothing earlier to "
+                            "compare against."
+                            if previous is None
+                            else "No band changes since the last review."
+                            if changes == 0
+                            else f"{changes} band change{'' if changes == 1 else 's'} "
+                            "since the last review; see What's new on the queue."
+                        ),
+                        "forecast_run_id": marker,
+                        "review_date": review_date,
+                    },
+                    recipient_ids=[person],
+                    actor_id=self.system_actor_id,
+                )
+                summaries += 1
+        return notices, summaries
+
+    def _users_with_roles(self, session: Session, roles: tuple[str, ...]) -> list[UUID]:
+        return list(
+            session.execute(
+                select(AppUser.id)
+                .distinct()
+                .join(UserRole, UserRole.user_id == AppUser.id)
+                .join(Role, Role.id == UserRole.role_id)
+                .where(AppUser.is_active.is_(True), Role.code.in_(roles))
+                .order_by(AppUser.id)
+            )
+            .scalars()
+            .all()
+        )
+
+    def _already_sent(
+        self,
+        session: Session,
+        template: str,
+        subject_id: UUID | None,
+        marker: str,
+        *,
+        recipient_id: UUID | None = None,
+        key: str = "forecast_run_id",
+    ) -> bool:
+        statement = select(Notification.payload).where(Notification.template == template)
+        if subject_id is not None:
+            statement = statement.where(Notification.subject_id == subject_id)
+        if recipient_id is not None:
+            statement = statement.where(Notification.recipient_id == recipient_id)
+        return any(
+            (payload or {}).get(key) == marker for payload in session.execute(statement).scalars()
+        )
+
+    def _case_sla(self, band: str, now: datetime) -> tuple[datetime | None, int | None]:
+        """T11's deadline for a new case, or none when T11 is not configured
+        (the case still opens; it simply has no SLA to escalate on)."""
+
+        try:
+            deadline = derive_sla(band, now, self.threshold_store)
+        except (KeyError, LookupError, TypeError, ValueError):
+            return None, None
+        return deadline.due_at, deadline.hours
+
+    def _escalate_overdue_cases(self, session: Session, request_id: str, now: datetime) -> int:
+        """Escalate every case past its SLA and notify its owner (`spec §R-18.b`)."""
+
+        principal = Principal(
+            id=self.system_actor_id,
+            permissions=frozenset({Permission.VIEW_QUEUE, Permission.UPDATE_CASE}),
+            kind=PrincipalKind.USER,
+        )
+        service = CaseService(
+            session,
+            audit=self._audit(session, request_id),
+            clock=self.clock,
+            request_id=request_id,
+            scope_resolver=lambda _principal: self._full_book_scope(session),
+        )
+        return len(service.escalate_overdue(principal, now=now))
+
+    def _re_escalated_cases(
+        self, session: Session, forecast_run: ForecastRun, borrower_id: UUID | None
+    ) -> list[Case]:
+        """Open cases, opened by an earlier run, whose borrower entered the
+        act band in ``forecast_run`` from a lower band (or from no entry).
+        A single-borrower run considers only that borrower."""
+
+        act_borrowers = set(
+            session.execute(
+                select(TriageEntryModel.borrower_id).where(
+                    TriageEntryModel.run_id == forecast_run.id,
+                    TriageEntryModel.band == ACT_BAND,
+                )
+            )
+            .scalars()
+            .all()
+        )
+        if borrower_id is not None:
+            act_borrowers &= {borrower_id}
+        if not act_borrowers:
+            return []
+        previous = self._previous_serving_run(session, forecast_run)
+        previously_act: set[UUID] = set()
+        if previous is not None:
+            previously_act = set(
+                session.execute(
+                    select(TriageEntryModel.borrower_id).where(
+                        TriageEntryModel.run_id == previous.id,
+                        TriageEntryModel.band == ACT_BAND,
+                    )
+                )
+                .scalars()
+                .all()
+            )
+        escalated = act_borrowers - previously_act
+        if not escalated:
+            return []
+        cases = (
+            session.execute(
+                select(Case)
+                .where(
+                    Case.borrower_id.in_(escalated),
+                    Case.state != "closed",
+                    or_(
+                        Case.opened_from_run_id.is_(None),
+                        Case.opened_from_run_id != forecast_run.id,
+                    ),
+                )
+                .order_by(Case.borrower_id, Case.created_at.desc())
+            )
+            .scalars()
+            .all()
+        )
+        latest_by_borrower: dict[UUID, Case] = {}
+        for case in cases:
+            latest_by_borrower.setdefault(case.borrower_id, case)
+        return list(latest_by_borrower.values())
 
     # -- shared queries and adapters -----------------------------------------
 
@@ -1296,16 +2027,19 @@ class NightlyPipelineService:
     def _test_history(
         self, session: Session, covenant_version_id: UUID, as_of_date: date
     ) -> list[CovenantTest]:
+        # Newest first so the limit keeps the most recent tests, then flipped
+        # back to chronological order for the trend fit.  Same-day retests sort
+        # by computation time, so the last row is always the latest result.
         statement = (
             select(CovenantTest)
             .where(
                 CovenantTest.covenant_version_id == covenant_version_id,
                 CovenantTest.as_of_date <= as_of_date,
             )
-            .order_by(CovenantTest.as_of_date.asc())
+            .order_by(CovenantTest.as_of_date.desc(), CovenantTest.computed_at.desc())
             .limit(_TEST_HISTORY_LIMIT)
         )
-        return list(session.execute(statement).scalars().all())
+        return list(reversed(session.execute(statement).scalars().all()))
 
     def _forecast_candidates(
         self,
@@ -1325,15 +2059,38 @@ class NightlyPipelineService:
             if not history:
                 continue
             latest = history[-1]
-            series = [Observation(date=row.as_of_date, value=row.value) for row in history]
+            statement_based = not reads_facility_conduct(version.definition_ref)
+            series = self._observations(session, history, statement_based=statement_based)
+            data_as_of = series[-1].observed_on
+            allowance = self._statement_allowance_days(version) if statement_based else None
             evidence_items = self._evidence_for_covenant(session, version, scope)
+            threshold, threshold_changes = self._threshold_schedule(session, version, as_of_date)
             candidates.append(
                 ForecastCandidate(
                     covenant_version_id=version.id,
-                    threshold=version.threshold,
+                    # The limit in force today, and its changes inside the
+                    # horizon, so an approved exception relaxes the forecast
+                    # exactly where it relaxes the covenant test.
+                    threshold=threshold,
+                    threshold_changes=threshold_changes,
                     direction=version.direction,
                     series=series,
-                    data_as_of=latest.as_of_date,
+                    # The date the latest value describes (a statement's period
+                    # end), not the night it was re-tested: staleness is
+                    # measured from it, past the expected reporting lag.
+                    data_as_of=data_as_of,
+                    reporting_lag_days=allowance or 0,
+                    distance_scale=self.distance_scale,
+                    # Sustained evidence at full materiality moves the covenant
+                    # by `pressure_rate` of its threshold over one reporting
+                    # period, not by whole units of it per day.
+                    pressure_scale=(
+                        self.pressure_rate
+                        * abs(version.threshold)
+                        / Decimal(
+                            FREQUENCY_WINDOW_DAYS.get(version.frequency, _DEFAULT_PERIOD_DAYS)
+                        )
+                    ),
                     computable=True,
                     already_breached=latest.verdict in _BREACH_VERDICTS,
                     pressure=evidence_pressure(evidence_items, version.direction),
@@ -1344,6 +2101,98 @@ class NightlyPipelineService:
                 )
             )
         return candidates
+
+    def _threshold_schedule(
+        self, session: Session, version: CovenantVersion, as_of_date: date
+    ) -> tuple[Decimal, list[ThresholdChange]]:
+        """The threshold in force on ``as_of_date`` and each change to it
+        within the longest horizon, from the version's exception windows."""
+
+        fiscal = _fiscal_start_month(session)
+        windows: list[tuple[date, date, Decimal]] = []
+        rows = session.execute(
+            select(CovenantException).where(
+                CovenantException.covenant_version_id == version.id,
+                CovenantException.relaxed_threshold.is_not(None),
+            )
+        ).scalars()
+        for row in rows:
+            try:
+                start, _ = period_bounds_for_label(row.from_period, fiscal_year_start_month=fiscal)
+                _, end = period_bounds_for_label(row.to_period, fiscal_year_start_month=fiscal)
+            except (TypeError, ValueError):
+                continue  # a malformed window cannot be placed on the calendar
+            assert row.relaxed_threshold is not None
+            windows.append((start, end, row.relaxed_threshold))
+
+        def in_force(day: date) -> Decimal:
+            for start, end, relaxed in windows:
+                if start <= day <= end:
+                    return relaxed
+            return version.threshold
+
+        current = in_force(as_of_date)
+        horizon_end = date.fromordinal(as_of_date.toordinal() + max(self.horizons))
+        boundaries = sorted(
+            {start for start, _end, _relaxed in windows}
+            | {date.fromordinal(end.toordinal() + 1) for _start, end, _relaxed in windows}
+        )
+        changes: list[ThresholdChange] = []
+        previous = current
+        for boundary in boundaries:
+            if as_of_date < boundary <= horizon_end and in_force(boundary) != previous:
+                previous = in_force(boundary)
+                changes.append(
+                    ThresholdChange(
+                        threshold=previous,
+                        effective_date=boundary,
+                        reason="covenant exception window",
+                    )
+                )
+        return current, changes
+
+    def _observations(
+        self, session: Session, history: Sequence[CovenantTest], *, statement_based: bool
+    ) -> list[Observation]:
+        """One observation per date the values describe, oldest first.
+
+        A test tied to a statement period describes that period's end, however
+        late it was run; a re-test of the same period replaces the earlier
+        value.  Older statement tests carry no period, and older nightly runs
+        re-tested the same statement daily — an identical value within days of
+        the last one is that statement again, kept at its first date, or the
+        copies would flatten the trend toward zero.  A genuinely flat history
+        a quarter apart keeps every point.
+        """
+
+        period_ids = {row.period_id for row in history if row.period_id is not None}
+        period_ends: dict[UUID, date] = {}
+        if period_ids:
+            statement = select(FinancialPeriod.id, FinancialPeriod.period_end).where(
+                FinancialPeriod.id.in_(period_ids)
+            )
+            period_ends = {
+                period_id: period_end for period_id, period_end in session.execute(statement)
+            }
+        by_date: dict[date, Decimal] = {}
+        previous_untied: tuple[date, Decimal] | None = None
+        for row in history:  # chronological; a later test of a date wins
+            assert row.value is not None
+            if row.period_id is not None and row.period_id in period_ends:
+                by_date[period_ends[row.period_id]] = row.value
+                previous_untied = None
+                continue
+            copy = (
+                statement_based
+                and previous_untied is not None
+                and row.value == previous_untied[1]
+                and (row.as_of_date - previous_untied[0]).days < _MIN_STATEMENT_GAP_DAYS
+            )
+            previous_untied = (row.as_of_date, row.value)
+            if copy:
+                continue  # a nightly copy of the same statement, not a new period
+            by_date[row.as_of_date] = row.value
+        return [Observation(date=day, value=value) for day, value in sorted(by_date.items())]
 
     def _evidence_for_covenant(
         self,
@@ -1398,21 +2247,84 @@ class NightlyPipelineService:
         statement = select(TriageEntryModel).where(TriageEntryModel.run_id == run_id)
         return list(session.execute(statement).scalars().all())
 
-    def _borrowers_with_forecasts(
+    def _borrowers_to_rank(
         self, session: Session, forecast_run_id: UUID, borrower_id: UUID | None
     ) -> list[UUID]:
-        statement = (
+        """Every active borrower in the book, plus any borrower scored in
+        this run — not only those that happen to have a forecast row."""
+
+        if borrower_id is not None:
+            return [borrower_id]
+        scope = self._full_book_scope(session)
+        active = (
             select(Borrower.id)
-            .distinct()
+            .join(Portfolio, Portfolio.id == Borrower.portfolio_id)
+            .where(scope.predicate(Portfolio.path), Borrower.is_active.is_(True))
+        )
+        scored = (
+            select(Borrower.id)
             .join(Facility, Facility.borrower_id == Borrower.id)
             .join(Covenant, Covenant.facility_id == Facility.id)
             .join(CovenantVersion, CovenantVersion.covenant_id == Covenant.id)
             .join(Forecast, Forecast.covenant_version_id == CovenantVersion.id)
             .where(Forecast.run_id == forecast_run_id)
         )
-        if borrower_id is not None:
-            statement = statement.where(Borrower.id == borrower_id)
-        return list(session.execute(statement).scalars().all())
+        ids = set(session.execute(active).scalars().all())
+        ids.update(session.execute(scored).scalars().all())
+        return sorted(ids, key=str)
+
+    def _carried_forward_facts(
+        self, session: Session, forecast_run: ForecastRun, borrower_id: UUID
+    ) -> dict[UUID, list[ForecastFact]]:
+        """The rest of the book's worst-horizon facts from the queue a
+        single-borrower run replaces, so its re-rank covers every borrower."""
+
+        serving = self._previous_serving_run(session, forecast_run)
+        if serving is None:
+            return {}
+        carried: dict[UUID, list[ForecastFact]] = {}
+        for entry in self._entries_for_run(session, serving.id):
+            if entry.borrower_id == borrower_id:
+                continue
+            if entry.worst_covenant_version_id is None or entry.worst_horizon is None:
+                carried[entry.borrower_id] = []
+                continue
+            carried[entry.borrower_id] = [
+                ForecastFact(
+                    covenant_version_id=entry.worst_covenant_version_id,
+                    horizon_days=entry.worst_horizon,
+                    probability=entry.probability,
+                    confidence=entry.confidence,
+                    suppressed=entry.probability is None,
+                )
+            ]
+        return carried
+
+    def _previous_serving_run(self, session: Session, current: ForecastRun) -> ForecastRun | None:
+        """The newest complete run before ``current`` that has a ranked queue."""
+
+        statement = (
+            select(ForecastRun)
+            .where(
+                ForecastRun.id != current.id,
+                ForecastRun.state == COMPLETE_FORECAST_RUN_STATE,
+                ForecastRun.as_of_date <= current.as_of_date,
+                exists(select(1).where(TriageEntryModel.run_id == ForecastRun.id)),
+            )
+            .order_by(
+                ForecastRun.as_of_date.desc(),
+                ForecastRun.finished_at.desc().nullslast(),
+                ForecastRun.id.desc(),
+            )
+        )
+        if current.finished_at is not None:
+            statement = statement.where(
+                or_(
+                    ForecastRun.finished_at.is_(None),
+                    ForecastRun.finished_at <= current.finished_at,
+                )
+            )
+        return session.execute(statement.limit(1)).scalars().first()
 
     def _forecast_facts(
         self, session: Session, forecast_run_id: UUID, borrower_id: UUID
@@ -1514,6 +2426,47 @@ def _case_reference(borrower_id: UUID, sequence: int = 1) -> str:
 
     base = f"C-{borrower_id.hex[:12].upper()}"
     return base if sequence <= 1 else f"{base}-{sequence}"
+
+
+_BAND_ORDER: Final[Mapping[str, int]] = {"watch": 0, "amber": 1, "act": 2}
+_BAND_WORDS: Final[Mapping[str, str]] = {"watch": "Watch", "amber": "Amber", "act": "Act now"}
+#: Who hears about a borrower's band worsening: the risk desk and the
+#: relationship managers, each only for borrowers in their own portfolios.
+_BAND_NOTICE_ROLES: Final[tuple[str, ...]] = ("risk_head", "risk", "relationship_manager")
+_SUMMARY_ROLES: Final[tuple[str, ...]] = _BAND_NOTICE_ROLES
+_FAILURE_NOTICE_ROLES: Final[tuple[str, ...]] = ("administrator",)
+
+
+def _in_scope(scope: Scope, path: str) -> bool:
+    return path in scope.exact_paths or any(
+        path.startswith(prefix) for prefix in scope.descendant_paths
+    )
+
+
+def _band_worsened(before: str | None, after: str | None) -> bool:
+    """A move into amber or act from a lower band, or a first appearance there."""
+
+    after_rank = _BAND_ORDER.get(after or "watch", 0)
+    if after_rank == 0:
+        return False
+    return before is None or after_rank > _BAND_ORDER.get(before, 0)
+
+
+def _fiscal_start_month(session: Session) -> int:
+    """The bank's fiscal-year start month (`organisation`), April by default."""
+
+    value = session.scalar(select(Organisation.fiscal_year_start_month).limit(1))
+    return value if isinstance(value, int) else DEFAULT_FISCAL_YEAR_START_MONTH
+
+
+def _canonical_label(label: str, period_end: date, fiscal_year_start_month: int) -> str:
+    """The statement's own `FYyyQn` label, or one derived from its period end
+    when the stored label is not canonical (so exception lookup never fails)."""
+
+    try:
+        return normalise_period(label)
+    except (TypeError, ValueError):
+        return period_label_for_date(period_end, fiscal_year_start_month=fiscal_year_start_month)
 
 
 def _longest_consecutive_days(values: Sequence[date]) -> int:

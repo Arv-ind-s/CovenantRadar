@@ -25,7 +25,7 @@
       {% for item in view.items %}
         <li class="panel notification-list__item" data-notification-id="{{ item.id }}" data-accessible="{{ 'true' if item.accessible else 'false' }}">
           <header class="notification-list__header">
-            <div><h3>{{ item.title }}</h3><p>{{ labels.type }}: {{ item.template or labels.heading }}</p></div>
+            <div><h3>{{ item.title }}</h3><p>{{ labels.type }}: {{ (template_labels|default({})).get(item.template, item.template) or labels.heading }}</p></div>
             <div><span>{{ labels.read_status if item.read else labels.unread_status }}</span><time datetime="{{ item.created_at.isoformat() }}">{{ item.created_at|ist_date }}</time></div>
           </header>
           <p{% if not item.accessible %} role="status"{% endif %}>{{ item.body }}</p>

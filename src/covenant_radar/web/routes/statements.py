@@ -380,8 +380,8 @@ def _base_context(
     error: str,
     rows: object = (),
 ) -> dict[str, object]:
-    locale = request.cookies.get("covenant_radar_locale", "en").lower()
-    if locale not in {"en", "hi"}:
+    locale = "en".lower()
+    if locale not in {"en"}:
         locale = "en"
     return {
         "request": request,

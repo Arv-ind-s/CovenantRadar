@@ -40,13 +40,6 @@
   font-display: swap;
 }
 
-@font-face {
-  font-family: "Radar Devanagari";
-  src: url("../fonts/radar-devanagari.ttf") format("truetype");
-  font-style: normal;
-  font-weight: 400 700;
-  font-display: swap;
-}
 
 /* Plum & Porcelain. The brand accent sits outside green/amber/red because
    those three hues are owned by covenant risk semantics and must never be
@@ -79,7 +72,6 @@
   --font-editorial: "Radar Serif", Georgia, "Times New Roman", serif;
   --font-data: "Radar Mono", Consolas, "Courier New", monospace;
   --font-ui: "Radar Sans", "Segoe UI", Tahoma, sans-serif;
-  --font-deva: "Radar Devanagari", "Nirmala UI", sans-serif;
   --font-heading: var(--font-head);
 
   --size-caption: 11px;

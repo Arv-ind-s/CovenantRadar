@@ -9,7 +9,7 @@ Accepted.
 Covenant Radar presents financial evidence as dense, legible ledgers. The
 interface needs three distinct typographic roles: a newspaper-style face for
 headings and memo prose, a monospaced face with aligned figures for data, and a
-platform-style sans for controls. Hindi and the rupee sign must remain legible
+platform-style sans for controls. English text and the rupee sign must remain legible
 without a network request. The light and dark palettes must preserve the
 meaning of the risk colours instead of treating dark mode as an inversion.
 

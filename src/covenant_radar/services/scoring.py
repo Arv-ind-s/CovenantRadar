@@ -62,6 +62,7 @@ from covenant_radar.domain.forecast import (
     project,
 )
 from covenant_radar.domain.forecast.attribution import DriverShare, attribute
+from covenant_radar.domain.forecast.inputs import probability_inputs
 from covenant_radar.domain.trace import TraceRecord, stage_record
 
 _SCORING_RULE_VERSION = "forecast.scoring.v1"
@@ -85,9 +86,7 @@ SHADOW_PREDICTOR_MODE: Final[str] = "shadow"
 #: `services.nightly_runtime` selects this, and only for an artifact whose
 #: component carries an approved `model_registration` row.
 CHAMPION_PREDICTOR_MODE: Final[str] = "champion"
-PREDICTOR_MODES: Final[frozenset[str]] = frozenset(
-    {SHADOW_PREDICTOR_MODE, CHAMPION_PREDICTOR_MODE}
-)
+PREDICTOR_MODES: Final[frozenset[str]] = frozenset({SHADOW_PREDICTOR_MODE, CHAMPION_PREDICTOR_MODE})
 
 
 class AuditWriter(Protocol):
@@ -128,6 +127,16 @@ class ForecastCandidate:
     already_breached: bool = False
     recent_periods: int | None = None
     period_days: int | Decimal | None = None
+    #: Days after ``data_as_of`` within which newer data is not yet expected
+    #: (a quarter plus filing time for a statement).  Staleness counts only
+    #: the days beyond it, so a current quarterly statement is not "stale".
+    reporting_lag_days: int = 0
+    #: Covenant units per day per unit of evidence materiality (see
+    #: `domain.forecast.path.project`).  `None` applies materiality directly.
+    pressure_scale: Decimal | None = None
+    #: Stretch applied to the cushion before the probability mapping
+    #: (`domain.forecast.inputs.probability_inputs`).
+    distance_scale: Decimal = Decimal("1")
     threshold_changes: Sequence[object] = ()
     formula_inputs: Mapping[str, object] = field(default_factory=dict)
     probability_weights: Weights | Mapping[str, object] | None = None
@@ -157,6 +166,12 @@ class ForecastCandidate:
             raise ValueError("recent_periods must be a positive integer or None.")
         if self.period_days is not None:
             _positive_decimal_or_int(self.period_days, "period_days")
+        if (
+            isinstance(self.reporting_lag_days, bool)
+            or not isinstance(self.reporting_lag_days, int)
+            or self.reporting_lag_days < 0
+        ):
+            raise ValueError("reporting_lag_days must be a non-negative integer.")
         object.__setattr__(self, "threshold", threshold)
         object.__setattr__(self, "direction", direction)
         object.__setattr__(self, "series", tuple(self.series))
@@ -203,6 +218,9 @@ class ForecastCandidate:
             already_breached=cast(bool, _read_any(value, "already_breached", default=False)),
             recent_periods=cast(int | None, _read_any(value, "recent_periods", default=None)),
             period_days=cast(int | Decimal | None, _read_any(value, "period_days", default=None)),
+            reporting_lag_days=cast(int, _read_any(value, "reporting_lag_days", default=0)),
+            pressure_scale=cast(Decimal | None, _read_any(value, "pressure_scale", default=None)),
+            distance_scale=cast(Decimal, _read_any(value, "distance_scale", default=Decimal("1"))),
             threshold_changes=cast(
                 Sequence[object],
                 _read_any(value, "threshold_changes", "threshold_schedule", default=()),
@@ -296,8 +314,7 @@ class ForecastScoringService:
             raise TypeError("ForecastScoringService requires a SQLAlchemy Session.")
         if predictor_mode not in PREDICTOR_MODES:
             raise ValueError(
-                f"predictor_mode must be one of {sorted(PREDICTOR_MODES)}, "
-                f"not {predictor_mode!r}."
+                f"predictor_mode must be one of {sorted(PREDICTOR_MODES)}, not {predictor_mode!r}."
             )
         if audit is None or not callable(getattr(audit, "record", None)):
             raise TypeError("ForecastScoringService requires an append-only audit writer.")
@@ -488,7 +505,9 @@ class ForecastScoringService:
         """Compute one covenant and atomically stage all of its rows."""
 
         projection: Projection | None = None
-        staleness_days = _staleness(candidate.data_as_of, scoring_date)
+        staleness_days = _staleness(
+            candidate.data_as_of, scoring_date, reporting_lag_days=candidate.reporting_lag_days
+        )
         computable, reason = _candidate_computability(candidate)
         if computable:
             observations = tuple(Observation.from_value(value) for value in candidate.series)
@@ -507,14 +526,21 @@ class ForecastScoringService:
                     candidate.direction,
                     recent_periods=candidate.recent_periods,
                     period_days=candidate.period_days,
+                    pressure_scale=candidate.pressure_scale,
+                    elapsed_days=_elapsed_days(candidate, scoring_date),
                 )
                 if projection.current_value is None:
                     computable = False
                     reason = projection.reason or "forecast projection has no usable value"
 
+        # `spec §R-12.f`: a covenant already in breach is a recorded fact.
+        # An overdue statement lowers confidence in where the covenant is
+        # heading, not in a breach that has already been tested, so the
+        # staleness factor is not allowed to hide it from the act band.  The
+        # true staleness is still stored on the forecast row.
         confidence_result = _confidence_result(
             candidate,
-            staleness_days,
+            0 if candidate.already_breached and staleness_days is not None else staleness_days,
             thresholds,
             computable=computable,
         )
@@ -721,9 +747,7 @@ class ForecastScoringService:
                 "threshold_snapshot_id": str(run.threshold_snapshot_id),
                 "model_version": run.model_version,
                 "covenant_count": run.covenant_count,
-                "attempted_count": len(
-                    {row.covenant_version_id for row in forecast_rows}
-                ),
+                "attempted_count": len({row.covenant_version_id for row in forecast_rows}),
                 "state": run.state,
                 "resumed": resumed,
             },
@@ -857,40 +881,51 @@ def _forecast_rows(
                 if horizon == projection.horizon_days
                 else project(
                     projection.usable_observations,
-                    projection.requested_pressure,
+                    # The full evidence result, so every horizon keeps its
+                    # per-item terms and links, not only the longest one.
+                    candidate.pressure,
                     horizon,
                     candidate.threshold,
                     candidate.direction,
                     recent_periods=candidate.recent_periods,
                     period_days=candidate.period_days,
+                    pressure_scale=candidate.pressure_scale,
+                    elapsed_days=_elapsed_days(candidate, scoring_date),
                 )
             )
             endpoint = horizon_projection.path[-1].value
             if endpoint is not None and effective_weights is not None:
-                direction = cast(Direction, candidate.direction)
-                distance = _distance_to_boundary(endpoint, candidate.threshold, direction)
-                velocity = (
-                    horizon_projection.net_per_day_drift
-                    if direction is Direction.MAX
-                    else -horizon_projection.net_per_day_drift
-                )
                 crossing_result = first_crossing(
                     horizon_projection,
                     as_of_date=scoring_date,
                     threshold_changes=cast(
                         Sequence[ThresholdChange | Mapping[str, object] | Sequence[object]],
-                        candidate.threshold_changes,
+                        _changes_within(candidate.threshold_changes, scoring_date, horizon),
                     ),
                 )
+                # Dimensionless inputs (`domain.forecast.inputs`), shared with
+                # the intervention simulator so its baseline matches this row.
+                inputs = probability_inputs(
+                    horizon_projection,
+                    threshold=(
+                        crossing_result.threshold_path[-1].threshold
+                        if crossing_result.threshold_path
+                        else None
+                    ),
+                    distance_scale=candidate.distance_scale,
+                )
+                assert inputs is not None  # the endpoint and current value exist
                 probability_result = probability(
-                    distance,
-                    velocity,
-                    horizon_projection.pressure,
+                    inputs.distance,
+                    inputs.velocity,
+                    inputs.pressure,
                     horizon,
                     effective_weights,
-                    already_breached=(
-                        candidate.already_breached or crossing_result.crossing_day == 0
-                    ),
+                    # Only a tested breach is "already in breach".  A path that
+                    # is past the limit on day zero (the trend since the last
+                    # statement, or a lapsed exception) is a projection.
+                    already_breached=candidate.already_breached,
+                    projected_crossing=inputs.projected_crossing,
                 )
         shown_probability = (
             probability_result.probability
@@ -912,8 +947,14 @@ def _forecast_rows(
                 # configured maximum; letting a model that predicts a *future*
                 # crossing overwrite that would report a live breach as a near
                 # -zero probability and silently drop it out of the act band.
+                # A path projected to cross inside the horizon is held the
+                # same way, and named as a projection.
                 fallback_reason = (
-                    "covenant is already in breach; deterministic maximum retained over "
+                    "the projected path crosses the covenant limit within the horizon; "
+                    "deterministic maximum retained over the model probability"
+                    if probability_result.formula_inputs.get("projected_crossing") is True
+                    and probability_result.formula_inputs.get("already_breached") is not True
+                    else "covenant is already in breach; deterministic maximum retained over "
                     "the model probability"
                 )
             else:
@@ -946,6 +987,22 @@ def _forecast_rows(
             "rule_versions": dict(rule_versions),
             "horizon_days": horizon,
             "data_as_of": candidate.data_as_of,
+            "reporting_lag_days": candidate.reporting_lag_days,
+            "pressure_scale": candidate.pressure_scale,
+            "distance_scale": candidate.distance_scale,
+            # The limit in force on the scoring date and its effective-dated
+            # changes (exception windows), for the simulator's re-projection.
+            "threshold_in_force": candidate.threshold,
+            "threshold_changes": [
+                _threshold_change_json(item)
+                for item in _changes_within(candidate.threshold_changes, scoring_date, horizon)
+            ],
+            # The evidence materiality behind the path; the probability's own
+            # pressure input is the share of the cushion it uses, a different
+            # number.  The simulator re-projects from this one.
+            "requested_pressure": (
+                projection.requested_pressure if projection is not None else None
+            ),
             "staleness_days": staleness_days,
             "computable": computable,
             "not_computable_reason": not_computable_reason,
@@ -1020,12 +1077,14 @@ def _forecast_rows(
                     else (
                         project(
                             projection.usable_observations,
-                            projection.requested_pressure,
+                            candidate.pressure,
                             horizon,
                             candidate.threshold,
                             candidate.direction,
                             recent_periods=candidate.recent_periods,
                             period_days=candidate.period_days,
+                            pressure_scale=candidate.pressure_scale,
+                            elapsed_days=_elapsed_days(candidate, scoring_date),
                         )
                         if projection is not None
                         else None
@@ -1083,12 +1142,13 @@ def _attribution(
     contributions: dict[str, Decimal] = {}
     metadata: dict[str, _DriverMetadata] = {}
     probability_terms = probability_result.terms_by_name
+    distance_lift, trend_lift, pressure_lift = _clamp_lift(computation, probability_result)
 
     _add_driver_contribution(
         contributions,
         metadata,
         "distance",
-        probability_terms["distance"].contribution,
+        probability_terms["distance"].contribution + distance_lift,
         _DriverMetadata(
             evidence_id=None,
             driver_type="distance",
@@ -1100,7 +1160,7 @@ def _attribution(
         contributions,
         metadata,
         "trend",
-        probability_terms["velocity"].contribution,
+        probability_terms["velocity"].contribution + trend_lift,
         _DriverMetadata(
             evidence_id=None,
             driver_type="trend",
@@ -1109,7 +1169,7 @@ def _attribution(
         ),
     )
 
-    pressure_contribution = probability_terms["pressure"].contribution
+    pressure_contribution = probability_terms["pressure"].contribution + pressure_lift
     pressure_result = (
         computation.projection.pressure_result if computation.projection is not None else None
     )
@@ -1186,6 +1246,82 @@ def _attribution(
         else:
             raise RuntimeError(f"Attribution produced an unknown driver {share.name!r}.")
     return shares, metadata
+
+
+def _elapsed_days(candidate: ForecastCandidate, scoring_date: date) -> int:
+    """Days from the latest observation to the scoring date, which the
+    projection carries the trend across (`domain.forecast.path.project`)."""
+
+    if candidate.data_as_of is None:
+        return 0
+    return max(0, (scoring_date - candidate.data_as_of).days)
+
+
+def _changes_within(
+    changes: Sequence[object], scoring_date: date, horizon: int
+) -> tuple[object, ...]:
+    """The threshold changes that take effect inside one horizon."""
+
+    kept: list[object] = []
+    for change in changes:
+        if isinstance(change, ThresholdChange):
+            if change.effective_day is not None:
+                day = change.effective_day
+            else:
+                assert isinstance(change.effective_date, date)
+                day = (change.effective_date - scoring_date).days
+            if day <= horizon:
+                kept.append(change)
+        else:
+            kept.append(change)  # adapter shapes are validated by the crossing stage
+    return tuple(kept)
+
+
+def _threshold_change_json(value: object) -> dict[str, object]:
+    if isinstance(value, ThresholdChange):
+        return {
+            "threshold": str(value.threshold),
+            "effective_day": value.effective_day,
+            "effective_date": (
+                value.effective_date.isoformat()
+                if isinstance(value.effective_date, date)
+                else value.effective_date
+            ),
+            "reason": value.reason,
+        }
+    if isinstance(value, Mapping):
+        return {str(key): item for key, item in value.items()}
+    raise TypeError("A threshold change must be a ThresholdChange or a mapping.")
+
+
+def _clamp_lift(
+    computation: _ForecastComputation, result: ProbabilityResult
+) -> tuple[Decimal, Decimal, Decimal]:
+    """Split the lift a breach clamp adds above the raw score.
+
+    A projected crossing fixes the probability at the configured maximum, so
+    most of the shown number is that clamp, not the three raw terms.  The lift
+    belongs to whatever moved the path across the limit: the trend and the
+    sustained evidence, in proportion to how far each moved it by the horizon.
+    An observed breach is the covenant's current state, so its lift is
+    distance.  Returns ``(distance, trend, pressure)`` lifts.
+    """
+
+    lift = result.probability - result.raw_score
+    if not result.already_breached or lift <= _ZERO:
+        return _ZERO, _ZERO, _ZERO
+    projection = computation.projection
+    if result.formula_inputs.get("already_breached") is True or projection is None:
+        return lift, _ZERO, _ZERO
+    last = projection.path[-1]
+    sign = _ONE if projection.direction is Direction.MAX else -_ONE
+    trend_move = max(_ZERO, sign * last.trend_component)
+    pressure_move = max(_ZERO, sign * last.pressure_component)
+    moved = trend_move + pressure_move
+    if moved <= _ZERO:
+        return lift, _ZERO, _ZERO
+    trend_lift = lift * trend_move / moved
+    return _ZERO, trend_lift, lift - trend_lift
 
 
 def _quantized_driver_shares(shares: Sequence[DriverShare]) -> tuple[DriverShare, ...]:
@@ -1319,6 +1455,7 @@ def _stage4_trace(
         "threshold": candidate.threshold,
         "direction": cast(Direction, candidate.direction).value,
         "data_as_of": candidate.data_as_of,
+        "reporting_lag_days": candidate.reporting_lag_days,
         "staleness_days": forecast_row.staleness_days,
         "current_value": projection.current_value if projection is not None else None,
         "slope": projection.slope if projection is not None else None,
@@ -1493,12 +1630,6 @@ def _candidate_computability(candidate: ForecastCandidate) -> tuple[bool, str | 
     if not candidate.computable:
         return False, candidate.not_computable_reason or "forecast was marked not computable"
     return True, candidate.not_computable_reason
-
-
-def _distance_to_boundary(value: Decimal, threshold: Decimal, direction: Direction) -> Decimal:
-    if direction is Direction.MAX:
-        return max(_ZERO, threshold - value)
-    return max(_ZERO, value - threshold)
 
 
 def _run_content_hash(
@@ -1690,13 +1821,17 @@ def _unique_candidate_ids(values: Sequence[ForecastCandidate]) -> None:
         raise ValidationError("Each covenant_version_id may occur only once per scoring pass.")
 
 
-def _staleness(data_as_of: date | None, scoring_date: date) -> int | None:
+def _staleness(
+    data_as_of: date | None, scoring_date: date, *, reporting_lag_days: int = 0
+) -> int | None:
+    """Days the data is overdue: its age beyond the expected reporting lag."""
+
     if data_as_of is None:
         return None
     normalized = _calendar_date(data_as_of, "data_as_of")
     if normalized > scoring_date:
         raise ValidationError("data_as_of cannot be after as_of_date.", field="data_as_of")
-    return (scoring_date - normalized).days
+    return max(0, (scoring_date - normalized).days - reporting_lag_days)
 
 
 def _configuration_value(configuration: object, name: str) -> object | None:

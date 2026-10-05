@@ -31,10 +31,11 @@ import httpx
 MAX_BYTES = 2_000_000
 NEWS_WINDOW = timedelta(days=14)
 SERIES_HISTORY = timedelta(days=430)
-_NEWS_PER_QUERY = 12
+_NEWS_PER_QUERY = 20
 # Social reposts and chart widgets are not reporting; they are dropped.
 _SKIP_PUBLISHERS = ("linkedin", "youtube", "facebook", "instagram", "tradingview", "scribd")
-# Established business and trade press ranks first; everything else follows by date.
+# Established business and trade press is flagged so views can prefer it; the
+# stored list itself is newest first, because it feeds a live headline stream.
 _ESTABLISHED = (
     "reuters",
     "economic times",
@@ -141,7 +142,7 @@ def _title_key(title: str) -> str:
 
 
 def parse_news(payload: bytes, source: PublicSource, now: datetime) -> list[dict[str, object]]:
-    """Google News RSS: publisher from ``<source>``, deduplicated by headline."""
+    """Google News RSS, newest first: publisher from ``<source>``, deduplicated by headline."""
     result: list[dict[str, object]] = []
     seen: set[str] = set()
     for item in _rss_items(payload):
@@ -178,7 +179,7 @@ def parse_news(payload: bytes, source: PublicSource, now: datetime) -> list[dict
                 "established": any(mark in f"{name} " for mark in _ESTABLISHED),
             }
         )
-    result.sort(key=lambda row: (row["established"], str(row["published_at"])), reverse=True)
+    result.sort(key=lambda row: str(row["published_at"]), reverse=True)
     return result[:_NEWS_PER_QUERY]
 
 

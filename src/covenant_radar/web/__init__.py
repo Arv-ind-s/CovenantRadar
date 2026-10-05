@@ -6,8 +6,8 @@ from typing import Any
 
 
 def create_app(*args: Any, **kwargs: Any) -> Any:
-    """Lazily expose the ASGI factory without creating an import cycle."""
-    from covenant_radar.asgi import create_app as factory
+    """Lazily expose the web application factory (`covenant_radar.web.app`)."""
+    from covenant_radar.web.app import create_app as factory
 
     return factory(*args, **kwargs)
 

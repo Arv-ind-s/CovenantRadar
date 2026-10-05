@@ -207,7 +207,7 @@ def _render(
     values = {
         "request": request,
         "principal": principal,
-        "locale": request.cookies.get("covenant_radar_locale", "en"),
+        "locale": "en",
         "theme": theme_for_request(request),
         "text_direction": "ltr",
         "labels": _LABELS,

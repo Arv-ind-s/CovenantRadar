@@ -43,6 +43,7 @@ from covenant_radar.domain.covenants.evaluate import (
     CovenantVersionFacts,
     PeriodFacts,
     Thresholds,
+    continue_cure_window,
     evaluate_covenant,
 )
 from covenant_radar.domain.covenants.exceptions import resolve_exception, resolve_waiver
@@ -70,7 +71,7 @@ _FACILITY_CONDUCT_FIELDS: Final[frozenset[str]] = frozenset(
 )
 
 
-def _reads_facility_conduct(definition_ref: str | None) -> bool:
+def reads_facility_conduct(definition_ref: str | None) -> bool:
     """Whether a covenant version's ratio definition reads facility conduct."""
     if definition_ref is None:
         return False
@@ -225,6 +226,13 @@ class EngineService:
             active_exception,
             active_waiver,
             Thresholds(as_of_date=test_date),
+        )
+        prior = self._prior_valued_test(covenant_row.id, test_date)
+        evaluation = continue_cure_window(
+            evaluation,
+            prior_verdict=prior.verdict if prior is not None else None,
+            prior_cure_ends_on=prior.cure_ends_on if prior is not None else None,
+            test_date=test_date,
         )
 
         now = self._now()
@@ -381,7 +389,7 @@ class EngineService:
             return tuple(
                 version
                 for version in candidates
-                if version.status == "live" and _reads_facility_conduct(version.definition_ref)
+                if version.status == "live" and reads_facility_conduct(version.definition_ref)
             )
         # STATEMENT / RESTATEMENT: any live covenant across the borrower's
         # current facilities may depend on the changed period.
@@ -451,6 +459,23 @@ class EngineService:
             CovenantSchedule.state == ScheduleState.DUE.value,
         )
         return self.session.execute(statement).scalars().one_or_none()
+
+    def _prior_valued_test(self, covenant_id: UUID, test_date: date) -> CovenantTest | None:
+        """The covenant's latest earlier test that produced a verdict on a value,
+        across versions, so an amendment does not restart a running cure."""
+
+        statement = (
+            select(CovenantTest)
+            .join(CovenantVersion, CovenantVersion.id == CovenantTest.covenant_version_id)
+            .where(
+                CovenantVersion.covenant_id == covenant_id,
+                CovenantTest.as_of_date <= test_date,
+                CovenantTest.verdict.in_(("pass", "warning", "breach", "breach_cure_open")),
+            )
+            .order_by(CovenantTest.as_of_date.desc(), CovenantTest.computed_at.desc())
+            .limit(1)
+        )
+        return self.session.execute(statement).scalars().first()
 
     def _derive_sma(
         self,
@@ -1033,4 +1058,4 @@ def _sma_trace(derivation: BorrowerSmaDerivation) -> TraceRecord:
 CovenantEngineService = EngineService
 
 
-__all__ = ["AuditWriter", "CovenantEngineService", "EngineService"]
+__all__ = ["AuditWriter", "CovenantEngineService", "EngineService", "reads_facility_conduct"]

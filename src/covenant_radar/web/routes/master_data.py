@@ -703,8 +703,8 @@ def _pagination(path: str, request: Request, *, page: int, has_next: bool) -> di
 
 
 def _locale(request: Request) -> str:
-    locale = request.cookies.get("covenant_radar_locale", "en").lower()
-    return locale if locale in {"en", "hi"} else "en"
+    locale = "en".lower()
+    return locale if locale in {"en"} else "en"
 
 
 def _message(request: Request, key: str, **values: object) -> str:

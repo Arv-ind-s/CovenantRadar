@@ -3,7 +3,7 @@
 from __future__ import annotations
 
 import logging
-from collections.abc import Callable, Iterable, Mapping
+from collections.abc import Callable, Iterable
 from dataclasses import dataclass
 from datetime import date
 from decimal import Decimal
@@ -23,6 +23,7 @@ from covenant_radar.db.repositories.thresholds import SqlAlchemyThresholdReposit
 from covenant_radar.db.session import SessionFactory
 from covenant_radar.domain.forecast import Weights
 from covenant_radar.domain.forecast.predictor import ForecastPredictor
+from covenant_radar.domain.triage.changes import ChangeThresholds
 from covenant_radar.ingestion.signals.file_source import FileSignalSource
 from covenant_radar.ml.forecast import SklearnForecastPredictor
 from covenant_radar.scheduler import default_registry
@@ -35,8 +36,9 @@ from covenant_radar.scheduler.pipeline import (
     register_nightly_pipeline,
 )
 from covenant_radar.scheduler.runner import JobRunner, Scheduler
+from covenant_radar.services.certificates import CertificateCyclePolicy
 from covenant_radar.services.model_governance import SqlAlchemyModelRegistryRepository
-from covenant_radar.services.nightly import NightlyPipelineService
+from covenant_radar.services.nightly import NightlyPipelineService, StatementSnapshot
 from covenant_radar.services.scoring import CHAMPION_PREDICTOR_MODE, SHADOW_PREDICTOR_MODE
 
 _LOGGER = logging.getLogger(__name__)
@@ -116,6 +118,23 @@ def build_nightly_runtime(
             predictor.version
             if isinstance(predictor, SklearnForecastPredictor)
             else "nightly.pipeline.v1"
+        ),
+        statement_grace_days=settings.forecast.statement_grace_days,
+        pressure_rate=Decimal(str(settings.forecast.pressure_rate)),
+        distance_scale=Decimal(str(settings.forecast.distance_scale)),
+        what_changed_thresholds=ChangeThresholds(
+            reporting_threshold=Decimal(str(settings.forecast.what_changed_reporting_threshold)),
+            dominant_driver_share=Decimal(
+                str(settings.forecast.what_changed_dominant_driver_share)
+            ),
+        ),
+        certificate_policy=(
+            CertificateCyclePolicy(
+                lead_time_days=settings.certificates.lead_time_days,
+                grace_days=settings.certificates.grace_days,
+            )
+            if settings.certificates.enabled
+            else None
         ),
     )
     active_registry = registry or default_registry()
@@ -222,14 +241,15 @@ def _register_if_needed(scheduler: Scheduler, service: NightlyPipelineService) -
                 scheduler.runner,
                 schedule="0 1 * * *",
                 policy=default_step_policy(),
+                on_failure=service.notify_pipeline_failure,
             )
         )
 
 
 def _statement_lines_provider(
     session_factory: SessionFactory,
-) -> Callable[[CovenantVersion, date], Mapping[str, Decimal] | None]:
-    def provider(version: CovenantVersion, as_of_date: date) -> Mapping[str, Decimal] | None:
+) -> Callable[[CovenantVersion, date], StatementSnapshot | None]:
+    def provider(version: CovenantVersion, as_of_date: date) -> StatementSnapshot | None:
         session = session_factory()
         try:
             period = session.scalar(
@@ -239,6 +259,9 @@ def _statement_lines_provider(
                 .where(
                     Covenant.id == version.covenant_id,
                     FinancialPeriod.is_complete.is_(True),
+                    # A restated period's original row stays for audit; the
+                    # restatement that superseded it is the one to test.
+                    FinancialPeriod.superseded_by_id.is_(None),
                     FinancialPeriod.period_end <= as_of_date,
                 )
                 .order_by(FinancialPeriod.period_end.desc(), FinancialPeriod.id.desc())
@@ -251,7 +274,15 @@ def _statement_lines_provider(
                     StatementLineValue.period_id == period.id
                 )
             ).all()
-            return {line_code: value for line_code, value in rows} or None
+            lines = {line_code: value for line_code, value in rows}
+            if not lines:
+                return None
+            return StatementSnapshot(
+                lines=lines,
+                period_id=period.id,
+                period_label=period.fy_label,
+                period_end=period.period_end,
+            )
         finally:
             session.close()
 

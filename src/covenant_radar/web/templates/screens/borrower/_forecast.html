@@ -31,7 +31,7 @@
     {% set state_message = forecast_panel.degraded_message %}
     {% include "_states/degraded.html" %}
   {% else %}
-    <details class="forecast-explanation">
+    <details class="forecast-explanation" open>
       <summary>How to read this forecast</summary>
       <div class="forecast-explanation__body">
         <p><strong>Rules:</strong> the operational risk score combines distance to the covenant boundary, deterioration and sustained evidence. It is a prioritisation score, not a calibrated probability of covenant breach.</p>
@@ -291,8 +291,18 @@
             <div class="forecast-insights__heading">
               {# `-insights` now names the drawer, so the heading takes its own id. #}
               <h3 class="sr-only" id="{{ covenant.trajectory_id }}-insights-heading">{{ labels.forecast_actionable_insights }}</h3>
-              <p>{{ labels.forecast_actionable_note }}</p>
             </div>
+            {# The tailored package comes first: levers sized in rupees from this
+               borrower's own filings. It loads when the drawer is opened, since
+               the planner runs a simulation; without script the link remains. #}
+            {% if view.actions and view.actions.can_simulate %}
+              <div class="forecast-tailored"
+                   hx-get="/borrowers/{{ view.borrower_reference|urlencode }}/remediation/summary?covenant={{ covenant.covenant_reference|urlencode }}"
+                   hx-trigger="intersect once" hx-swap="innerHTML">
+                <a class="button" href="/borrowers/{{ view.borrower_reference|urlencode }}/remediation">{{ labels.forecast_open_planner }}</a>
+              </div>
+            {% endif %}
+            <p class="forecast-insights__catalogue-note">{{ labels.forecast_actionable_note }}</p>
             {% if covenant.actionable_insights %}
               <ol class="forecast-insight-list">
                 {% for insight in covenant.actionable_insights %}

@@ -10,7 +10,7 @@
   </a>
 {%- endmacro %}
 <!doctype html>
-<html lang="{{ locale }}" data-theme="{{ theme }}" class="no-js" data-sidebar="expanded" dir="{{ text_direction }}">
+<html lang="en" data-theme="{{ theme }}" class="no-js" data-sidebar="expanded" dir="{{ text_direction }}">
   <head>
     <meta charset="utf-8">
     <meta name="viewport" content="width=device-width, initial-scale=1">
@@ -145,13 +145,6 @@
                 <input type="hidden" name="next" value="{{ current_path }}">
                 <button class="icon-button" type="submit" aria-label="{% if theme == 'dark' %}{{ tr('navigation.theme_light') }}{% else %}{{ tr('navigation.theme_dark') }}{% endif %}" title="{% if theme == 'dark' %}{{ tr('navigation.theme_light') }}{% else %}{{ tr('navigation.theme_dark') }}{% endif %}">
                   {% if theme == "dark" %}{{ icons.icon("sun") }}{% else %}{{ icons.icon("moon") }}{% endif %}
-                </button>
-              </form>
-              <form method="post" action="/preferences/locale" class="shell-locale">
-                <input type="hidden" name="locale" value="{{ 'en' if locale == 'hi' else 'hi' }}">
-                <input type="hidden" name="next" value="{{ current_path }}">
-                <button class="icon-button" type="submit" aria-label="{% if locale == 'hi' %}{{ tr('navigation.language_english') }}{% else %}{{ tr('navigation.language_hindi') }}{% endif %}" title="{% if locale == 'hi' %}{{ tr('navigation.language_english') }}{% else %}{{ tr('navigation.language_hindi') }}{% endif %}">
-                  {% if locale == "hi" %}{{ tr("navigation.language_english_short") }}{% else %}{{ tr("navigation.language_hindi_short") }}{% endif %}
                 </button>
               </form>
               <div class="shell-user-menu" data-user-menu data-state="closed">

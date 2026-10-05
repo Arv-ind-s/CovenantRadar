@@ -137,16 +137,7 @@ class Translator:
 
 
 class ContextTranslator(Translator):
-    """Template translator that follows the locale of the render context.
-
-    Every screen already puts the request's locale into its template context —
-    `base.html` uses it for `<html lang>` — but ``_`` was bound to a single
-    locale at application startup, so switching language changed the language
-    attribute and nothing else.  Resolving per render is what makes the
-    shipped Hindi catalogue reachable.  A context with no locale (the
-    component gallery, offline audit renders) falls back to the bound default,
-    so nothing that worked before changes.
-    """
+    """Template translator for the English application catalogue."""
 
     #: Jinja only passes the render context to a global that asks for it.
     jinja_pass_arg = _PASS_CONTEXT
@@ -160,62 +151,6 @@ class ContextTranslator(Translator):
 
     gettext = __call__
 
-
-#: Hindi for the application shell only.  Anything absent here falls back to
-#: English through the catalogue's locale chain, which is deliberate: a
-#: machine-guessed Hindi threshold or verdict is a number a credit officer
-#: might act on, and this catalogue does not invent those.
-_HINDI_SHELL_MESSAGES: dict[str, str] = {
-    "navigation.label": "मुख्य नेविगेशन",
-    "navigation.queue": "पोर्टफोलियो कतार",
-    "navigation.intelligence": "बाज़ार संदर्भ",
-    "navigation.cases": "मामले",
-    "navigation.borrowers": "उधारकर्ता",
-    "navigation.facilities": "ऋण सुविधाएँ",
-    "navigation.portfolios": "पोर्टफोलियो",
-    "navigation.covenants": "अनुबंध शर्तें",
-    "navigation.certificates": "प्रमाणपत्र",
-    "navigation.intake": "दस्तावेज़ प्रविष्टि",
-    "navigation.financial_statements": "वित्तीय विवरण",
-    "navigation.document_review": "दस्तावेज़ समीक्षा",
-    "navigation.simulator": "सिम्युलेटर",
-    "navigation.audit": "ऑडिट अभिलेख",
-    "navigation.governance": "गवर्नेंस",
-    "navigation.catalogue": "कार्रवाई सूची",
-    "navigation.operations": "परिचालन",
-    "navigation.configuration": "विन्यास",
-    "navigation.admin": "प्रशासन",
-    "navigation.admin_users": "उपयोगकर्ता और पहुँच",
-    "navigation.notifications": "सूचनाएँ",
-    "navigation.notifications_unread": "{count} अपठित सूचनाएँ",
-    "navigation.search": "खोज",
-    "navigation.sign_in": "साइन इन",
-    "navigation.sign_out": "साइन आउट",
-    "navigation.group_monitor": "निगरानी",
-    "navigation.group_data": "पोर्टफोलियो डेटा",
-    "navigation.group_workflows": "कार्यप्रवाह",
-    "navigation.group_admin": "प्रशासन",
-    "navigation.theme_dark": "गहरा थीम प्रयोग करें",
-    "navigation.theme_light": "हल्का थीम प्रयोग करें",
-    "navigation.language_english": "अंग्रेज़ी में बदलें",
-    "navigation.language_hindi": "हिंदी में बदलें",
-    "navigation.language_english_short": "EN",
-    "navigation.language_hindi_short": "हिं",
-    "shell.skip_to_content": "मुख्य सामग्री पर जाएँ",
-    "shell.navigation": "कार्यक्षेत्र नेविगेशन",
-    "shell.close_navigation": "नेविगेशन बंद करें",
-    "shell.open_navigation": "नेविगेशन खोलें",
-    "shell.collapse_sidebar": "साइडबार संक्षिप्त करें",
-    "shell.workspace": "कार्यक्षेत्र",
-    "shell.current_view": "वर्तमान दृश्य",
-    "shell.search_label": "कार्यक्षेत्र में खोजें",
-    "shell.search_placeholder": "उधारकर्ता, मामले, अनुबंध शर्तें खोजें...",
-    "shell.open_user_menu": "उपयोगकर्ता मेन्यू खोलें",
-    "shell.signed_in_user": "साइन-इन उपयोगकर्ता",
-    "shell.secure_workspace": "सुरक्षित कार्यक्षेत्र",
-    "shell.change_password": "पासवर्ड बदलें",
-    "shell.decision_workspace": "निर्णय कार्यक्षेत्र",
-}
 
 _DEFAULT_MESSAGES: dict[str, str] = {
     "app.name": "Covenant Radar",
@@ -306,10 +241,6 @@ _DEFAULT_MESSAGES: dict[str, str] = {
     "navigation.governance": "Governance",
     "navigation.theme_dark": "Use dark theme",
     "navigation.theme_light": "Use light theme",
-    "navigation.language_english": "Switch to English",
-    "navigation.language_hindi": "Switch to Hindi",
-    "navigation.language_english_short": "EN",
-    "navigation.language_hindi_short": "हिं",
     "master.common.actions": "Actions",
     "master.common.open": "Open",
     "master.common.active": "Present",
@@ -419,21 +350,15 @@ _DEFAULT_MESSAGES: dict[str, str] = {
 
 
 def default_catalogue() -> Catalogue:
-    """Return the built-in catalogue: full English, Hindi for the shell.
-
-    Hindi covers the application shell — navigation, the top bar, the user
-    menu — which is what the language switcher visibly changes.  Screen bodies
-    fall back to English by the catalogue's own locale chain rather than being
-    machine-translated into text a credit officer would then act on.
-    """
-    return Catalogue({_DEFAULT_LOCALE: _DEFAULT_MESSAGES, "hi": _HINDI_SHELL_MESSAGES})
+    """Return the built-in English catalogue."""
+    return Catalogue({_DEFAULT_LOCALE: _DEFAULT_MESSAGES})
 
 
 def load_catalogue(source: Path | str | Mapping[str, Any] | None = None) -> Catalogue:
     """Load a catalogue from JSON, a mapping, or the built-in English scaffold.
 
     JSON may be either ``{"key": "value"}`` for English or
-    ``{"en": {"key": "value"}, "hi": {...}}`` for multiple locales.
+    ``{"en": {"key": "value"}}`` for multiple locales.
     """
     if source is None:
         return default_catalogue()

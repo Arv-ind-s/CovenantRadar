@@ -35,7 +35,7 @@ from sqlalchemy.orm import Session
 from covenant_radar.db.models.borrower import Borrower
 from covenant_radar.db.models.covenant import Covenant, CovenantVersion
 from covenant_radar.db.models.facility import Facility
-from covenant_radar.db.models.forecast import Forecast, ForecastDriver, ForecastPath
+from covenant_radar.db.models.forecast import Forecast, ForecastDriver, ForecastPath, ForecastRun
 from covenant_radar.db.models.identity import AppUser, UserPortfolioScope
 from covenant_radar.db.models.portfolio import Portfolio
 from covenant_radar.db.scoping import Scope
@@ -49,7 +49,9 @@ from covenant_radar.web.svg.trajectory import (
 )
 from covenant_radar.web.view_models.case import SelectOption, path_grants
 
-NO_FORECAST_TEXT: Final[str] = "No covenant has been tested for this borrower yet."
+NO_FORECAST_TEXT: Final[str] = (
+    "No forecast yet: no covenant has a usable tested value (missing statement or inputs)."
+)
 SUPPRESSED_TEXT: Final[str] = "Not enough reliable data to project this borrower yet."
 UNASSIGNED_TEXT: Final[str] = "Unassigned"
 NO_CASE_TEXT: Final[str] = "No case opened"
@@ -103,6 +105,8 @@ class QueueRowView:
     case_reference: str = ""
     case_href: str = ""
     market_impact: MarketAssessment | None = None
+    #: The covenant's latest test is a breach (not only a projected crossing).
+    observed_breach: bool = False
 
 
 @dataclass(frozen=True, slots=True)
@@ -167,6 +171,7 @@ def build_queue_view(
     horizons = _queue_horizon_displays(session, page)
     drivers = _queue_dominant_drivers(session, page)
     forecast_ids = _queue_forecast_ids(session, page)
+    observed = _observed_breaches(session, page)
     # Entries are already scoped by the triage query; positions add only their financials.
     market = (
         {
@@ -189,6 +194,7 @@ def build_queue_view(
             drivers,
             forecast_ids,
             market.get(entry.borrower_id),
+            observed_breach=(entry.worst_covenant_version_id, entry.worst_horizon) in observed,
         )
         for entry in page.entries
     )
@@ -214,6 +220,8 @@ def _row_view(
     drivers: Mapping[tuple[UUID, int], str] | None = None,
     forecast_ids: Mapping[tuple[UUID, int], UUID] | None = None,
     market_impact: MarketAssessment | None = None,
+    *,
+    observed_breach: bool = False,
 ) -> QueueRowView:
     worst_covenant, probability_display, crossing_date, crossing_note = _risk_cells(
         entry, covenant_labels, crossing_dates
@@ -242,6 +250,7 @@ def _row_view(
         case_reference=case_reference,
         case_href=f"/cases/{case_reference}" if case_reference else "",
         market_impact=market_impact,
+        observed_breach=observed_breach,
         href=f"/borrowers/{entry.borrower_reference}",
         borrower_name=entry.legal_name,
         borrower_reference=entry.borrower_reference,
@@ -331,10 +340,14 @@ def humanise_what_changed(summary: str | None) -> str:
     if tail is not None:
         text = tail.group("head")
         name = tail.group("name").strip()
-        driver = (
-            f" Biggest factor: {_DRIVER_WORDS.get(name.lower(), name)}"
-            f" ({_percent_text(tail.group('share'))})."
+        # An evidence driver is stored by its ledger id, which means nothing
+        # on a queue row; the case file links the item itself.
+        words = (
+            "a sustained early-warning signal"
+            if name.lower().startswith(("evidence:", "pressure_"))
+            else _DRIVER_WORDS.get(name.lower(), name)
         )
+        driver = f" Biggest factor: {words} ({_percent_text(tail.group('share'))})."
     band_move = _BAND_MOVE.match(text)
     score_move = _SCORE_MOVE.match(text)
     if band_move is not None:
@@ -417,7 +430,7 @@ def _queue_horizon_displays(
             Forecast.below_confidence_floor,
         )
         .where(
-            Forecast.run_id == page.run_id,
+            tuple_(Forecast.covenant_version_id, Forecast.run_id).in_(_source_runs(session, page)),
             Forecast.covenant_version_id.in_(version_ids),
             Forecast.horizon_days.in_((30, 60, 90)),
         )
@@ -460,7 +473,7 @@ def _queue_dominant_drivers(
         )
         .join(ForecastDriver, ForecastDriver.forecast_id == Forecast.id)
         .where(
-            Forecast.run_id == page.run_id,
+            tuple_(Forecast.covenant_version_id, Forecast.run_id).in_(_source_runs(session, page)),
             Forecast.covenant_version_id.in_(version_ids),
             Forecast.horizon_days.in_(horizons),
         )
@@ -507,7 +520,7 @@ def _queue_forecast_ids(
         Forecast.covenant_version_id,
         Forecast.horizon_days,
     ).where(
-        Forecast.run_id == page.run_id,
+        tuple_(Forecast.covenant_version_id, Forecast.run_id).in_(_source_runs(session, page)),
         Forecast.covenant_version_id.in_(version_ids),
         Forecast.horizon_days.in_(horizons),
     )
@@ -553,7 +566,9 @@ def _queue_trajectories(
         .join(Borrower, Borrower.id == Facility.borrower_id)
         .join(Portfolio, Portfolio.id == Borrower.portfolio_id)
         .where(
-            ForecastPath.run_id == page.run_id,
+            tuple_(ForecastPath.covenant_version_id, ForecastPath.run_id).in_(
+                _source_runs(session, page)
+            ),
             ForecastPath.covenant_version_id.in_(version_ids),
         )
         .order_by(ForecastPath.covenant_version_id, ForecastPath.day_offset)
@@ -661,6 +676,52 @@ def _number_with_unit(value: Decimal, unit: str) -> str:
     return f"{rendered}{unit}"
 
 
+def _source_runs(session: Session, page: QueuePage) -> tuple[tuple[UUID, UUID], ...]:
+    """The forecast run behind each visible covenant, as ``(version, run)``.
+
+    Normally that is the queue's own run.  A single-borrower recheck ranks
+    the rest of the book from the queue it replaces, so those rows' forecasts
+    live in an earlier run: the newest complete one up to this queue's date.
+    """
+
+    if page.run_id is None:
+        return ()
+    version_ids = {
+        entry.worst_covenant_version_id
+        for entry in page.entries
+        if entry.worst_covenant_version_id is not None
+    }
+    queue_run = session.get(ForecastRun, page.run_id)
+    if not version_ids or queue_run is None:
+        return ()
+    statement = (
+        select(
+            Forecast.covenant_version_id,
+            ForecastRun.id,
+            ForecastRun.as_of_date,
+            ForecastRun.finished_at,
+        )
+        .join(ForecastRun, ForecastRun.id == Forecast.run_id)
+        .where(
+            Forecast.covenant_version_id.in_(version_ids),
+            ForecastRun.state == "complete",
+            ForecastRun.as_of_date <= queue_run.as_of_date,
+        )
+        .distinct()
+    )
+    best: dict[UUID, tuple[tuple[bool, date, float], UUID]] = {}
+    for version_id, run_id, as_of_date, finished_at in session.execute(statement).all():
+        key = (run_id == page.run_id, as_of_date, finished_at.timestamp() if finished_at else 0.0)
+        current = best.get(version_id)
+        if current is None or key > current[0]:
+            best[version_id] = (key, run_id)
+    # The queue's own run unless only an earlier run forecast that covenant.
+    return tuple(
+        (version_id, best[version_id][1] if version_id in best else page.run_id)
+        for version_id in version_ids
+    )
+
+
 def _crossing_dates(session: Session, page: QueuePage) -> dict[tuple[UUID, int], date]:
     if page.run_id is None:
         return {}
@@ -676,7 +737,7 @@ def _crossing_dates(session: Session, page: QueuePage) -> dict[tuple[UUID, int],
         Forecast.horizon_days,
         Forecast.projected_cross_date,
     ).where(
-        Forecast.run_id == page.run_id,
+        tuple_(Forecast.covenant_version_id, Forecast.run_id).in_(_source_runs(session, page)),
         tuple_(Forecast.covenant_version_id, Forecast.horizon_days).in_(keys),
     )
     return {
@@ -684,6 +745,31 @@ def _crossing_dates(session: Session, page: QueuePage) -> dict[tuple[UUID, int],
         for covenant_version_id, horizon_days, crossing in session.execute(statement).all()
         if crossing is not None
     }
+
+
+def _observed_breaches(session: Session, page: QueuePage) -> set[tuple[UUID, int]]:
+    """Worst outcomes whose covenant is in breach on its latest test, as
+    opposed to a path projected past the limit (`services.scoring`)."""
+
+    keys = {
+        (entry.worst_covenant_version_id, entry.worst_horizon)
+        for entry in page.entries
+        if entry.worst_covenant_version_id is not None and entry.worst_horizon is not None
+    }
+    if page.run_id is None or not keys:
+        return set()
+    statement = select(
+        Forecast.covenant_version_id, Forecast.horizon_days, Forecast.formula_inputs
+    ).where(
+        tuple_(Forecast.covenant_version_id, Forecast.run_id).in_(_source_runs(session, page)),
+        tuple_(Forecast.covenant_version_id, Forecast.horizon_days).in_(keys),
+    )
+    observed: set[tuple[UUID, int]] = set()
+    for version_id, horizon, formula in session.execute(statement).all():
+        probability = (formula or {}).get("probability") if isinstance(formula, dict) else None
+        if isinstance(probability, dict) and probability.get("already_breached") is True:
+            observed.add((version_id, horizon))
+    return observed
 
 
 def assignable_users(session: Session, scope: Scope | None) -> tuple[SelectOption, ...]:

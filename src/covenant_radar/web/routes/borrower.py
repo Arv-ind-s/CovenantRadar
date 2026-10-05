@@ -130,7 +130,7 @@ _LABELS = {
     "forecast_title": "Forecast trajectory",
     "forecast_ledger": "Forecast figures",
     "forecast_horizon": "Horizon",
-    "forecast_probability": "Probability",
+    "forecast_probability": "Risk score",
     "forecast_confidence": "Confidence",
     "forecast_crossing": "Crossing",
     "forecast_method": "Decision method",
@@ -142,7 +142,7 @@ _LABELS = {
     ),
     "forecast_operational_source": "Operational source",
     "forecast_rule_version": "Rule version",
-    "forecast_deterministic_probability": "Deterministic probability",
+    "forecast_deterministic_probability": "Rules risk score",
     "forecast_ml_probability": "ML probability",
     "forecast_model_version": "Model version",
     "forecast_artifact_checksum": "Artifact checksum",
@@ -207,9 +207,10 @@ _LABELS = {
     "forecast_close": "Close",
     "forecast_actionable_insights": "Possible actionable insights",
     "forecast_actionable_note": (
-        "These are active, bank-owned catalogue actions applicable to this covenant. They are "
+        "Generic bank catalogue actions applicable to this covenant class follow. They are "
         "advisory candidates, not automatic credit decisions; simulate before prioritising."
     ),
+    "forecast_open_planner": "Open the remediation planner",
     "forecast_action_owner": "Owner",
     "forecast_action_effect": "Effect model",
     "forecast_action_assumptions": "Assumptions",
@@ -227,7 +228,7 @@ _LABELS = {
     "horizon_no_javascript": "The named horizons remain available without JavaScript.",
     "horizon_projected_value": "Projected value",
     "horizon_headroom": "Headroom",
-    "horizon_probability": "Probability",
+    "horizon_probability": "Risk score",
     "horizon_confidence": "Confidence",
     "horizon_crossing": "Crossing",
     "horizon_not_selected": "Not selected",
@@ -255,6 +256,7 @@ _LABELS = {
     "actions_title": "Case actions",
     "actions_why": "Why this decision",
     "actions_simulate": "Run simulation",
+    "actions_remediation": "Remediation planner",
     "actions_memo": "Generate AI explanation",
     "actions_log": "Log action",
     "actions_unavailable": "Unavailable for this case",
@@ -589,8 +591,8 @@ def _render(
 ) -> HTMLResponse:
     environment = getattr(request.app.state, "template_env", fallback_environment)
     template = environment.get_template("screens/borrower/index.html")
-    locale = request.cookies.get("covenant_radar_locale", "en").lower()
-    if locale not in {"en", "hi"}:
+    locale = "en".lower()
+    if locale not in {"en"}:
         locale = "en"
     theme = theme_for_request(request)
     values = {

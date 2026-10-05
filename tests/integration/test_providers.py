@@ -8,14 +8,14 @@ import httpx
 import pytest
 
 from covenant_radar.ai.errors import ProviderAuthError, ProviderUnavailable
-from covenant_radar.ai.providers.tcs_genailab import TCSGenAILabProvider
+from covenant_radar.ai.providers.gemini import GeminiProvider
 from covenant_radar.ports.llm import CompletionRequest
 
 
 def _request() -> CompletionRequest:
     return CompletionRequest(
         messages=[{"role": "user", "content": "Return the covenant result."}],
-        model="credit-model",
+        model="gemini-3.8-flash",
     )
 
 
@@ -28,8 +28,8 @@ def test_auth_failure_not_retried() -> None:
         return httpx.Response(401, json={"error": "invalid key"}, request=request)
 
     client = httpx.Client(transport=httpx.MockTransport(handler))
-    provider = TCSGenAILabProvider(
-        endpoint="https://tcs.example",
+    provider = GeminiProvider(
+        endpoint="https://generativelanguage.googleapis.com/v1beta/openai",
         api_key="super-secret-key",
         http_client=client,
     )
@@ -41,7 +41,7 @@ def test_auth_failure_not_retried() -> None:
 
     assert calls == 1
     assert "super-secret-key" not in str(raised.value)
-    assert raised.value.provider == "tcs"
+    assert raised.value.provider == "gemini"
 
 
 def test_transport_failure_names_provider_not_credential() -> None:
@@ -49,8 +49,8 @@ def test_transport_failure_names_provider_not_credential() -> None:
         raise httpx.ConnectError("connection failed for super-secret-key", request=request)
 
     client = httpx.Client(transport=httpx.MockTransport(handler))
-    provider = TCSGenAILabProvider(
-        endpoint="https://tcs.example",
+    provider = GeminiProvider(
+        endpoint="https://generativelanguage.googleapis.com/v1beta/openai",
         api_key="super-secret-key",
         http_client=client,
     )
@@ -60,9 +60,9 @@ def test_transport_failure_names_provider_not_credential() -> None:
     finally:
         client.close()
 
-    assert "tcs" in str(raised.value)
+    assert "gemini" in str(raised.value)
     assert "super-secret-key" not in str(raised.value)
-    assert raised.value.provider == "tcs"
+    assert raised.value.provider == "gemini"
 
 
 def test_non_conforming_payload_passed_through_with_note() -> None:
@@ -72,8 +72,10 @@ def test_non_conforming_payload_passed_through_with_note() -> None:
         return httpx.Response(200, json=malformed, request=request)
 
     client = httpx.Client(transport=httpx.MockTransport(handler))
-    provider = TCSGenAILabProvider(
-        endpoint="https://tcs.example", api_key="key", http_client=client
+    provider = GeminiProvider(
+        endpoint="https://generativelanguage.googleapis.com/v1beta/openai",
+        api_key="key",
+        http_client=client,
     )
     try:
         response = provider.complete(_request())
@@ -87,7 +89,7 @@ def test_non_conforming_payload_passed_through_with_note() -> None:
     assert "choices" in response.normalization_note
 
 
-def test_tcs_omits_temperature_only_for_gpt5_models() -> None:
+def test_gemini_maps_model_tokens_and_supported_generation_parameters() -> None:
     bodies: list[dict[str, object]] = []
 
     def handler(request: httpx.Request) -> httpx.Response:
@@ -102,14 +104,16 @@ def test_tcs_omits_temperature_only_for_gpt5_models() -> None:
         )
 
     client = httpx.Client(transport=httpx.MockTransport(handler))
-    provider = TCSGenAILabProvider(
-        endpoint="https://tcs.example", api_key="key", http_client=client
+    provider = GeminiProvider(
+        endpoint="https://generativelanguage.googleapis.com/v1beta/openai",
+        api_key="key",
+        http_client=client,
     )
     try:
         provider.complete(
             CompletionRequest(
                 messages=[{"role": "user", "content": "test"}],
-                model="genailab-maas-gpt-5.4-mini",
+                model="gemini-3.8-flash",
                 max_tokens=256,
                 temperature=0.0,
             )
@@ -117,7 +121,7 @@ def test_tcs_omits_temperature_only_for_gpt5_models() -> None:
         provider.complete(
             CompletionRequest(
                 messages=[{"role": "user", "content": "test"}],
-                model="azure/genailab-maas-gpt-4o-mini",
+                model="gemini-3.8-flash",
                 max_tokens=256,
                 temperature=0.0,
             )
@@ -125,7 +129,8 @@ def test_tcs_omits_temperature_only_for_gpt5_models() -> None:
     finally:
         client.close()
 
-    assert bodies[0]["model"] == "genailab-maas-gpt-5.4-mini"
+    assert bodies[0]["model"] == "gemini-3.8-flash"
     assert bodies[0]["max_tokens"] == 256
     assert "temperature" not in bodies[0]
-    assert bodies[1]["temperature"] == 0.0
+    assert bodies[0]["reasoning_effort"] == "low"
+    assert "temperature" not in bodies[1]

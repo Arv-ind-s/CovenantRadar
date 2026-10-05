@@ -50,6 +50,7 @@ _DECIMAL_FIELDS: Final[frozenset[str]] = frozenset(
         "confidence_floor",
         "headroom_erosion_pct",
         "contribution_share",
+        "decay_rate",
         "monthly_budget",
         "ocr_confidence_floor",
         "auto_accept",
@@ -70,6 +71,10 @@ _INTEGER_FIELDS: Final[frozenset[str]] = frozenset(
         "watch_sla_hours",
     }
 )
+
+
+#: Fields a proposal may add to a snapshot written before they existed.
+_OPTIONAL_FIELDS: Final[Mapping[str, frozenset[str]]] = {"T3": frozenset({"decay_rate"})}
 
 
 class ThresholdConfigError(ValidationError):
@@ -638,6 +643,12 @@ def _validate_thresholds(values: Mapping[str, Mapping[str, object]]) -> None:
             "T3 invariant: sustained_days must not exceed event_window_days.",
             field="T3.sustained_days",
         )
+    # Optional: the daily evidence retention factor (`domain.signals.decay`).
+    # A snapshot from before decay existed omits it and applies no decay.
+    if "decay_rate" in values["T3"]:
+        _between_zero_and_one(
+            _as_decimal(values["T3"]["decay_rate"], "T3.decay_rate"), "T3.decay_rate"
+        )
 
     _require_fraction(values["T4"], "T4", "headroom_erosion_pct")
     _require_fraction(values["T5"], "T5", "contribution_share")
@@ -777,7 +788,7 @@ def _merge_proposal(
                 )
             patch = {keys[0]: raw_value}
         for key, raw in patch.items():
-            if key not in current:
+            if key not in current and key not in _OPTIONAL_FIELDS.get(name, frozenset()):
                 raise ThresholdConfigError(
                     f"Unknown field {key!r} in {name} proposal.",
                     field=f"values.{name}.{key}",

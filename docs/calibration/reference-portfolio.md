@@ -5,6 +5,31 @@ forecast on the labelled reference data. It is an engineering calibration,
 not evidence from a customer book: the displayed probability remains a
 bounded risk score until a customer's own historical backtest is complete.
 
+> **Input convention changed after this record (October 2026).** The record
+> below was produced with raw-unit probability inputs: distance to the limit at
+> the horizon in the covenant's own units, and velocity as the raw per-day
+> drift. The scorer now uses dimensionless inputs (`domain/forecast/inputs.py`):
+> today's cushion as a fraction of the threshold, stretched by
+> `forecast.distance_scale`, and the share of that cushion the trend and the
+> sustained evidence each use up over the horizon. The harness in
+> `tests/integration/test_calibrated_cohorts.py` still replays the raw-unit
+> record; `tests/integration/test_cohort_probability.py` gates R-12.a and
+> R-12.b on the production inputs.
+>
+> **Distance scale.** With the 0.50 distance weight, an unscaled cushion makes
+> any flat covenant within 25% of its limit amber on distance alone. Measured
+> through the production inputs (shipped weights, no evidence pressure):
+>
+> | `distance_scale` | Stable cohort, worst over 30/60/90 on any sampled day | Deteriorating, 60-day, 60 days before breach |
+> |---|---|---|
+> | 1 | 0.4016 — above amber 0.40 | 0.9900 |
+> | **2 (shipped)** | **0.3244** | **0.9900** |
+> | 3 | 0.2740 | 0.9900 |
+>
+> At 2 a flat covenant reaches amber on distance alone only inside about 12.5%
+> headroom, beside the covenants' own 10% warning band. That anchor, not the
+> margin over the stable cohort, is why 2 was chosen rather than 3.
+
 ## Procedure
 
 The calibration uses the deterministic product path in this order for each

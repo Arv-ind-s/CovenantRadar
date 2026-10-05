@@ -303,7 +303,7 @@ def _provider_label(value: str | None) -> str:
     if not isinstance(value, str) or not value.strip():
         return "Not recorded"
     provider = value.strip()
-    return "Covenant Radar AI" if provider.lower() == "tcs" else provider
+    return "Google Gemini" if provider.lower() == "gemini" else provider
 
 
 def _draft_label(provider: str | None) -> str:

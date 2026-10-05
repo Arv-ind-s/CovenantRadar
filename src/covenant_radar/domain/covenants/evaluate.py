@@ -16,7 +16,7 @@ used by the forecast crossing stage.
 from __future__ import annotations
 
 from collections.abc import Mapping
-from dataclasses import dataclass, field
+from dataclasses import dataclass, field, replace
 from datetime import date, datetime, timedelta
 from decimal import Decimal
 from enum import Enum
@@ -344,6 +344,40 @@ def evaluate_covenant(
         return _invalid_evaluation(threshold)
 
 
+_BREACH_VERDICTS: Final[frozenset[str]] = frozenset(
+    {CovenantVerdict.BREACH.value, CovenantVerdict.BREACH_CURE_OPEN.value}
+)
+
+
+def continue_cure_window(
+    evaluation: CovenantEvaluation,
+    *,
+    prior_verdict: str | None,
+    prior_cure_ends_on: date | None,
+    test_date: date,
+) -> CovenantEvaluation:
+    """Anchor a continuing breach to the cure window its first breach opened.
+
+    ``evaluate_covenant`` sees one test in isolation, so every breach it finds
+    opens a window from that test's date.  A covenant that was already in
+    breach at its previous valued test has not had a new breach: its window
+    still ends where it first ended, and once that date has passed the breach
+    stands as plain ``breach``.  A pass, warning or waiver in between ends the
+    run, so the next breach opens a fresh window.
+    """
+
+    if evaluation.verdict not in _BREACH_VERDICTS or prior_verdict not in _BREACH_VERDICTS:
+        return evaluation
+    if prior_verdict == CovenantVerdict.BREACH_CURE_OPEN.value and prior_cure_ends_on is not None:
+        if test_date <= prior_cure_ends_on:
+            return replace(
+                evaluation,
+                verdict=CovenantVerdict.BREACH_CURE_OPEN.value,
+                cure_ends_on=prior_cure_ends_on,
+            )
+    return replace(evaluation, verdict=CovenantVerdict.BREACH.value, cure_ends_on=None)
+
+
 def _at_or_beyond_boundary(value: Decimal, threshold: Decimal, direction: str) -> bool:
     if direction == "min":
         return value <= threshold
@@ -546,5 +580,6 @@ __all__ = [
     "PeriodFacts",
     "ThresholdSide",
     "Thresholds",
+    "continue_cure_window",
     "evaluate_covenant",
 ]

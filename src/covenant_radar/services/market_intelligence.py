@@ -17,12 +17,14 @@ same windows, because an Indian borrower pays the rupee price.
 
 from __future__ import annotations
 
+import hashlib
 import json
+import logging
 import os
 import tempfile
 import threading
+import time
 from collections.abc import Callable
-from concurrent.futures import ThreadPoolExecutor
 from dataclasses import dataclass
 from datetime import UTC, date, datetime, timedelta
 from pathlib import Path
@@ -38,6 +40,15 @@ from covenant_radar.ingestion.feeds.public_data import (
 )
 
 CACHE_VERSION = 2
+# How often the feed loop checks which sources are due. Each source keeps its
+# own cadence; this only bounds how late a due source can start.
+FEED_TICK_SECONDS = 15.0
+# The first retry after a failure; each further failure doubles the wait, up
+# to the source's normal cadence, so a provider that is throttling us is not
+# hammered by ten queries a minute.
+RETRY_SECONDS = 60
+
+_LOGGER = logging.getLogger(__name__)
 
 
 @dataclass(frozen=True, slots=True)
@@ -300,16 +311,27 @@ def driver_move(
 
     Price and FX changes are percentages; rate changes are basis points.
     USD-priced drivers also carry the rupee-equivalent change.
+
+    The latest lens is meaningful whenever the latest observation is newer
+    than the first one in the base, even inside the reported quarter: right
+    after a quarter closes, nothing is published after it yet, but a quarter
+    that exited above its average still hands that rise to the next quarter.
+    When the latest observation *is* the base (a monthly series published
+    only to the quarter's first month), ``latest_beyond_base`` is false and
+    no move is claimed.
     """
     points = _points(snapshot, driver)
     if not points:
         return None
-    base = _mean(points, start, end)
-    if base is None:
-        prior = [value for day, value in points if day <= end]
+    in_period = [(day, value) for day, value in points if start <= day <= end]
+    if in_period:
+        base = sum(value for _, value in in_period) / len(in_period)
+        base_from = in_period[0][0]
+    else:
+        prior = [(day, value) for day, value in points if day <= end]
         if not prior:
             return None
-        base = prior[-1]
+        base_from, base = prior[-1]
     after = [(day, value) for day, value in points if day > end]
     latest_day, latest = points[-1]
     monthly = driver.frequency == "monthly"
@@ -336,6 +358,7 @@ def driver_move(
             f"{latest_day:%b %Y}" if monthly else f"{latest_day.day} {latest_day:%b %Y}"
         ),
         "latest_is_after_period": latest_day > end,
+        "latest_beyond_base": latest_day > base_from,
         "qtd_from": qtd_from.isoformat() if qtd_from else None,
         "qtd_to": qtd_to.isoformat() if qtd_to else None,
         "qtd_points": len(after),
@@ -379,13 +402,47 @@ def history(snapshot: dict[str, Any], driver: Driver, since: date) -> list[tuple
     return [point for point in _points(snapshot, driver) if point[0] >= since]
 
 
+def _series_version(series: dict[str, Any]) -> str:
+    """Changes only when a series gains or revises an observation, not on every fetch."""
+    marks = sorted(
+        (key, entry["observations"][-1]) for key, entry in series.items() if entry["observations"]
+    )
+    return hashlib.sha256(json.dumps(marks).encode()).hexdigest()[:16] if marks else ""
+
+
+def news_feed(
+    snapshot: dict[str, Any], drivers: list[str] | None = None, *, limit: int = 30
+) -> list[dict[str, Any]]:
+    """Recent headlines across drivers, newest first, one entry per story.
+
+    The same story often answers several queries ("crude oil" and "rupee
+    dollar"); it is listed once, tagged with every market it was found under.
+    """
+    keys = [key for key in drivers or () if key in DRIVERS_BY_KEY] or list(DRIVERS_BY_KEY)
+    stories: dict[str, dict[str, Any]] = {}
+    for key in keys:
+        for story in snapshot.get("news", {}).get(key, []):
+            label = DRIVERS_BY_KEY[key].label
+            entry = stories.get(story["url"])
+            if entry is None:
+                stories[story["url"]] = {**story, "drivers": [key], "driver_labels": [label]}
+            elif key not in entry["drivers"]:
+                entry["drivers"].append(key)
+                entry["driver_labels"].append(label)
+    ordered = sorted(stories.values(), key=lambda story: story["published_at"], reverse=True)
+    return ordered[:limit]
+
+
 # --------------------------------------------------------------------------- cache
 
 
 class MarketIntelligenceService:
     """A shared public-only cache: stale-while-revalidate, per-source isolation.
 
-    Requests never wait on the network. When a source is due, one background
+    Requests never wait on the network. ``start`` runs a feed loop from
+    process start, so sources are fetched before anyone opens a page and keep
+    refreshing on their own cadence: news every ``news_refresh_seconds``,
+    series every ``refresh_seconds``. When a source is due, one background
     refresh starts and the request is answered from the cache; an open page
     polls for the update. Successful snapshots survive restarts. Portfolio
     assessments are built per request and never enter this shared cache.
@@ -397,21 +454,29 @@ class MarketIntelligenceService:
         cache_path: Path,
         enabled: bool = True,
         refresh_seconds: int = 900,
+        news_refresh_seconds: int = 120,
         fetcher: Callable[[PublicSource, datetime], list[object]] = fetch_source,
         clock: Callable[[], datetime] = lambda: datetime.now(UTC),
         background: bool = True,
         sources: tuple[PublicSource, ...] = SOURCES,
+        feed_tick_seconds: float = FEED_TICK_SECONDS,
     ) -> None:
         self.cache_path = cache_path
         self.enabled = enabled
         self.refresh_seconds = refresh_seconds
+        self.news_refresh_seconds = news_refresh_seconds
         self.fetcher = fetcher
         self.clock = clock
         self.background = background
         self.sources = sources
+        self.feed_tick_seconds = feed_tick_seconds
         self._lock = threading.Lock()
-        self._refreshing = False
-        self._thread: threading.Thread | None = None
+        # Provider hosts with a fetch in flight. Each host refreshes on its own,
+        # so a trickling FRED download never holds up the next headlines.
+        self._busy: set[str] = set()
+        self._threads: list[threading.Thread] = []
+        self._feed: threading.Thread | None = None
+        self._stopping = threading.Event()
         self._sources: dict[str, Any] = {}
         self._cache_error = False
         try:
@@ -436,65 +501,112 @@ class MarketIntelligenceService:
         return instant
 
     def snapshot(self, *, force: bool = False) -> dict[str, Any]:
-        now = self.clock()
-        start = False
-        with self._lock:
-            due = self._due(now, force) if self.enabled and not self._refreshing else []
-            if due:
-                self._refreshing = start = True
-        if start:
-            if self.background:
-                self._thread = threading.Thread(
-                    target=self._refresh, args=(due, now), name="market-refresh", daemon=True
-                )
-                self._thread.start()
-            else:
-                self._refresh(due, now)
+        self._kick(force=force)
         with self._lock:
             return self._build(self.clock())
 
+    def start(self) -> None:
+        """Fetch from process start and keep every source fresh, viewed or not."""
+        if not self.enabled or self._feed is not None:
+            return
+        self._stopping.clear()
+        self._feed = threading.Thread(target=self._run_feed, name="market-feed", daemon=True)
+        self._feed.start()
+
+    def stop(self, timeout: float = 2.0) -> None:
+        """End the feed loop. An in-flight download is a daemon and is not awaited."""
+        self._stopping.set()
+        feed, self._feed = self._feed, None
+        if feed is not None:
+            feed.join(timeout)
+
     def wait(self, timeout: float = 60.0) -> None:
-        """Block until an in-flight background refresh has finished (tests, CLI)."""
-        thread = self._thread
-        if thread is not None:
-            thread.join(timeout)
+        """Block until in-flight background refreshes have finished (tests, CLI)."""
+        deadline = time.monotonic() + timeout
+        with self._lock:
+            threads = list(self._threads)
+        for thread in threads:
+            thread.join(max(deadline - time.monotonic(), 0))
+
+    def _run_feed(self) -> None:
+        while not self._stopping.is_set():
+            try:
+                self._kick()
+            except Exception:
+                # The loop must outlive any one bad tick, or the feed dies silently.
+                _LOGGER.exception("Market feed tick failed")
+            self._stopping.wait(self.feed_tick_seconds)
+
+    def _kick(self, *, force: bool = False) -> None:
+        """Start a refresh of each provider host with due sources and none in flight."""
+        now = self.clock()
+        groups: dict[str, list[PublicSource]] = {}
+        started: list[threading.Thread] = []
+        with self._lock:
+            if not self.enabled:
+                return
+            for source in self._due(now, force):
+                host = urlsplit(source.url).hostname or ""
+                if host not in self._busy:
+                    groups.setdefault(host, []).append(source)
+            self._busy.update(groups)
+            if self.background:
+                started = [
+                    threading.Thread(
+                        target=self._refresh,
+                        args=(host, group, now),
+                        name=f"market-refresh-{host}",
+                        daemon=True,
+                    )
+                    for host, group in groups.items()
+                ]
+                self._threads = [thread for thread in self._threads if thread.is_alive()]
+                self._threads.extend(started)
+        for thread in started:
+            thread.start()
+        if not self.background:
+            for host, group in groups.items():
+                self._refresh(host, group, now)
+
+    def _interval(self, source: PublicSource) -> int:
+        return self.news_refresh_seconds if source.kind == "news" else self.refresh_seconds
 
     def _due(self, now: datetime, force: bool) -> list[PublicSource]:
         due = []
         for source in self.sources:
             previous = self._sources.get(source.key, {})
             attempted = previous.get("attempted_at")
-            interval = 60 if force or previous.get("error") else self.refresh_seconds
+            interval = self._interval(source)
+            if force:
+                interval = RETRY_SECONDS
+            elif previous.get("error"):
+                failures = max(int(previous.get("failures") or 1), 1)
+                interval = min(RETRY_SECONDS * 2 ** min(failures - 1, 10), max(interval, 60))
             if not attempted or now - self._instant(attempted) >= timedelta(seconds=interval):
                 due.append(source)
         return due
 
-    def _refresh(self, due: list[PublicSource], now: datetime) -> None:
+    def _refresh(self, host: str, group: list[PublicSource], now: datetime) -> None:
         # One sequential worker per provider host: FRED throttles parallel
         # downloads into multi-minute trickles, while one at a time takes
         # well under a second each. Each result is stored as it arrives so an
         # open page fills progressively.
-        hosts: dict[str, list[PublicSource]] = {}
-        for source in due:
-            hosts.setdefault(urlsplit(source.url).hostname or "", []).append(source)
-
-        def run(group: list[PublicSource]) -> None:
+        try:
             for source in group:
                 try:
                     items = self.fetcher(source, now)
-                except Exception:
+                except Exception as error:
                     # Never expose network exception text (proxy credentials etc.).
+                    _LOGGER.warning(
+                        "Market source %s unavailable (%s)", source.key, type(error).__name__
+                    )
                     items = None
                 with self._lock:
                     self._store(source.key, items, now)
-
-        try:
-            with ThreadPoolExecutor(max_workers=len(hosts)) as pool:
-                list(pool.map(run, hosts.values()))
         finally:
             with self._lock:
                 self._save()
-                self._refreshing = False
+                self._busy.discard(host)
 
     def _store(self, key: str, items: list[object] | None, now: datetime) -> None:
         previous = self._sources.get(key, {})
@@ -504,6 +616,7 @@ class MarketIntelligenceService:
                 "items": previous.get("items", []),
                 "attempted_at": now.isoformat(),
                 "error": "Source unavailable",
+                "failures": int(previous.get("failures") or 0) + 1,
             }
         else:
             self._sources[key] = {
@@ -520,12 +633,12 @@ class MarketIntelligenceService:
         for source in self.sources:
             entry = self._sources.get(source.key, {})
             fetched = entry.get("fetched_at")
+            # Stale means a refresh was missed, not that one is about to run.
+            allowed = timedelta(seconds=self._interval(source) + RETRY_SECONDS)
             stale = bool(
                 fetched
                 and (
-                    not self.enabled
-                    or entry.get("error")
-                    or now - self._instant(fetched) > timedelta(seconds=self.refresh_seconds)
+                    not self.enabled or entry.get("error") or now - self._instant(fetched) > allowed
                 )
             )
             status = (
@@ -549,7 +662,7 @@ class MarketIntelligenceService:
                     if now - self._instant(item["published_at"]) <= NEWS_WINDOW
                 ]
                 news[source.key.removeprefix("news:")] = fresh
-                latest = fresh[0]["published_at"][:10] if fresh else None
+                latest = max(item["published_at"] for item in fresh)[:10] if fresh else None
             health.append(
                 {
                     "key": source.key,
@@ -565,16 +678,25 @@ class MarketIntelligenceService:
                     "latest": latest,
                 }
             )
+        news_fetched = [
+            entry["fetched_at"]
+            for source in self.sources
+            if source.kind == "news"
+            and (entry := self._sources.get(source.key, {})).get("fetched_at")
+        ]
         return {
             "series": series,
             "news": news,
             "sources": health,
             "enabled": self.enabled,
-            "refreshing": self._refreshing,
+            "refreshing": bool(self._busy),
             "loaded": bool(series),
             "checked_at": now.isoformat(),
             "cache_error": self._cache_error,
             "refresh_seconds": self.refresh_seconds,
+            "news_refresh_seconds": self.news_refresh_seconds,
+            "news_fetched_at": max(news_fetched, default=None),
+            "series_version": _series_version(series),
         }
 
     def _save(self) -> None:

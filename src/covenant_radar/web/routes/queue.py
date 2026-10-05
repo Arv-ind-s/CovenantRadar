@@ -18,7 +18,7 @@ from uuid import UUID
 
 import structlog
 from fastapi import APIRouter, Depends, Query, Request
-from fastapi.responses import HTMLResponse
+from fastapi.responses import HTMLResponse, RedirectResponse
 from jinja2 import Environment, FileSystemLoader, select_autoescape
 from sqlalchemy.orm import Session
 
@@ -28,6 +28,7 @@ from covenant_radar.db.repositories.saved_view import SavedViewRepository
 from covenant_radar.db.repositories.triage import TriageRepository
 from covenant_radar.db.scoping import Scope, resolve_scope
 from covenant_radar.db.session import is_database_session
+from covenant_radar.demo.scenarios import SCENARIOS
 from covenant_radar.domain.triage.views import QueueFilters
 from covenant_radar.i18n.formatting import format_indian_currency
 from covenant_radar.security.permissions import Permission
@@ -183,6 +184,14 @@ def create_queue_router(
     triage_repo = TriageRepository(session, cursor_secret=cursor_secret)
     views_repo = SavedViewRepository(session)
 
+    @router.get("/queue", include_in_schema=False, name="queue_alias")
+    def queue_alias(request: Request, principal: Principal = _READ_DEP) -> RedirectResponse:
+        """The queue lives at ``/``; older links and ``next`` targets used
+        ``/queue``, so they redirect there with their filters intact."""
+
+        query = request.url.query
+        return RedirectResponse(f"/?{query}" if query else "/", status_code=307)
+
     @router.get("/", response_class=HTMLResponse, name="queue")
     def queue(
         request: Request,
@@ -306,6 +315,7 @@ def create_queue_router(
                 for change in recent_changes(session, scope)
             ),
             demo_enabled=request.app.state.settings.web.demo_walkthrough_enabled,
+            demo_scenarios=tuple(SCENARIOS.values()),
             can_run_demo=principal.has(Permission.APPROVE_MODEL_PROMOTION),
         )
 
@@ -468,8 +478,8 @@ def _render(
             "queue-ledger": "screens/queue/_ledger.html",
         }.get(target, template_name)
     template = environment.get_template(template_name)
-    locale = request.cookies.get("covenant_radar_locale", "en").lower()
-    if locale not in {"en", "hi"}:
+    locale = "en".lower()
+    if locale not in {"en"}:
         locale = "en"
     theme = theme_for_request(request)
     values = {

@@ -58,6 +58,8 @@ _CASE_SLA_BREACHED_EVENT: Final[str] = "sla_breached"
 _CASE_ASSIGNEE_FALLBACK_EVENT: Final[str] = "assignee_fallback"
 _ASSIGNEE_FALLBACK_TEMPLATE: Final[str] = "assignee_fallback"
 _SLA_BREACH_TEMPLATE: Final[str] = "sla_breach"
+#: Who picks up an overdue case nobody is assigned to.
+_RISK_DESK_ROLES: Final[tuple[str, ...]] = ("risk_head", "risk")
 _IN_APP_CHANNEL: Final[str] = "in_app"
 
 
@@ -442,65 +444,81 @@ class CaseService:
         )
         instant = self._now(now)
         escalated: list[Case] = []
-        with self.session.begin_nested():
-            candidates = self.repository.overdue(instant, scope=resolved_scope)
-            for candidate in candidates:
-                case = self.repository.get_for_update(candidate.id, scope=resolved_scope)
-                if case is None or case.state == CaseState.CLOSED.value:
-                    continue
-                if case.due_at is None or not is_overdue(case.due_at, instant):
-                    continue
-                if case.state == CaseState.ESCALATED.value:
-                    continue
-                change = transition_result(case.state, CaseState.ESCALATED)
-                case.state = change.to_state.value
-                case.updated_at = instant
-                case.updated_by_id = principal.id
-                case.version += 1
-                if case.assignee_id is None:
-                    raise Conflict(
-                        f"Case {case.reference} has no assignee; overdue escalation is refused."
-                    )
-                self.session.flush()
-                self._append_event(
-                    case,
-                    _CASE_SLA_BREACHED_EVENT,
-                    principal.id,
-                    instant,
-                    {
-                        "due_at": case.due_at.isoformat(),
-                        "overdue_at": instant.isoformat(),
-                        "assignee_id": str(case.assignee_id),
-                    },
-                )
-                self._audit(
-                    case,
-                    "sla_breached",
-                    principal.id,
-                    {
-                        "due_at": case.due_at.isoformat(),
-                        "overdue_at": instant.isoformat(),
-                        "assignee_id": str(case.assignee_id),
-                    },
-                )
-                self._queue_and_notify(
-                    case,
-                    _SLA_BREACH_TEMPLATE,
-                    (case.assignee_id,),
-                    {
-                        "case_reference": case.reference,
-                        "case_id": str(case.id),
-                        "borrower_id": str(case.borrower_id),
-                        "due_at": case.due_at.isoformat(),
-                        "overdue_at": instant.isoformat(),
-                    },
-                    principal.id,
-                    instant,
-                )
+        candidates = self.repository.overdue(instant, scope=resolved_scope)
+        for candidate in candidates:
+            # One case's failure must not stop the sweep for the rest of the
+            # book, so each escalation commits or rolls back on its own.
+            try:
+                with self.session.begin_nested():
+                    case = self._escalate_one(candidate.id, principal, resolved_scope, instant)
+            except (Conflict, ValidationError):
+                continue
+            if case is not None:
                 escalated.append(case)
         return tuple(escalated)
 
     escalate = escalate_overdue
+
+    def _escalate_one(
+        self,
+        case_id: UUID,
+        principal: Principal,
+        scope: Scope,
+        instant: datetime,
+    ) -> Case | None:
+        case = self.repository.get_for_update(case_id, scope=scope)
+        if case is None or case.state == CaseState.CLOSED.value:
+            return None
+        if case.due_at is None or not is_overdue(case.due_at, instant):
+            return None
+        if case.state == CaseState.ESCALATED.value:
+            return None
+        change = transition_result(case.state, CaseState.ESCALATED)
+        case.state = change.to_state.value
+        case.updated_at = instant
+        case.updated_by_id = principal.id
+        case.version += 1
+        self.session.flush()
+        detail = {
+            "due_at": case.due_at.isoformat(),
+            "overdue_at": instant.isoformat(),
+            "assignee_id": str(case.assignee_id) if case.assignee_id else None,
+        }
+        self._append_event(case, _CASE_SLA_BREACHED_EVENT, principal.id, instant, detail)
+        self._audit(case, "sla_breached", principal.id, detail)
+        # The assignee owns an overdue case; an unassigned one is the risk
+        # desk's to pick up rather than a reason to skip the escalation.
+        recipients = (case.assignee_id,) if case.assignee_id else self._risk_desk_ids()
+        if recipients:
+            self._queue_and_notify(
+                case,
+                _SLA_BREACH_TEMPLATE,
+                recipients,
+                {
+                    "case_reference": case.reference,
+                    "summary": (f"Case {case.reference} passed its SLA due time and is escalated."),
+                    "case_id": str(case.id),
+                    "borrower_id": str(case.borrower_id),
+                    "due_at": case.due_at.isoformat(),
+                    "overdue_at": instant.isoformat(),
+                },
+                principal.id,
+                instant,
+            )
+        return case
+
+    def _risk_desk_ids(self) -> tuple[UUID, ...]:
+        return tuple(
+            self.session.execute(
+                select(AppUser.id)
+                .join(UserRole, UserRole.user_id == AppUser.id)
+                .join(Role, Role.id == UserRole.role_id)
+                .where(AppUser.is_active.is_(True), Role.code.in_(_RISK_DESK_ROLES))
+                .order_by(AppUser.id)
+            )
+            .scalars()
+            .all()
+        )
 
     def get_case(
         self,

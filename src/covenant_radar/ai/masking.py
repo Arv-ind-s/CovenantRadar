@@ -35,7 +35,7 @@ MASKING_MARKER: Final[str] = "covenant-radar/masked/v1"
 REDACTION_TOKEN: Final[str] = "[REDACTED]"
 """Replacement used for configured secrets."""
 
-_SECRET_ENVIRONMENT_VARIABLE: Final[str] = "COVENANT_RADAR_AI_API_KEY"
+_SECRET_ENVIRONMENT_VARIABLE: Final[str] = "GEMINI_API_KEY"
 _MAX_FIELDS: Final[int] = 256
 _MAX_FIELD_PATH_LENGTH: Final[int] = 256
 _MAX_NESTING_DEPTH: Final[int] = 32
@@ -249,7 +249,7 @@ def build_outbound(
 
     ``secret`` is injectable for tests and for application composition.  When
     no explicit secret is supplied, the configured model API key is read from
-    ``COVENANT_RADAR_AI_API_KEY`` without importing settings or forcing model
+    ``GEMINI_API_KEY`` without importing settings or forcing model
     configuration during offline startup.  ``configured_secret`` and
     ``secret_value`` are accepted as descriptive aliases; supplying more than
     one singular value is an error.

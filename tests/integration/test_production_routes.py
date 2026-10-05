@@ -18,6 +18,8 @@ import inspect
 import pkgutil
 from collections.abc import Iterator
 from typing import Any
+from urllib.parse import urlsplit
+from uuid import uuid4
 
 import pytest
 from fastapi import FastAPI
@@ -28,6 +30,7 @@ import covenant_radar.web.routes as web_routes
 from covenant_radar.api.deps import iter_application_routes
 from covenant_radar.config.settings import load_settings
 from covenant_radar.db.base import Base
+from covenant_radar.notifications.digest import deep_link
 from covenant_radar.web.application import create_production_app
 
 
@@ -89,6 +92,8 @@ def _router_factories(package: Any) -> set[str]:
 # per-router tests.
 REQUIRED_BROWSER_PATHS = (
     "/",
+    # Older links and sign-in `next` targets; redirects to the queue at `/`.
+    "/queue",
     "/cases",
     "/certificates",
     "/dispositions",
@@ -141,6 +146,20 @@ def test_borrower_create_route_precedes_case_file_reference_route(
     assert paths.index("/borrowers/new") < paths.index("/borrowers/{reference}")
 
 
+def test_notification_links_land_on_mounted_pages(mounted_paths: frozenset[str]) -> None:
+    """The "Open" link on a notice with no borrower or case behind it — a
+    morning summary, a job failure, an unrouted subject — must not 404."""
+
+    links = (
+        deep_link(None, None, {"summary": "Review of 02 Oct 2026"}),
+        deep_link(None, None, {"job_name": "nightly.test"}),
+        deep_link("portfolio", uuid4(), {}),
+    )
+    assert [urlsplit(link).path for link in links] == ["/", "/admin/jobs", "/"]
+    for link in links:
+        assert urlsplit(link).path in mounted_paths, link
+
+
 @pytest.mark.parametrize("path", REQUIRED_API_PATHS)
 def test_api_path_is_mounted(mounted_paths: frozenset[str], path: str) -> None:
     assert path in mounted_paths, (
@@ -155,7 +174,7 @@ COMPOSED_ELSEWHERE = {
     # `routes/admin.py` includes both into the users router it returns.
     "create_admin_ops_router": "/admin/jobs",
     "create_admin_config_router": "/admin/config",
-    # `asgi.create_app` mounts this for every app it builds, not just this one.
+    # `web.app.create_app` mounts this for every app it builds, not just this one.
     "create_system_router": "/health",
 }
 
@@ -224,3 +243,10 @@ def test_openapi_document_generates(production_app: FastAPI) -> None:
     assert document["paths"], "OpenAPI generation produced no paths."
     for path in REQUIRED_API_PATHS:
         assert path in document["paths"], f"{path} is absent from the OpenAPI document."
+
+
+def test_market_data_is_fetched_from_process_start(production_app: FastAPI) -> None:
+    """Live market news must not wait for the first page view."""
+    service = production_app.state.market_intelligence
+    assert service.start in production_app.router.on_startup
+    assert service.stop in production_app.router.on_shutdown

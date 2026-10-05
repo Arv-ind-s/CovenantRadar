@@ -43,6 +43,12 @@
         </div>
       {% endif %}
 
+      {% if view.actions.can_simulate %}
+        <div class="case-actions__control">
+          <a class="button" href="/borrowers/{{ view.borrower_reference|urlencode }}/remediation">{{ labels.actions_remediation }}</a>
+        </div>
+      {% endif %}
+
       {% if view.actions.can_log_action %}
         <div class="case-actions__control">
           {% if view.actions.log_href %}

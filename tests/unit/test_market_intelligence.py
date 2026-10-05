@@ -5,6 +5,7 @@ on 2026-09-29 through `public_data._download`, so parsing is exercised against
 what the providers actually return.
 """
 
+import time
 from datetime import UTC, date, datetime, timedelta
 from pathlib import Path
 
@@ -23,6 +24,7 @@ from covenant_radar.services.market_intelligence import (
     SOURCES,
     MarketIntelligenceService,
     driver_move,
+    news_feed,
 )
 
 FIXTURES = Path(__file__).resolve().parents[1] / "fixtures" / "market"
@@ -78,8 +80,11 @@ def test_news_keeps_publishers_strips_suffixes_and_drops_social_reposts():
         assert CAPTURED_AT - timedelta(days=14) <= published <= CAPTURED_AT + timedelta(hours=1)
     publishers = {story["publisher"].casefold() for story in stories}
     assert not any("linkedin" in name or "tradingview" in name for name in publishers)
-    established = [story["established"] for story in stories]
-    assert established == sorted(established, reverse=True)
+    # Stored newest first: the list feeds a live headline stream. Established
+    # press is flagged for the views that prefer it, not ranked first here.
+    published = [story["published_at"] for story in stories]
+    assert published == sorted(published, reverse=True)
+    assert any(story["established"] for story in stories)
     # The whole window ages out: nothing is shown as current news a month later.
     assert (
         parse_news(
@@ -268,5 +273,157 @@ def test_background_refresh_answers_immediately_then_fills(tmp_path):
     assert service.snapshot()["refreshing"] is True  # no second refresh is started
     gate.set()
     service.wait()
+    done = service.snapshot()
+    assert done["loaded"] and not done["refreshing"]
+
+
+def test_latest_lens_needs_an_observation_newer_than_its_base():
+    # Right after a quarter closes, nothing is published past it yet.
+    daily = _series([("2026-07-10", 90.0), ("2026-08-10", 100.0), ("2026-09-25", 110.0)])
+    move = driver_move(daily, DRIVERS_BY_KEY["brent"], date(2026, 7, 1), date(2026, 9, 30))
+    assert move["qtd"] is None and move["latest_is_after_period"] is False
+    assert move["latest_beyond_base"] is True
+    assert move["latest_change"] == pytest.approx(10)
+    # A monthly series published only to the quarter's first month is its own base.
+    first_month = _series([("2026-06-01", 90.0), ("2026-07-01", 100.0)], key="PIORECRUSDM")
+    iron_ore = DRIVERS_BY_KEY["iron_ore"]
+    move = driver_move(first_month, iron_ore, date(2026, 7, 1), date(2026, 9, 30))
+    assert move["latest_beyond_base"] is False
+    # So is the last print before a quarter the series has not reached at all.
+    before = _series([("2026-05-01", 90.0), ("2026-06-01", 100.0)], key="PIORECRUSDM")
+    move = driver_move(before, iron_ore, date(2026, 7, 1), date(2026, 9, 30))
+    assert move["base"] == 100.0 and move["latest_beyond_base"] is False
+
+
+def _story(story_id, published_at, url=None):
+    return {
+        "id": story_id,
+        "title": f"Headline {story_id} about crude and the rupee",
+        "url": url or f"https://news.example/{story_id}",
+        "publisher": "Reuters",
+        "publisher_url": "https://www.reuters.com",
+        "published_at": published_at,
+        "established": True,
+    }
+
+
+def _until(condition, timeout=5.0):
+    deadline = time.monotonic() + timeout
+    while not condition():
+        assert time.monotonic() < deadline, "condition not reached"
+        time.sleep(0.01)
+
+
+def test_feed_loop_fetches_from_start_and_keeps_news_on_its_own_cadence(tmp_path):
+    instant = [CAPTURED_AT]
+    calls = []
+
+    def fetch(source, now):
+        calls.append(source.key)
+        if source.kind == "series":
+            return [["2026-09-25", 100.0]]
+        return [_story(f"s{len(calls)}", now.isoformat())]
+
+    sources = (fred_source("DCOILBRENTEU", "Brent", "EIA"), news_source("brent", "crude oil"))
+    service = MarketIntelligenceService(
+        cache_path=tmp_path / "market.json",
+        fetcher=fetch,
+        clock=lambda: instant[0],
+        background=False,
+        sources=sources,
+        news_refresh_seconds=120,
+        feed_tick_seconds=0.01,
+    )
+    service.start()
+    try:
+        # Nobody has asked for a page: the process fetched on its own.
+        _until(lambda: sorted(calls) == ["DCOILBRENTEU", "news:brent"])
+        assert (tmp_path / "market.json").exists()
+        instant[0] += timedelta(seconds=120)
+        _until(lambda: calls.count("news:brent") == 2)
+        # Headlines refresh on their own cadence; series wait for theirs.
+        assert calls.count("DCOILBRENTEU") == 1
+        assert service.snapshot()["news_fetched_at"] == instant[0].isoformat()
+    finally:
+        service.stop()
+    assert service._feed is None
+
+
+def test_failing_sources_back_off_and_log_without_their_message(tmp_path, caplog):
+    instant = [CAPTURED_AT]
+    calls = []
+
+    def fetch(source, now):
+        calls.append(now)
+        raise RuntimeError("proxy https://user:secret@proxy.example refused")
+
+    service = MarketIntelligenceService(
+        cache_path=tmp_path / "market.json",
+        fetcher=fetch,
+        clock=lambda: instant[0],
+        background=False,
+        sources=(news_source("brent", "crude oil"),),
+        news_refresh_seconds=600,
+    )
+    for offset, expected in ((0, 1), (59, 1), (60, 2), (60 + 119, 2), (60 + 120, 3)):
+        instant[0] = CAPTURED_AT + timedelta(seconds=offset)
+        service.snapshot()
+        assert len(calls) == expected, offset
+    assert "Market source news:brent unavailable (RuntimeError)" in caplog.text
+    assert "secret" not in caplog.text
+
+
+def test_news_feed_lists_each_story_once_newest_first():
+    snapshot = {
+        "news": {
+            "brent": [
+                _story("old", "2026-09-27T08:00:00+00:00"),
+                _story("both", "2026-09-28T09:00:00+00:00", url="https://news.example/shared"),
+            ],
+            "usdinr": [
+                _story("both", "2026-09-28T09:00:00+00:00", url="https://news.example/shared"),
+                _story("new", "2026-09-29T10:00:00+00:00"),
+            ],
+        }
+    }
+    feed = news_feed(snapshot)
+    assert [story["id"] for story in feed] == ["new", "both", "old"]
+    assert feed[1]["driver_labels"] == ["Brent crude", "US dollar in rupees"]
+    assert [story["id"] for story in news_feed(snapshot, ["brent"])] == ["both", "old"]
+    assert news_feed(snapshot, ["not-a-driver"]) == news_feed(snapshot)
+
+
+def test_a_stalled_series_download_never_holds_up_the_headlines(tmp_path):
+    import threading
+
+    instant = [CAPTURED_AT]
+    release = threading.Event()
+    news_calls = []
+
+    def fetch(source, now):
+        if source.kind == "series":
+            release.wait(10)  # FRED trickling
+            return [["2026-09-25", 100.0]]
+        news_calls.append(now)
+        return [_story(f"n{len(news_calls)}", now.isoformat())]
+
+    service = MarketIntelligenceService(
+        cache_path=tmp_path / "market.json",
+        fetcher=fetch,
+        clock=lambda: instant[0],
+        sources=(fred_source("DCOILBRENTEU", "Brent", "EIA"), news_source("brent", "crude oil")),
+        news_refresh_seconds=120,
+    )
+    try:
+        service.snapshot()
+        _until(lambda: len(news_calls) == 1)
+        instant[0] += timedelta(seconds=120)
+        fresh = instant[0].isoformat()
+        _until(lambda: service.snapshot()["news_fetched_at"] == fresh)
+        # The series download is still in flight, and the headlines moved on anyway.
+        assert service.snapshot()["refreshing"] is True and not release.is_set()
+    finally:
+        release.set()
+        service.wait()
     done = service.snapshot()
     assert done["loaded"] and not done["refreshing"]

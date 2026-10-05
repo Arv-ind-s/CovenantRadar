@@ -52,6 +52,7 @@ from covenant_radar.services.admin_users import AdminUsersService
 from covenant_radar.services.auth import AuthenticationSettings
 from covenant_radar.services.catalogue import CatalogueService
 from covenant_radar.services.certificates import CertificateService
+from covenant_radar.services.market_intelligence import MarketIntelligenceService
 from covenant_radar.services.registry import RegistryService
 from covenant_radar.web.routes.admin import create_admin_config_router, create_admin_users_router
 from covenant_radar.web.routes.auth import CHALLENGE_COOKIE_NAME, create_auth_router
@@ -59,7 +60,9 @@ from covenant_radar.web.routes.catalogue import create_catalogue_router
 from covenant_radar.web.routes.certificates import create_certificates_router
 from covenant_radar.web.routes.covenants import create_covenants_router
 from covenant_radar.web.routes.documents import create_documents_router
+from covenant_radar.web.routes.intelligence import create_intelligence_router
 from covenant_radar.web.routes.master_data import create_master_data_router
+from covenant_radar.web.routes.remediation import create_remediation_router
 from covenant_radar.web.routes.statements import create_statements_router
 from covenant_radar.web.routes.why import create_why_router
 from tests.integration.test_admin_ops import _World as _AdminOpsWorld
@@ -76,6 +79,11 @@ from tests.integration.test_governance_screens import _World as _GovernanceWorld
 from tests.integration.test_inapp_notifications import _Fixture as _NotificationFixture
 from tests.integration.test_intake_screen import _generator as _intake_generator
 from tests.integration.test_intake_screen import _ScreenFixture as _IntakeFixture
+from tests.integration.test_market_intelligence_routes import (
+    add_financials as _add_market_financials,
+)
+from tests.integration.test_market_intelligence_routes import add_industries as _add_industries
+from tests.integration.test_market_intelligence_routes import fixture_service as _market_service
 from tests.integration.test_master_data import _Bundle as _MasterDataBundle
 from tests.integration.test_queue_screen import _Fixture as _QueueFixture
 from tests.integration.test_search import _SearchBundle
@@ -991,6 +999,47 @@ def _audit_bundle_status_rest(theme: str) -> str:
 
 
 # ---------------------------------------------------------------------------
+# remediation/* — `tests/integration/test_remediation_screen.py`.
+# ---------------------------------------------------------------------------
+
+
+def _remediation_get(path: str, theme: str, *, filed: bool) -> str:
+    fixture = _CaseFileFixture()
+    try:
+        fixture.principal = Principal.user(
+            fixture.principal.id, (Permission.VIEW_BORROWER, Permission.RUN_SIMULATION)
+        )
+        if filed:
+            _case_file_financials(fixture)
+        app = create_app(
+            routers=(create_remediation_router(fixture.session),),
+            principal_resolver=lambda _request: fixture.principal,
+        )
+        with TestClient(app) as client:
+            return _get(client, path.format(reference=fixture.borrower.reference), theme=theme)
+    finally:
+        fixture.close()
+
+
+def _remediation_rest(theme: str) -> str:
+    return _remediation_get("/borrowers/{reference}/remediation", theme, filed=True)
+
+
+def _remediation_empty(theme: str) -> str:
+    return _remediation_get("/borrowers/{reference}/remediation", theme, filed=False)
+
+
+def _remediation_summary_rest(theme: str) -> str:
+    return _remediation_get(
+        "/borrowers/{reference}/remediation/summary?covenant=CV-T075-LEV", theme, filed=True
+    )
+
+
+def _remediation_summary_empty(theme: str) -> str:
+    return _remediation_get("/borrowers/{reference}/remediation/summary", theme, filed=False)
+
+
+# ---------------------------------------------------------------------------
 # simulator/index.html — `tests/integration/test_simulator_screen.py`.
 # ---------------------------------------------------------------------------
 
@@ -1181,6 +1230,69 @@ def _queue_no_run(theme: str) -> str:
         fixture.grant_scope(portfolio)
         with fixture.client() as client:
             return _get(client, "/", theme=theme)
+    finally:
+        fixture.close()
+
+
+# ---------------------------------------------------------------------------
+# intelligence/* — `tests/integration/test_market_intelligence_routes.py`'s
+# fixtures, replaying the captured FRED and Google News responses offline.
+# ---------------------------------------------------------------------------
+
+
+def _intelligence_app(fixture: _QueueFixture, service: MarketIntelligenceService) -> TestClient:
+    app = create_app(
+        routers=(create_intelligence_router(fixture.session, service=service),),
+        principal_resolver=lambda request: fixture.principal,
+    )
+    return TestClient(app)
+
+
+def _intelligence_rest(theme: str) -> str:
+    fixture = _QueueFixture()
+    try:
+        portfolio = fixture.portfolio("MARKET")
+        fixture.grant_scope(portfolio)
+        _add_industries(fixture, ("H51", "Air transport"))
+        borrower = fixture.borrower(portfolio, "AIR", legal_name="Visible Aviation Private Limited")
+        borrower.industry_code = "H51"
+        _add_market_financials(fixture, borrower, ebit="16.2")
+        service = _market_service(Path(tempfile.mkdtemp()))
+        with _intelligence_app(fixture, service) as client:
+            return _get(client, "/intelligence", theme=theme)
+    finally:
+        fixture.close()
+
+
+def _intelligence_offline(theme: str) -> str:
+    fixture = _QueueFixture()
+    try:
+        fixture.grant_scope(fixture.portfolio("MARKET-OFFLINE"))
+        service = MarketIntelligenceService(
+            cache_path=Path(tempfile.mkdtemp()) / "cache.json", enabled=False
+        )
+        with _intelligence_app(fixture, service) as client:
+            return _get(client, "/intelligence", theme=theme)
+    finally:
+        fixture.close()
+
+
+def _intelligence_review(theme: str) -> str:
+    fixture = _QueueFixture()
+    try:
+        portfolio = fixture.portfolio("MARKET-REVIEW")
+        fixture.grant_scope(portfolio)
+        _add_industries(fixture, ("H51", "Air transport"))
+        borrower = fixture.borrower(portfolio, "AIR", legal_name="Visible Aviation Private Limited")
+        borrower.industry_code = "H51"
+        _add_market_financials(fixture, borrower, ebit="16.2")
+        fixture.case(borrower, state="open")
+        fixture.principal = Principal.user(
+            fixture.principal.id, (Permission.VIEW_QUEUE, Permission.UPDATE_CASE)
+        )
+        service = _market_service(Path(tempfile.mkdtemp()))
+        with _intelligence_app(fixture, service) as client:
+            return _get(client, "/intelligence/review/AIR", theme=theme)
     finally:
         fixture.close()
 
@@ -1650,6 +1762,28 @@ SCREENS: tuple[ScreenCase, ...] = (
         (ScreenState("rest", _audit_bundle_status_rest),),
     ),
     ScreenCase(
+        "remediation_index",
+        ("screens/remediation/index.html",),
+        (ScreenState("rest", _remediation_rest),),
+    ),
+    ScreenCase(
+        "remediation_empty",
+        ("screens/remediation/empty.html",),
+        (ScreenState("empty", _remediation_empty),),
+    ),
+    ScreenCase(
+        "remediation_summary",
+        ("screens/remediation/_summary.html",),
+        (ScreenState("rest", _remediation_summary_rest),),
+        fragment=True,
+    ),
+    ScreenCase(
+        "remediation_summary_empty",
+        ("screens/remediation/_summary_empty.html",),
+        (ScreenState("empty", _remediation_summary_empty),),
+        fragment=True,
+    ),
+    ScreenCase(
         "simulator_index",
         ("screens/simulator/index.html",),
         (ScreenState("rest", _simulator_rest),),
@@ -1690,6 +1824,23 @@ SCREENS: tuple[ScreenCase, ...] = (
             ScreenState("empty_scope", _queue_empty_scope),
             ScreenState("no_run", _queue_no_run),
         ),
+    ),
+    ScreenCase(
+        "intelligence_index",
+        (
+            "screens/intelligence/index.html",
+            "screens/intelligence/_workspace.html",
+            "screens/intelligence/_macros.html",
+        ),
+        (
+            ScreenState("rest", _intelligence_rest),
+            ScreenState("offline", _intelligence_offline),
+        ),
+    ),
+    ScreenCase(
+        "intelligence_review",
+        ("screens/intelligence/review.html",),
+        (ScreenState("rest", _intelligence_review),),
     ),
     ScreenCase(
         "notifications_index",

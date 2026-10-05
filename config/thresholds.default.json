@@ -9,7 +9,8 @@
   "T3": {
     "sustained_days": 14,
     "sustained_events": 3,
-    "event_window_days": 30
+    "event_window_days": 30,
+    "decay_rate": 0.95
   },
   "T4": {
     "headroom_erosion_pct": 0.05

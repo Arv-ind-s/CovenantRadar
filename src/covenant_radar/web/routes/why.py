@@ -307,8 +307,8 @@ def _render(
         "screens/why/_drawer.html" if _is_htmx_request(request) else "screens/why/panel.html"
     )
     template = environment.get_template(template_name)
-    locale = request.cookies.get("covenant_radar_locale", "en").lower()
-    if locale not in {"en", "hi"}:
+    locale = "en".lower()
+    if locale not in {"en"}:
         locale = "en"
     theme = theme_for_request(request)
     values = {

@@ -67,35 +67,17 @@ def create_provider(
     # An injected client carries its own TLS configuration, so the bundle is
     # only forwarded when this seam is the one creating the client.
     ca_bundle = getattr(settings, "ca_bundle", None) if http_client is None else None
-    if provider == "tcs":
-        from covenant_radar.ai.providers.tcs_genailab import TCSGenAILabProvider
+    if provider == "gemini":
+        from covenant_radar.ai.providers.gemini import GeminiProvider
 
-        return TCSGenAILabProvider(
+        return GeminiProvider(
             endpoint=endpoint,
             api_key=key,
             http_client=http_client,
             transport=transport,
             ca_bundle=ca_bundle,
         )
-    if provider == "azure_openai":
-        from covenant_radar.ai.providers.azure_openai import AzureOpenAIProvider
-
-        return AzureOpenAIProvider(
-            endpoint=endpoint,
-            api_key=key,
-            http_client=http_client,
-            transport=transport,
-            ca_bundle=ca_bundle,
-        )
-    from covenant_radar.ai.providers.anthropic import AnthropicProvider
-
-    return AnthropicProvider(
-        endpoint=endpoint,
-        api_key=key,
-        http_client=http_client,
-        transport=transport,
-        ca_bundle=ca_bundle,
-    )
+    raise ProviderConfigurationError("Only Gemini is supported for live calls.", provider=provider)
 
 
 def provider_from_settings(
@@ -123,18 +105,10 @@ def _secret_value(value: object, provider: str) -> str:
 def __getattr__(name: str) -> Any:
     """Resolve adapter names on demand without widening the import graph."""
 
-    if name in {"TCSGenAIProvider", "TCSGenAILabProvider", "TCSGenAiLabProvider"}:
-        from covenant_radar.ai.providers.tcs_genailab import TCSGenAILabProvider
+    if name in {"GeminiProvider"}:
+        from covenant_radar.ai.providers.gemini import GeminiProvider
 
-        return TCSGenAILabProvider
-    if name in {"AzureOpenAIProvider", "AzureOpenAiProvider"}:
-        from covenant_radar.ai.providers.azure_openai import AzureOpenAIProvider
-
-        return AzureOpenAIProvider
-    if name == "AnthropicProvider":
-        from covenant_radar.ai.providers.anthropic import AnthropicProvider
-
-        return AnthropicProvider
+        return GeminiProvider
     if name == "RecordedProvider":
         from covenant_radar.ai.providers.recorded import RecordedProvider
 
@@ -143,18 +117,13 @@ def __getattr__(name: str) -> Any:
 
 
 __all__ = [
-    "AnthropicProvider",
-    "AzureOpenAIProvider",
-    "AzureOpenAiProvider",
     "CompletionRequest",
     "CompletionResponse",
     "LLMProvider",
     "PromptMessage",
     "ProviderConfigurationError",
     "RecordedProvider",
-    "TCSGenAIProvider",
-    "TCSGenAILabProvider",
-    "TCSGenAiLabProvider",
+    "GeminiProvider",
     "VALID_PROVIDER_NAMES",
     "create_provider",
     "provider_from_settings",

@@ -49,6 +49,10 @@ _CLAMP_REASON: Final[str] = "raw probability exceeded the configured maximum and
 _BREACH_REASON: Final[str] = (
     "covenant is already in breach; probability is fixed at the configured maximum"
 )
+_PROJECTED_REASON: Final[str] = (
+    "the projected path crosses the covenant limit within the horizon; "
+    "probability is fixed at the configured maximum"
+)
 _BOUNDARY_REASON: Final[str] = (
     "covenant is at its boundary with a non-neutral signal; "
     "probability is fixed at the configured maximum"
@@ -346,6 +350,7 @@ def probability(
     weights: Weights | Mapping[str, object],
     *,
     already_breached: bool = False,
+    projected_crossing: bool = False,
 ) -> ProbabilityResult:
     """Return a bounded, traceable breach probability for one horizon.
 
@@ -359,6 +364,9 @@ def probability(
     the mapping and returns the configured maximum for every horizon.  A zero
     distance with any non-neutral signal is treated as an immediate boundary
     for consistency with the covenant engine's inclusive boundary convention.
+    ``projected_crossing`` marks a projected path that reaches the limit inside
+    the horizon: it is fixed at the maximum like a breach, with its own
+    reason, while ``distance`` stays today's cushion.
     """
 
     configured_weights = weights if isinstance(weights, Weights) else Weights.from_mapping(weights)
@@ -370,6 +378,8 @@ def probability(
         raise ValueError("pressure must be non-negative.")
     if not isinstance(already_breached, bool):
         raise TypeError("already_breached must be a boolean.")
+    if not isinstance(projected_crossing, bool):
+        raise TypeError("projected_crossing must be a boolean.")
 
     positive_velocity = max(velocity_value, _ZERO)
     neutral = (
@@ -377,9 +387,10 @@ def probability(
         and velocity_value == _ZERO
         and pressure_value == _ZERO
         and not already_breached
+        and not projected_crossing
     )
     boundary_breach = distance_value <= _ZERO and not neutral
-    breached = already_breached or distance_value < _ZERO or boundary_breach
+    breached = already_breached or distance_value < _ZERO or boundary_breach or projected_crossing
 
     normalized_distance = _normalise_distance(distance_value, neutral=neutral)
     normalized_velocity = _saturate(positive_velocity)
@@ -418,8 +429,14 @@ def probability(
     elif breached:
         result = configured_weights.max_probability
         clamped = True
-        clamp_reason = _BREACH_REASON
-        reason = _BREACH_REASON if distance_value < _ZERO or already_breached else _BOUNDARY_REASON
+        if distance_value < _ZERO or already_breached:
+            reason = _BREACH_REASON
+        elif boundary_breach:
+            reason = _BOUNDARY_REASON
+        else:
+            reason = _PROJECTED_REASON
+        # A projected crossing is a forecast, not a breach: say which it is.
+        clamp_reason = _PROJECTED_REASON if reason == _PROJECTED_REASON else _BREACH_REASON
     elif raw_score > configured_weights.max_probability:
         result = configured_weights.max_probability
         clamped = True
@@ -448,6 +465,7 @@ def probability(
         "clamped": clamped,
         "clamp_reason": clamp_reason,
         "already_breached": already_breached,
+        "projected_crossing": projected_crossing,
         "breach_override": breached,
         "reason": reason,
         "terms": {
@@ -491,6 +509,7 @@ def probability_value(
     weights: Weights | Mapping[str, object],
     *,
     already_breached: bool = False,
+    projected_crossing: bool = False,
 ) -> Decimal:
     """Return only the Decimal value for persistence-facing adapters."""
 
@@ -501,6 +520,7 @@ def probability_value(
         horizon_days,
         weights,
         already_breached=already_breached,
+        projected_crossing=projected_crossing,
     ).probability
 
 

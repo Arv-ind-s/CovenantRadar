@@ -354,8 +354,8 @@ covenant-radar/
 │  │
 │  ├─ ai/
 │  │  ├─ client.py                    THE single outbound call site · T-089
-│  │  ├─ providers/  base.py  tcs_genailab.py  azure_openai.py
-│  │  │              anthropic.py  recorded.py                · T-088, T-091
+│  │  ├─ providers/  base.py  gemini.py
+│  │  │              recorded.py                · T-088, T-091
 │  │  ├─ masking.py                   whitelist, fails closed · T-090
 │  │  ├─ shapes.py                    stage-1 and stage-7 checks · T-095, T-100
 │  │  ├─ prompts/  stage1_extract.v1.md  stage7_memo.v1.md    · T-092
@@ -618,7 +618,7 @@ covenant-radar/
 
 | ID | Protocol | Implemented by | Failure |
 |---|---|---|---|
-| **C-50** | `LLMProvider.complete(request: CompletionRequest) -> CompletionResponse` | `ai/providers/{tcs_genailab,azure_openai,anthropic,recorded}.py` | Transport failure → `ProviderUnavailable`; auth failure → `ProviderAuthError`, **never retried with altered credentials**; malformed response → returned as-is for the shape check to refuse |
+| **C-50** | `LLMProvider.complete(request: CompletionRequest) -> CompletionResponse` | `ai/providers/{gemini,recorded}.py` | Transport failure → `ProviderUnavailable`; auth failure → `ProviderAuthError`, **never retried with altered credentials**; malformed response → returned as-is for the shape check to refuse |
 | **C-51** | `ai.client.call(stage: Stage, prompt: MaskedPrompt, prompt_version: str, context: CallContext) -> ModelResult` | `ai/client.py` | **The single outbound call site.** Unmasked prompt → `RuntimeError`; stage not in {1, 7} → `ValueError`; timeout → one retry → `ProviderUnavailable`; hourly, daily or budget ceiling → `CeilingReached` with **no call made**; every path writes one `model_call` row |
 | **C-52** | `ai.masking.build_outbound(fields: Mapping[str, object]) -> MaskedPrompt` | `ai/masking.py` | Whitelist only; any other key → `FieldNotWhitelisted` naming it — **fails closed**. Names → role tokens, identifier patterns → opaque tokens, the configured secret value → redacted. The token map stays on the host |
 | **C-53** | `DocumentStore.put/get/delete/stream` | `documents/store.py` | Unwritable → `StorageUnavailable` naming the path; a read of a missing key → `NotFound`; content is encrypted at rest |
@@ -763,7 +763,7 @@ Screenshots at 390×844, 1366×768 and 1920×1080, in both themes, for every scr
 
 ### 8.1 The provider layer is the exit strategy
 
-`ports/llm.py` declares one protocol. `ai/providers/` holds four adapters: the TCS GenAI Lab gateway (default, OpenAI-compatible), Azure OpenAI, Anthropic, and `recorded` — which replays cassettes and is what makes the whole evaluation suite and CI run with no network. Selection is configuration; adding a fifth adapter is a new file and a registry entry, never a change to a caller. This is the concrete answer to the IT-Outsourcing Direction's exit-strategy requirement: an architecture, not a promise.
+`ports/llm.py` declares one protocol. `ai/providers/` holds two adapters: the Google Gemini API (default, OpenAI-compatible) and `recorded` — which replays cassettes and is what makes the whole evaluation suite and CI run with no network. Selection is configuration; adding another adapter is a new file and a registry entry, never a change to a caller. This is the concrete answer to the IT-Outsourcing Direction's exit-strategy requirement: an architecture, not a promise.
 
 Every adapter normalises to one response shape carrying text, the model identifier the provider actually returned, token counts, latency and the raw payload for the log. An adapter never retries, never interprets, never repairs and never decides — those belong to the call site and the shape checker.
 
@@ -970,7 +970,7 @@ Every adapter normalises to one response shape carrying text, the model identifi
 | T-138 | Saved views, recent items and sharing | R-33 | 1.0 | T-137, T-074 |
 | T-139 | Bulk operations and asynchronous export | R-34 | 1.5 | T-074, T-120 |
 | T-140 | Translation catalogues, extraction and the build check | R-35 | 1.5 | T-022 |
-| T-141 | Hindi translation and locale formatting | R-35 | 1.0 | T-140 |
+| T-141 | Removed language feature (English-only) | R-35 | 1.0 | T-140 |
 
 ### M-6 · Hardening and release — 55.0 days
 
@@ -1142,7 +1142,7 @@ Milestone totals: M-0 34.0 · M-1 29.0 · M-2 35.0 · M-3 29.0 · M-4 39.0 · M-
 | **M-2** | On the reference portfolio: the deteriorating cohort dated within tolerance, the noisy cohort never escalating, the stable cohort below amber, driver shares summing, simulation deltas reconciling to recomputation | Cohort report, calibration record with before and after values, trace samples showing thresholds and sides |
 | **M-3** | The primary flow completes end to end in the browser, by keyboard, in both themes; every figure on the case file resolves through the why-panel; a warning reconstructs and its bundle verifies | Screenshots at three viewports, keyboard walkthrough recording, accessibility report, a verified bundle |
 | **M-4** | A sanction letter becomes live covenants through extraction, verification and approval, with one clause deliberately struck; a memo generates, grounds, exports and refuses correctly; both harness arms score with gates enforced | Intake walkthrough capture, memo PDF with its hash, the scoreboard, the refusal transcript |
-| **M-5** | An overnight run scores the reference portfolio, raises cases, dispatches digests and lands inside its window; a file-drop connector reconciles against control totals; the API passes its contract tests; Hindi renders complete | Job ledger, reconciliation report, contract-test output, Hindi screenshots |
+| **M-5** | An overnight run scores the reference portfolio, raises cases, dispatches digests and lands inside its window; a file-drop connector reconciles against control totals; the API passes its contract tests; English renders complete | Job ledger, reconciliation report, contract-test output, English screenshots |
 | **M-6** | `spec §23`'s ten criteria, all true, on a clean install of the release candidate | The release evidence pack |
 
 A gate is demonstrated, never asserted. Someone runs it, someone else witnesses it, and the evidence is attached to the gate record in `MERGE_LOG.md`.

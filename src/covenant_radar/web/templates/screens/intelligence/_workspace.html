@@ -1,5 +1,5 @@
 {%- from "screens/intelligence/_macros.html" import borrower_card, compact_row with context -%}
-<div class="mkt" id="intelligence-workspace" hx-get="/intelligence{% if view.driver %}?driver={{ view.driver|urlencode }}{% endif %}" hx-trigger="every {{ 5 if (view.refreshing or not view.loaded) and view.enabled else view.refresh_seconds }}s" hx-target="this" hx-swap="outerHTML" aria-busy="{{ 'true' if view.refreshing else 'false' }}">
+<div class="mkt" id="intelligence-workspace" hx-get="/intelligence?{% if view.driver %}driver={{ view.driver|urlencode }}&amp;{% endif %}v={{ view.version|urlencode }}" hx-trigger="every {{ 5 if not view.loaded and view.enabled else 60 }}s" hx-target="this" hx-swap="outerHTML" aria-busy="{{ 'true' if not view.loaded and view.enabled else 'false' }}">
   <section class="mkt-hero" aria-labelledby="mkt-heading">
     <div class="mkt-hero__text">
       <p class="mkt-eyebrow">Market pressure{% if view.reporting.end %} · since statements to {{ view.reporting.end }}{% endif %}</p>
@@ -21,20 +21,36 @@
       </dl>
       <form method="post" action="/intelligence/refresh" class="mkt-refresh">
         <button class="button" type="submit"{% if not view.enabled %} disabled{% endif %}>Refresh data</button>
-        <small>{% if view.refreshing %}<span class="mkt-live">Refreshing sources…</span>{% else %}{{ view.sources_current }}/{{ view.sources|length }} sources current · checked {{ view.checked_at[11:16] }} UTC{% endif %}</small>
+        <small data-market-health>{% if view.refreshing %}<span class="mkt-live">Refreshing sources…</span>{% else %}{{ view.sources_current }}/{{ view.sources|length }} sources current · checked {{ view.checked_at[11:16] }} UTC{% endif %}</small>
       </form>
     </div>
   </section>
 
   {% if not view.enabled %}<p class="mkt-notice" role="status">Offline mode: public data requests are disabled. Only previously retrieved data is shown.</p>{% endif %}
   {% if view.cache_error %}<p class="mkt-notice" role="status">Data loaded, but the snapshot could not be saved to disk; it may be unavailable after a restart.</p>{% endif %}
+  {% if view.loaded and view.counts.awaiting %}
+  <p class="mkt-notice" role="status">{{ view.counts.awaiting }} borrower{{ '' if view.counts.awaiting == 1 else 's' }} depend{{ 's' if view.counts.awaiting == 1 else '' }} only on series not yet published past {{ view.reporting.end }}. Monthly IMF and OECD prices arrive about two months in arrears; these borrowers update when newer data is out. Nothing is estimated meanwhile.</p>
+  {% endif %}
   {% if not view.loaded %}
   <div class="mkt-notice" role="status"><strong>{% if view.refreshing %}Fetching FRED series and news…{% elif view.enabled %}No market data retrieved yet.{% else %}No saved market data.{% endif %}</strong> This page updates automatically. No estimated or synthetic values are substituted while a source is unavailable.</div>
   {% endif %}
 
+  {% set feed = view.feed %}
+  <section class="mkt-feed" aria-labelledby="feed-heading" data-market-feed data-feed-url="/intelligence/feed?drivers={{ view.feed_drivers|urlencode }}">
+    <div class="mkt-heading">
+      <h2 id="feed-heading">Live market news</h2>
+      <span>{% if feed.enabled %}<span class="mkt-live mkt-feed__live">Live</span> {% endif %}<span data-feed-status>{% if not feed.enabled %}Offline mode: headlines are not fetched{% elif feed.fetched %}Updated {{ feed.fetched }}{% else %}Fetching headlines…{% endif %}</span> · Google News, checked every {{ (feed.refresh_seconds / 60)|round|int }} min{% if view.driver %} · {{ view.driver_label }} only{% endif %}</span>
+    </div>
+    <p class="sr-only" aria-live="polite" data-feed-announce></p>
+    <p class="mkt-feed__empty" data-feed-empty{% if feed['items'] %} hidden{% endif %}>{% if not feed.enabled %}No headlines are fetched in offline mode.{% elif not feed.fetched %}Fetching the latest headlines; they appear here as they arrive.{% else %}No headlines in the last 14 days for these markets.{% endif %}</p>
+    <ol class="mkt-feed__list" data-feed-list{% if not feed['items'] %} hidden{% endif %}>
+      {% for item in feed['items'] %}<li class="mkt-feed__item" data-id="{{ item.id }}"><a href="{{ item.url }}" target="_blank" rel="noopener noreferrer">{{ item.title }}</a><small><span class="mkt-feed__markets">{{ item.markets }}</span> · {{ item.publisher }} · <time datetime="{{ item.published_at }}">{{ item.ago }}</time></small></li>{% endfor %}
+    </ol>
+  </section>
+
   {% if view.tiles %}
   <section aria-labelledby="moves-heading">
-    <div class="mkt-heading"><h2 id="moves-heading">What moved since {{ view.reporting.end }}</h2><span>Change against the {{ view.reporting.label }} average. Shaded band on each chart: the reported quarter.</span></div>
+    <div class="mkt-heading"><h2 id="moves-heading">What moved against the quarter to {{ view.reporting.end }}</h2><span>Change against the {{ view.reporting.label }} average. Shaded band on each chart: the reported quarter.</span></div>
     <div class="mkt-tiles">
       {% for tile in view.tiles %}
       <article class="mkt-tile{% if view.driver == tile.key %} is-selected{% endif %}">
@@ -47,6 +63,7 @@
           <div><dt>{{ tile.qtd_label or 'Since quarter' }} average</dt><dd class="trend trend--{{ tile.qtd_trend }}">{{ tile.qtd }}</dd></div>
           <div><dt>Latest</dt><dd class="trend trend--{{ tile.latest_trend }}">{{ tile.latest_change }}{% if tile.rupee and tile.rupee != tile.latest_change %}<small>{{ tile.rupee }} in ₹</small>{% endif %}</dd></div>
         </dl>
+        {% if tile.pending %}<p class="mkt-tile__missing">Published only to {{ tile.latest_date }}; no move since the quarter can be measured yet.</p>{% endif %}
         {% else %}<p class="mkt-tile__missing">{% if view.refreshing %}Fetching…{% else %}Source unavailable. No value substituted.{% endif %}</p>{% endif %}
         <p class="mkt-tile__reach">{{ tile.story }}. Reaches {{ tile.exposed }} borrower{{ '' if tile.exposed == 1 else 's' }}{% if tile.sectors|length <= 3 %}: {{ tile.sectors|join(', ') }}{% endif %}.</p>
         <div class="mkt-tile__links"><a href="/intelligence?driver={{ tile.key|urlencode }}#borrowers">Show borrowers →</a><a href="{{ tile.url }}" target="_blank" rel="noopener noreferrer">{{ tile.publisher }} ↗</a></div>
@@ -77,22 +94,6 @@
     {% endif %}
   </section>
 
-  {% if view.stories %}
-  <section aria-labelledby="news-heading">
-    <div class="mkt-heading"><h2 id="news-heading">Why markets moved</h2><span>Recent reporting from the last 14 days via Google News, grouped by the market it explains</span></div>
-    <div class="mkt-story-grid">
-      {% for group in view.stories %}
-      <section class="mkt-story" aria-label="{{ group.label }} reporting">
-        <h3>{{ group.label }}</h3>
-        <ul class="mkt-news">
-          {% for story in group['items'] %}<li><a href="{{ story.url }}" target="_blank" rel="noopener noreferrer">{{ story.title }}</a><small>{{ story.publisher }} · {{ story.published }}</small></li>{% endfor %}
-        </ul>
-      </section>
-      {% endfor %}
-    </div>
-  </section>
-  {% endif %}
-
   <details class="mkt-method-panel" id="method">
     <summary>Method, assumptions and source health</summary>
     <div class="mkt-method-grid">
@@ -110,6 +111,7 @@
         <h3>Sector assumptions in your book</h3>
         <p class="mkt-method">Analyst defaults, not borrower facts. Replace them with the borrower’s own cost structure where known.</p>
         <table class="mkt-components">
+          <caption class="sr-only">Assumed input-cost shares by sector</caption>
           <thead><tr><th scope="col">Sector</th><th scope="col">Series</th><th scope="col">Share of revenue</th></tr></thead>
           <tbody>
           {% for sector in view.assumptions %}

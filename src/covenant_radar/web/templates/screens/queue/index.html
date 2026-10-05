@@ -4,7 +4,7 @@
 {% block page_title %}{{ labels.title }}{% endblock %}
 {% block h1 %}{{ labels.heading }}{% endblock %}
 {% block head %}<link rel="stylesheet" href="/static/css/queue-market.css">{% endblock %}
-{% block page_description %}<p>Every borrower in your portfolio, ranked by how soon they need your attention.</p>{% endblock %}
+{% block page_description %}<p>Every borrower in your portfolio, ranked by how soon they need your attention.</p>{% if demo_enabled is defined and demo_enabled %}<p><small>Demo book: NSE-listed companies, tested on the quarterly results they filed. Covenant terms, facility limits and bank-side signals are illustrative, and no repayment conduct is attributed to any company.</small></p>{% endif %}{% endblock %}
 {#
   Two page-level actions. The demo control lives here rather than beside
   the activity list because that list re-renders every 30 seconds, which
@@ -17,12 +17,17 @@
       <summary class="button button--secondary">Simulate a signal</summary>
       <form method="post" action="/demo/signal" class="queue-demo monitoring-demo">
         <input type="hidden" name="csrf_token" value="{{ csrf_token }}">
-        <label for="demo-borrower">Simulate a late payment for</label>
+        <label for="demo-borrower">Borrower for the illustrative scenario</label>
         <select id="demo-borrower" name="borrower_reference">{% for row in view.rows %}<option value="{{ row.borrower_reference }}"{% if row.band == 'watch' %} data-watch="true"{% endif %}>{{ row.borrower_name }}</option>{% endfor %}</select>
-        <button class="button" type="submit">Simulate</button>
-        <p class="queue-demo__note">Demo data. Watch "What's new" and the row update after the next review.</p>
+        <label for="demo-scenario">Scenario</label>
+        <select id="demo-scenario" name="scenario">{% for scenario in demo_scenarios %}<option value="{{ scenario.code }}">{{ scenario.label }}</option>{% endfor %}</select>
+        <button class="button" type="submit">Run scenario</button>
+        <p class="queue-demo__note">Illustrative signals only. Compare the previous and current run, then inspect Signals and Evidence. Repeat clicks do not duplicate observations.</p>
       </form>
     </details>
+  {% endif %}
+  {% if demo_enabled is defined and demo_enabled and can_run_demo %}
+    <a class="button button--secondary" href="/demo/assets/sanction-letter.pdf">Download intake sample</a>
   {% endif %}
   <a class="button button--secondary" href="/intelligence" title="How far commodity, rupee and rate moves since the last statements eat into each borrower’s interest-cover cushion">{{ tr("navigation.intelligence") }} →</a>
 {% endblock %}

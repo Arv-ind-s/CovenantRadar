@@ -1,54 +1,154 @@
 {% extends "base.html" %}
 {% import "_components/components.html" as components %}
 {% set labels = labels|default({}) %}
-{% set rows = rows|default(()) %}
-{% set table_rows = table_rows|default(()) %}
+{% set open_rows = open_rows|default(()) %}
+{% set settled_rows = settled_rows|default(()) %}
+{% set uploads_enabled = uploads_enabled|default(false) %}
 {% set error = error|default("") %}
+{% set csrf_token = csrf_token|default("") %}
+{% set state_tones = {"requested": "neutral", "received": "watch", "under_review": "watch", "overdue": "breach", "accepted": "headroom", "rejected": "neutral"} %}
 
 {% block page_title %}{{ labels.title }}{% endblock %}
 {% block h1 %}{{ labels.heading }}{% endblock %}
+{% block head %}<link rel="stylesheet" href="/static/css/certificates.css">{% endblock %}
+
+{% macro borrower_cell(row) -%}
+  <a href="/borrowers/{{ row.borrower_reference }}">{{ row.borrower_reference }}</a>
+  <span class="cert-cell__meta">{{ row.borrower_name }}</span>
+{%- endmacro %}
+
+{% macro state_cell(row) -%}
+  <span class="cert-state cert-state--{{ state_tones.get(row.state, 'neutral') }}">{{ row.state_label }}</span>
+  {% if row.timing %}<span class="cert-cell__meta{% if row.state == 'overdue' %} cert-cell__meta--breach{% endif %}">{{ row.timing }}</span>{% endif %}
+{%- endmacro %}
+
+{% macro certificate_cell(row) -%}
+  {% if row.document_id %}
+    <a href="/documents/{{ row.document_id }}/view">{{ row.document_filename or row.document_id }}</a>
+    {% if row.received_at %}<span class="cert-cell__meta">{{ labels.received }} {{ row.received_at }}</span>{% endif %}
+  {% else %}
+    <span class="cert-cell__meta">{{ labels.not_received }}</span>
+  {% endif %}
+{%- endmacro %}
 
 {% block content %}
-  {% if error %}<p role="alert">{{ error }}</p>{% endif %}
-  {% call components.panel(title=labels.heading, panel_id="certificate-list") %}
-    {{ components.ledger_table(
-      labels.heading,
-      [
-        {"key": "borrower", "label": labels.borrower},
-        {"key": "due_date", "label": labels.due_date},
-        {"key": "state", "label": labels.state},
-        {"key": "requested_at", "label": labels.requested_at},
-        {"key": "received_at", "label": labels.received_at}
-      ],
-      table_rows,
-      table_id="certificates-ledger",
-      empty_title=labels.empty,
-      empty_message=labels.empty
-    ) }}
+  {% if error %}<p class="cert-error" role="alert">{{ error }}</p>{% endif %}
+  <p class="cert-intro">{{ labels.intro }}</p>
 
-    {% for row in rows %}
-      <section class="certificate-actions" id="certificate-actions-{{ row.id }}">
-        {% if principal.has("UPLOAD_DOCUMENT") and row.state in ("requested", "received", "under_review", "overdue") %}
-          <form method="post" action="/certificates/{{ row.id }}/receive" novalidate>
-            <input type="hidden" name="csrf_token" value="{{ csrf_token }}">
-            {{ components.field("document_id", labels.document_id, required=true, field_id="document-id-" ~ row.id) }}
-            {{ components.button(labels.receive, type="submit") }}
-          </form>
-        {% endif %}
-        {% if principal.has("RECORD_WAIVER") and row.state in ("received", "under_review") %}
-          <form method="post" action="/certificates/{{ row.id }}/accept" novalidate>
-            <input type="hidden" name="csrf_token" value="{{ csrf_token }}">
-            {{ components.button(labels.accept, type="submit") }}
-          </form>
-        {% endif %}
-        {% if principal.has("RECORD_WAIVER") and row.state in ("requested", "received", "under_review", "overdue", "accepted") %}
-          <form method="post" action="/certificates/{{ row.id }}/reject" novalidate>
-            <input type="hidden" name="csrf_token" value="{{ csrf_token }}">
-            {{ components.field("reason", labels.reason, type="textarea", required=true, field_id="reject-reason-" ~ row.id) }}
-            {{ components.button(labels.reject, type="submit", destructive=true) }}
-          </form>
-        {% endif %}
-      </section>
-    {% endfor %}
+  {% call components.panel(title=labels.open_heading, panel_id="certificate-list") %}
+    {% if open_rows %}
+      <div class="ledger-table ledger-table--rest" id="certificates-ledger" data-state="rest">
+        <table class="ledger-table__table cert-table">
+          <caption class="ledger-table__caption sr-only">{{ labels.open_heading }}</caption>
+          <thead>
+            <tr>
+              <th scope="col">{{ labels.borrower }}</th>
+              <th scope="col">{{ labels.covenants }}</th>
+              <th scope="col">{{ labels.due_date }}</th>
+              <th scope="col">{{ labels.state }}</th>
+              <th scope="col">{{ labels.certificate }}</th>
+              <th scope="col">{{ labels.actions }}</th>
+            </tr>
+          </thead>
+          <tbody>
+            {% for row in open_rows %}
+              <tr class="ledger-row" id="certificate-{{ row.id }}">
+                <td class="ledger-row__cell">{{ borrower_cell(row) }}</td>
+                <td class="ledger-row__cell cert-cell__data">{{ row.covenants }}</td>
+                <td class="ledger-row__cell cert-cell__data">
+                  {{ row.due_date }}
+                  <span class="cert-cell__meta">{{ labels.requested }} {{ row.requested_at }}</span>
+                </td>
+                <td class="ledger-row__cell">{{ state_cell(row) }}</td>
+                <td class="ledger-row__cell">{{ certificate_cell(row) }}</td>
+                <td class="ledger-row__cell cert-actions" id="certificate-actions-{{ row.id }}">
+                  {% if principal.has("RECORD_WAIVER") and row.state in ("received", "under_review") %}
+                    <form method="post" action="/certificates/{{ row.id }}/accept" novalidate>
+                      <input type="hidden" name="csrf_token" value="{{ csrf_token }}">
+                      {{ components.button(labels.accept, type="submit") }}
+                    </form>
+                  {% endif %}
+                  {% if principal.has("UPLOAD_DOCUMENT") and row.state in ("requested", "received", "under_review", "overdue") %}
+                    <details class="cert-action">
+                      <summary>{{ labels.receive }}</summary>
+                      <form method="post" action="/certificates/{{ row.id }}/receive" enctype="multipart/form-data" novalidate>
+                        <input type="hidden" name="csrf_token" value="{{ csrf_token }}">
+                        {% if uploads_enabled %}
+                          {{ components.field("file", labels.file, type="file", accept=".pdf,.png,.jpg,.jpeg,.tif,.tiff,.txt", hint=labels.file_hint, field_id="certificate-file-" ~ row.id) }}
+                        {% endif %}
+                        {% if row.documents|length > 1 %}
+                          {{ components.field("document_id", labels.document_id, type="select", options=row.documents, field_id="document-id-" ~ row.id) }}
+                        {% endif %}
+                        {{ components.button(labels.receive, type="submit") }}
+                      </form>
+                    </details>
+                  {% endif %}
+                  {% if principal.has("RECORD_WAIVER") %}
+                    <details class="cert-action">
+                      <summary>{{ labels.reject_heading }}</summary>
+                      <form method="post" action="/certificates/{{ row.id }}/reject" novalidate>
+                        <input type="hidden" name="csrf_token" value="{{ csrf_token }}">
+                        {{ components.field("reason", labels.reason, type="textarea", required=true, field_id="reject-reason-" ~ row.id) }}
+                        {{ components.button(labels.reject, type="submit", destructive=true) }}
+                      </form>
+                    </details>
+                  {% endif %}
+                </td>
+              </tr>
+            {% endfor %}
+          </tbody>
+        </table>
+      </div>
+    {% else %}
+      <p class="cert-empty">{{ labels.empty }}</p>
+    {% endif %}
+  {% endcall %}
+
+  {% call components.panel(title=labels.settled_heading, panel_id="certificate-settled") %}
+    {% if settled_rows %}
+      <div class="ledger-table ledger-table--rest" id="certificates-settled-ledger" data-state="rest">
+        <table class="ledger-table__table cert-table">
+          <caption class="ledger-table__caption sr-only">{{ labels.settled_heading }}</caption>
+          <thead>
+            <tr>
+              <th scope="col">{{ labels.borrower }}</th>
+              <th scope="col">{{ labels.covenants }}</th>
+              <th scope="col">{{ labels.due_date }}</th>
+              <th scope="col">{{ labels.outcome }}</th>
+              <th scope="col">{{ labels.certificate }}</th>
+              <th scope="col">{{ labels.actions }}</th>
+            </tr>
+          </thead>
+          <tbody>
+            {% for row in settled_rows %}
+              <tr class="ledger-row" id="certificate-{{ row.id }}">
+                <td class="ledger-row__cell">{{ borrower_cell(row) }}</td>
+                <td class="ledger-row__cell cert-cell__data">{{ row.covenants }}</td>
+                <td class="ledger-row__cell cert-cell__data">{{ row.due_date }}</td>
+                <td class="ledger-row__cell">
+                  {{ state_cell(row) }}
+                  {% if row.rejection_reason %}<span class="cert-cell__meta">{{ row.rejection_reason }}</span>{% endif %}
+                </td>
+                <td class="ledger-row__cell">{{ certificate_cell(row) }}</td>
+                <td class="ledger-row__cell cert-actions" id="certificate-actions-{{ row.id }}">
+                  {% if principal.has("RECORD_WAIVER") and row.state == "accepted" %}
+                    <details class="cert-action">
+                      <summary>{{ labels.reject_heading }}</summary>
+                      <form method="post" action="/certificates/{{ row.id }}/reject" novalidate>
+                        <input type="hidden" name="csrf_token" value="{{ csrf_token }}">
+                        {{ components.field("reason", labels.reason, type="textarea", required=true, field_id="reject-reason-" ~ row.id) }}
+                        {{ components.button(labels.reject, type="submit", destructive=true) }}
+                      </form>
+                    </details>
+                  {% endif %}
+                </td>
+              </tr>
+            {% endfor %}
+          </tbody>
+        </table>
+      </div>
+    {% else %}
+      <p class="cert-empty">{{ labels.settled_empty }}</p>
+    {% endif %}
   {% endcall %}
 {% endblock %}

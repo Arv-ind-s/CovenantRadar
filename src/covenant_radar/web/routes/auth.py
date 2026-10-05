@@ -77,8 +77,8 @@ def create_auth_router(
     ) -> HTMLResponse:
         environment = getattr(request.app.state, "template_env", fallback_environment)
         template = environment.get_template(f"screens/auth/{template_name}")
-        locale = request.cookies.get("covenant_radar_locale", "en").lower()
-        if locale not in {"en", "hi"}:
+        locale = "en".lower()
+        if locale not in {"en"}:
             locale = "en"
         values: dict[str, object] = {
             "request": request,

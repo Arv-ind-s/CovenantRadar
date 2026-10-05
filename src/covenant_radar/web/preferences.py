@@ -21,11 +21,8 @@ from covenant_radar.security.rbac import Principal
 
 THEME_COOKIE = "covenant_radar_theme"
 THEMES = frozenset({"light", "dark"})
-#: Every screen already reads this cookie to pick its catalogue; until now
-#: nothing in the browser could set it, so the Hindi catalogue shipped with the
-#: application was unreachable to a user.
 LOCALE_COOKIE = "covenant_radar_locale"
-LOCALES = ("en", "hi")
+LOCALES = ("en",)
 _MAX_FORM_BYTES = 16 * 1024
 _WRITE = requires(Permission.VIEW_QUEUE)
 _WRITE_DEP = Depends(_WRITE)
@@ -96,26 +93,6 @@ def create_preferences_router(session: Session) -> APIRouter:
         response.set_cookie(
             THEME_COOKIE,
             theme,
-            httponly=False,
-            secure=not _is_local_request(request),
-            samesite="lax",
-            path="/",
-        )
-        return response
-
-    @router.post("/preferences/locale", name="set_locale")
-    async def set_locale(request: Request, principal: Principal = _WRITE_DEP) -> Response:
-        del principal  # The cookie is per-browser; the permission gates the route.
-        values = await _form_values(request)
-        locale = values.get("locale", "").lower()
-        if locale not in LOCALES:
-            raise ValidationError(
-                f"Locale must be one of {', '.join(LOCALES)}.", field="locale"
-            )
-        response = RedirectResponse(_safe_destination(values.get("next", "/")), status_code=303)
-        response.set_cookie(
-            LOCALE_COOKIE,
-            locale,
             httponly=False,
             secure=not _is_local_request(request),
             samesite="lax",

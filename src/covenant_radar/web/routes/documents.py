@@ -219,8 +219,8 @@ def _render(
 ) -> HTMLResponse:
     environment = getattr(request.app.state, "template_env", fallback_environment)
     template = environment.get_template("screens/documents/_review.html")
-    locale = request.cookies.get("covenant_radar_locale", "en").lower()
-    if locale not in {"en", "hi"}:
+    locale = "en".lower()
+    if locale not in {"en"}:
         locale = "en"
     theme = theme_for_request(request)
     values = {
@@ -256,8 +256,8 @@ def _render_viewer(
 ) -> HTMLResponse:
     environment = getattr(request.app.state, "template_env", fallback_environment)
     template = environment.get_template("screens/documents/_viewer.html")
-    locale = request.cookies.get("covenant_radar_locale", "en").lower()
-    if locale not in {"en", "hi"}:
+    locale = "en".lower()
+    if locale not in {"en"}:
         locale = "en"
     theme = theme_for_request(request)
     values = {

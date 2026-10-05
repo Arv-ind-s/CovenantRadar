@@ -402,10 +402,17 @@ class TriageRepository:
             .order_by(None)
             .subquery("scoped_queue_summary")
         )
+        # The tile counts band moves only (`domain.triage.changes` writes
+        # "band worsened from …" / "band improved from …"); a first run, a
+        # probability drift inside the same band and "no change" are not.
+        summary_text = func.lower(queue_rows.c.what_changed)
         meaningful_change = and_(
             queue_rows.c.triage_entry_id.is_not(None),
             queue_rows.c.what_changed.is_not(None),
-            ~func.lower(queue_rows.c.what_changed).like("no change%"),
+            or_(
+                summary_text.like("%band worsened from%"),
+                summary_text.like("%band improved from%"),
+            ),
         )
         statement = select(
             func.count(queue_rows.c.triage_entry_id),

@@ -382,7 +382,9 @@ def calibration_run() -> _CalibrationRun:
     store = ThresholdStore(path=DEFAULT_THRESHOLD_PATH)
     for name in _CALIBRATED_THRESHOLDS:
         expected = configuration.thresholds[name]
-        actual = store.get(name)
+        # Only the fields the calibration selected are pinned; a field added
+        # later (T3's decay_rate) is outside what this record calibrated.
+        actual = {key: value for key, value in store.get(name).items() if key in expected}
         assert actual == expected, (
             f"Packaged {name} differs from the selected calibration settings: "
             f"expected {expected}, found {actual}."

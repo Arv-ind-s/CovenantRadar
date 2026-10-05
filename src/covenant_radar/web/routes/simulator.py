@@ -37,6 +37,7 @@ from covenant_radar.domain.interventions.applicability import (
 )
 from covenant_radar.domain.interventions.catalogue import CatalogueEntry
 from covenant_radar.domain.interventions.simulate import SimulationComparison, SimulationResult
+from covenant_radar.domain.remediation import PLANNER_CATALOGUE_CODES
 from covenant_radar.domain.trace import stage_record
 from covenant_radar.security.permissions import Permission
 from covenant_radar.security.rbac import Principal
@@ -73,7 +74,7 @@ _LABELS = {
     "days": "days",
     "as_of": "As of",
     "unavailable": "Unavailable",
-    "probability": "Probability",
+    "probability": "Risk score",
     "confidence": "Confidence",
     "crossing": "Crossing date",
     "interventions_title": "Applicable interventions",
@@ -90,7 +91,7 @@ _LABELS = {
     "baseline": "Do nothing (baseline)",
     "selected_horizon": "Stored horizon",
     "delta_days": "Crossing delta",
-    "delta_probability": "Probability delta",
+    "delta_probability": "Risk score change",
     "status": "Status",
     "status_applied": "Applied",
     "status_no_effect": "No observable effect",
@@ -391,7 +392,13 @@ def _load_context(
     catalogue: CatalogueService,
 ) -> SimulationContext:
     initial = load_simulation_context(session, forecast_id, scope=scope)
-    entries = catalogue.applicable(initial.covenant.covenant_class)
+    # Entries the remediation planner sizes per borrower carry no fixed
+    # effect, so offering them here would show a comparison of nothing.
+    entries = tuple(
+        entry
+        for entry in catalogue.applicable(initial.covenant.covenant_class)
+        if entry.code not in PLANNER_CATALOGUE_CODES
+    )
     return SimulationContext(
         forecast=initial.forecast,
         forecasts=initial.forecasts,
@@ -421,6 +428,11 @@ def _resolve_entries(
         if entry.is_retired:
             raise ValidationError(
                 f"Intervention {code!r} is retired and cannot be used for a new simulation.",
+                field="intervention_code",
+            )
+        if entry.code in PLANNER_CATALOGUE_CODES:
+            raise ValidationError(
+                f"Intervention {code!r} is sized per borrower in the remediation planner.",
                 field="intervention_code",
             )
         try:
@@ -568,7 +580,10 @@ def _write_intervention_trace(
         _INTERVENTION_RULE_VERSION,
         (),
         Decimal("1"),
-        [{"type": "simulation", "id": str(simulation_id)}, {"type": "forecast", "id": str(forecast_id)}],
+        [
+            {"type": "simulation", "id": str(simulation_id)},
+            {"type": "forecast", "id": str(forecast_id)},
+        ],
     )
     TraceRepository(session, request_id=request_id).write(
         TraceSubject("borrower", borrower_id),
@@ -703,11 +718,33 @@ def _effective_parameters(
             parameters.pop(alias, None)
         parameters["weights"] = stored_weights
     if "as_of_date" not in parameters:
-        forecast_date = getattr(forecast, "data_as_of", None)
+        # Crossing days count from the scoring date, which is the forecast
+        # run's date; `data_as_of` is when the data was dated (a statement's
+        # period end) and would place every crossing that much too early.
+        forecast_date = context.run.as_of_date
         if forecast_date is None:
-            forecast_date = context.run.as_of_date
+            forecast_date = getattr(forecast, "data_as_of", None)
         if forecast_date is not None:
             parameters["as_of_date"] = forecast_date
+    formula_inputs = getattr(forecast, "formula_inputs", None)
+    if isinstance(formula_inputs, dict):
+        # The stored forecast's own probability policy and observed state.
+        stored_scale = formula_inputs.get("distance_scale")
+        if stored_scale is not None:
+            parameters["distance_scale"] = Decimal(str(stored_scale))
+        stored_probability = formula_inputs.get("probability")
+        if isinstance(stored_probability, dict):
+            parameters["observed_breach"] = stored_probability.get("already_breached") is True
+    if "threshold_changes" not in parameters and "threshold_schedule" not in parameters:
+        formula = getattr(forecast, "formula_inputs", None)
+        stored_changes = formula.get("threshold_changes") if isinstance(formula, dict) else None
+        if isinstance(stored_changes, list) and stored_changes:
+            # The exception schedule the stored forecast was scored against.
+            parameters["threshold_changes"] = [
+                {key: value for key, value in change.items() if value is not None}
+                for change in stored_changes
+                if isinstance(change, dict)
+            ]
     return parameters
 
 
@@ -855,8 +892,8 @@ def _render(
         "_components/simulator_results.html" if is_fragment else "screens/simulator/index.html"
     )
     template = environment.get_template(template_name)
-    locale = request.cookies.get("covenant_radar_locale", "en").lower()
-    if locale not in {"en", "hi"}:
+    locale = "en".lower()
+    if locale not in {"en"}:
         locale = "en"
     theme = theme_for_request(request)
     response = HTMLResponse(

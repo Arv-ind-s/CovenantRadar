@@ -32,9 +32,15 @@ slot group            source
                       carry a persisted ``event_count_window``.
 ``simulations``       ``Simulation`` rows against that forecast,
                       narrowed to ``simulation_ids`` when the
-                      caller names them (`C-08`).
-``recommendations``   active ``Intervention`` rows applicable to
-                      the covenant's class.
+                      caller names them (`C-08`).  Of the packages
+                      recorded from the remediation planner, only
+                      the latest is cited.
+``recommendations``   the steps of that recorded package, each
+                      citing its catalogue entry with the sized
+                      wording persisted on the step; otherwise the
+                      active ``Intervention`` rows applicable to
+                      the covenant's class, less the entries only
+                      the planner can size.
 ===================== ============================================
 
 "Worst" follows the same definition the case-file screen uses: the triage
@@ -68,6 +74,7 @@ from covenant_radar.db.repositories.forecast import ForecastRepository
 from covenant_radar.db.scoping import Scope, ownership_path_for
 from covenant_radar.db.session import is_database_session
 from covenant_radar.domain.memo.slots import MemoRecord, MemoRecords, RecordReference
+from covenant_radar.domain.remediation import PLANNER_CATALOGUE_CODES, RECORD_SOURCE
 
 #: The reason attached to a suppressed probability slot. `Forecast` records
 #: the suppression as a boolean, so the human-readable limiting factor is
@@ -135,8 +142,11 @@ def collect_memo_records(
         covenant, test = _covenant_context(session, forecast, scope)
         covenant_position = _covenant_position_record(forecast, covenant, test)
         drivers = _driver_records(session, forecast, scope)
-        simulations = _simulation_records(session, forecast, scope, requested_simulations)
-        recommendations = _recommendation_records(session, covenant)
+        cited = _cited_simulations(session, forecast, scope, requested_simulations)
+        simulations = _simulation_records(cited)
+        recommendations = _package_recommendations(cited) or _recommendation_records(
+            session, covenant
+        )
 
     return BorrowerMemoFacts(
         records=MemoRecords(
@@ -150,6 +160,30 @@ def collect_memo_records(
         forecast=forecast,
         run_id=run.id if run is not None else None,
         case_id=_open_case_id(session, borrower.id, scope),
+    )
+
+
+def memo_subject_forecast(session: Session, borrower: Borrower, *, scope: Scope) -> Forecast | None:
+    """The forecast a memo for this borrower is written about, or ``None``.
+
+    The same choice ``collect_memo_records`` makes, so anything recorded
+    against it — a remediation package — is what the next memo cites.
+    """
+
+    run = _latest_complete_run(session, borrower.id, scope)
+    triage = _latest_triage_entry(session, borrower.id, run, scope)
+    return _worst_forecast(session, triage, run, scope)
+
+
+def recorded_package_rows(
+    session: Session, forecast: Forecast, *, scope: Scope
+) -> tuple[tuple[Simulation, Intervention], ...]:
+    """The latest remediation package recorded against ``forecast``, in step order."""
+
+    return tuple(
+        (row, intervention)
+        for row, intervention in _cited_simulations(session, forecast, scope, ())
+        if _package_id(row) is not None
     )
 
 
@@ -259,17 +293,22 @@ def _evidence_records(session: Session, borrower_id: UUID, scope: Scope) -> tupl
     return tuple(records)
 
 
-def _simulation_records(
+def _cited_simulations(
     session: Session,
     forecast: Forecast,
     scope: Scope,
     requested: tuple[UUID, ...],
-) -> tuple[MemoRecord, ...]:
+) -> tuple[tuple[Simulation, Intervention], ...]:
     """Read simulations against this forecast, narrowed to those requested.
 
     A simulation whose assumptions were never persisted is skipped: an
     intervention's projected effect is not reportable without the assumptions
     it rests on, and assembly refuses such a record outright.
+
+    Each recording from the remediation planner writes one row per step of a
+    package.  Only the latest package is cited, in step order and ahead of
+    the fixed-effect simulations: an earlier package is a superseded draft,
+    and citing two would put contradictory sizes in one memo.
     """
 
     statement = (
@@ -283,30 +322,76 @@ def _simulation_records(
     rows = session.execute(statement).scalars().all()
     intervention_ids = {row.intervention_id for row in rows}
     interventions = _interventions_by_id(session, intervention_ids)
+    latest_package = next((found for row in rows if (found := _package_id(row)) is not None), None)
 
-    records: list[MemoRecord] = []
+    package: list[tuple[Simulation, Intervention]] = []
+    others: list[tuple[Simulation, Intervention]] = []
     for row in rows:
-        assumptions = row.assumptions
-        if not assumptions:
+        if not row.assumptions:
             continue
         intervention = interventions.get(row.intervention_id)
         if intervention is None:
+            continue
+        identifier = _package_id(row)
+        if identifier is None:
+            others.append((row, intervention))
+        elif identifier == latest_package:
+            package.append((row, intervention))
+    package.sort(key=lambda item: _step_number(item[0]))
+    return (*package, *others)
+
+
+def _simulation_records(
+    cited: tuple[tuple[Simulation, Intervention], ...],
+) -> tuple[MemoRecord, ...]:
+    return tuple(
+        MemoRecord(
+            reference=RecordReference("simulation", row.id),
+            values={
+                "code": intervention.code,
+                "text": _step_wording(row) or intervention.text,
+                "projected_cross_date": row.projected_cross_date,
+                "probability": row.probability,
+                "delta_days": row.delta_days,
+                "delta_probability": row.delta_probability,
+                "assumptions": row.assumptions,
+            },
+        )
+        for row, intervention in cited
+    )
+
+
+def _package_recommendations(
+    cited: tuple[tuple[Simulation, Intervention], ...],
+) -> tuple[MemoRecord, ...]:
+    """Recommend the recorded package's steps, in the wording that sized them.
+
+    Each step still cites its catalogue entry by code and role, so the
+    memo's catalogue check applies unchanged; only the wording is the
+    borrower's.  A step whose entry has since been retired or left without
+    a role is dropped rather than recommended under a stale citation.
+    """
+
+    records: list[MemoRecord] = []
+    for row, intervention in cited:
+        wording = _step_wording(row)
+        if _package_id(row) is None or wording is None:
+            continue
+        role_tag = intervention.role_tag
+        if not intervention.is_active or not isinstance(role_tag, str) or not role_tag.strip():
             continue
         records.append(
             MemoRecord(
                 reference=RecordReference("simulation", row.id),
                 values={
                     "code": intervention.code,
-                    "text": intervention.text,
-                    "projected_cross_date": row.projected_cross_date,
-                    "probability": row.probability,
-                    "delta_days": row.delta_days,
-                    "delta_probability": row.delta_probability,
-                    "assumptions": assumptions,
+                    "role_tag": role_tag,
+                    "text": wording,
+                    "requires_approval": intervention.requires_approval,
                 },
             )
         )
-    return tuple(records)
+    return tuple(records[:_MAX_RECOMMENDATION_RECORDS])
 
 
 def _recommendation_records(session: Session, covenant: Covenant | None) -> tuple[MemoRecord, ...]:
@@ -315,13 +400,16 @@ def _recommendation_records(session: Session, covenant: Covenant | None) -> tupl
     The catalogue is reference data rather than borrower data, so it carries
     no portfolio ownership path and is read unscoped. An entry without a role
     tag is skipped: assembly requires one, because a recommended action that
-    names no owning role cannot be acted on.
+    names no owning role cannot be acted on. Entries the remediation planner
+    sizes are skipped too: without a borrower's size they say nothing.
     """
 
     statement = select(Intervention).where(Intervention.is_active.is_(True))
     statement = statement.order_by(Intervention.code, Intervention.id)
     records: list[MemoRecord] = []
     for intervention in session.execute(statement).scalars().all():
+        if intervention.code in PLANNER_CATALOGUE_CODES:
+            continue
         if not _applies_to(intervention, covenant):
             continue
         role_tag = intervention.role_tag
@@ -341,6 +429,26 @@ def _recommendation_records(session: Session, covenant: Covenant | None) -> tupl
         if len(records) == _MAX_RECOMMENDATION_RECORDS:
             break
     return tuple(records)
+
+
+def _package_id(row: Simulation) -> str | None:
+    parameters = row.parameters
+    if not isinstance(parameters, dict) or parameters.get("source") != RECORD_SOURCE:
+        return None
+    identifier = parameters.get("package_id")
+    return identifier if isinstance(identifier, str) and identifier else None
+
+
+def _step_number(row: Simulation) -> int:
+    step = row.parameters.get("step") if isinstance(row.parameters, dict) else None
+    return step if isinstance(step, int) else 0
+
+
+def _step_wording(row: Simulation) -> str | None:
+    if _package_id(row) is None:
+        return None
+    wording = row.parameters.get("wording")
+    return wording.strip() if isinstance(wording, str) and wording.strip() else None
 
 
 def _applies_to(intervention: Intervention, covenant: Covenant | None) -> bool:
@@ -468,4 +576,6 @@ __all__ = [
     "CONFIDENCE_FLOOR_REASON",
     "BorrowerMemoFacts",
     "collect_memo_records",
+    "memo_subject_forecast",
+    "recorded_package_rows",
 ]

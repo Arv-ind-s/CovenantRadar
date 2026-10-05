@@ -59,7 +59,7 @@ DEFAULT_SEED: Final[int] = 20260830
 # Sized to the 24-entry `SHOWCASE_SECTOR_DESCRIPTORS_V2` name corpus and the
 # 24 leaf industry codes in `industries.json`, both walked in the same order:
 # a 24-borrower build gives one realistically-named company per industry,
-# which is what the curated demo overlay (`db/seed/demo.py`) is built on.
+# which is what the curated demo overlay (`demo/curated.py`) is built on.
 DEFAULT_BORROWER_COUNT: Final[int] = 24
 DEFAULT_FACILITY_COUNT: Final[int] = 28
 DEFAULT_QUARTER_COUNT: Final[int] = 8

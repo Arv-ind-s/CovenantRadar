@@ -91,9 +91,9 @@ class AiSettings(BaseModel):
 
     model_config = ConfigDict(extra="forbid", frozen=True)
 
-    provider: Literal["none", "recorded", "tcs", "azure_openai", "anthropic"]
-    endpoint: str | None = None
-    model: str | None = None
+    provider: Literal["none", "recorded", "gemini"]
+    endpoint: str | None = "https://generativelanguage.googleapis.com/v1beta/openai"
+    model: str | None = "gemini-3.8-flash"
     recorded_responses_path: Path | None = None
     api_key: SecretStr | None = None
     # Extra trust anchors, not a replacement set: a deployment behind a
@@ -135,6 +135,9 @@ class IntelligenceSettings(BaseModel):
     enabled: bool = True
     cache_path: Path = Path("var/market-intelligence.json")
     refresh_seconds: int = Field(default=900, ge=60, le=86400)
+    # Headlines change by the minute; series at most daily. Ten news queries
+    # every two minutes stays well inside what Google News tolerates.
+    news_refresh_seconds: int = Field(default=120, ge=60, le=86400)
 
 
 class ObservabilitySettings(BaseModel):
@@ -160,6 +163,7 @@ class WebSettings(BaseModel):
     # a deployment has verified its polling budget and operational workflow.
     live_workspace_enabled: bool = False
     demo_walkthrough_enabled: bool = False
+    demo_assets_path: Path | None = None
 
 
 class ForecastSettings(BaseModel):
@@ -180,6 +184,36 @@ class ForecastSettings(BaseModel):
     # only when the model register also carries an approved registration for
     # the challenger component.
     ml_mode: Literal["shadow", "champion"] = "shadow"
+    # `spec §R-14.d` what-changed policy: the smallest probability movement
+    # reported, and the driver share above which a driver is named.
+    what_changed_reporting_threshold: float = Field(default=0.05, ge=0, le=1)
+    what_changed_dominant_driver_share: float = Field(default=0.50, ge=0, le=1)
+    # Filing time allowed after a period's successor ends before the next
+    # statement is overdue: the covenant is then marked stale and the
+    # forecast's staleness counts days past this point (`spec §R-12`).
+    statement_grace_days: int = Field(default=60, ge=0)
+    # How far sustained evidence at full materiality moves a covenant over
+    # one reporting period, as a fraction of its threshold.
+    pressure_rate: float = Field(default=0.25, ge=0)
+    # Stretch on a covenant's cushion before the probability mapping: at 2 a
+    # flat covenant is amber on distance alone only inside ~12% headroom,
+    # beside the covenants' 10% warning band (docs/calibration).
+    distance_scale: float = Field(default=2.0, gt=0)
+
+
+class CertificateSettings(BaseModel):
+    """Compliance certificate cycle the nightly test step runs (`spec §R-09`)."""
+
+    model_config = ConfigDict(extra="forbid", frozen=True)
+
+    enabled: bool = True
+    # Days before a certificate's due date that its request is raised. Must be
+    # shorter than every certificate covenant's testing interval (a monthly
+    # one is 30 days), or the cycle refuses to run.
+    lead_time_days: int = Field(default=21, ge=1)
+    # Days past the due date before an unreceived certificate is overdue and
+    # becomes a `certificate_overdue` evidence item.
+    grace_days: int = Field(default=15, ge=0)
 
 
 class Settings(BaseModel):
@@ -197,6 +231,7 @@ class Settings(BaseModel):
     observability: ObservabilitySettings
     web: WebSettings
     forecast: ForecastSettings
+    certificates: CertificateSettings = Field(default_factory=CertificateSettings)
 
     @property
     def capabilities(self) -> Capabilities:
@@ -220,7 +255,7 @@ _SECRET_ENVIRONMENT_VARIABLES: dict[tuple[str, ...], str] = {
     ("security", "sso_client_secret"): "COVENANT_RADAR_SECURITY_SSO_CLIENT_SECRET",
     ("documents", "s3_access_key_id"): "COVENANT_RADAR_DOCUMENTS_S3_ACCESS_KEY_ID",
     ("documents", "s3_secret_access_key"): "COVENANT_RADAR_DOCUMENTS_S3_SECRET_ACCESS_KEY",
-    ("ai", "api_key"): "COVENANT_RADAR_AI_API_KEY",
+    ("ai", "api_key"): "GEMINI_API_KEY",
     ("notifications", "smtp_password"): "COVENANT_RADAR_NOTIFICATIONS_SMTP_PASSWORD",
     (
         "notifications",
@@ -281,6 +316,7 @@ def load_settings(
 
     merged: dict[str, Any] = {}
     origins: dict[tuple[str, ...], _Origin] = {}
+    configured_origins: dict[tuple[str, ...], _Origin] = {}
     _merge(merged, defaults, _file_origins(DEFAULT_CONFIG_PATH, default_lines), origins)
 
     selected_file = _configuration_file(config_file, environment)
@@ -295,6 +331,18 @@ def load_settings(
     _reject_unknown_keys(environment_values, Settings, environment_origins)
     _merge(merged, environment_values, environment_origins, origins)
     _inject_secret_sources(merged, origins, environment)
+    gemini_key = environment.get("GEMINI_API_KEY")
+    if gemini_key:
+        ai = merged.setdefault("ai", {})
+        if (
+            ai.get("provider") in {"none", "gemini"}
+            and "COVENANT_RADAR_AI__PROVIDER" not in environment
+            and ("ai", "provider") not in configured_origins
+        ):
+            ai["provider"] = "gemini"
+        if ai.get("provider") == "gemini":
+            ai["api_key"] = gemini_key
+            origins[("ai", "api_key")] = _Origin(description="environment variable GEMINI_API_KEY")
 
     try:
         settings = Settings.model_validate(merged)
@@ -466,6 +514,8 @@ def _environment_overrides(
     secret_names.update(_EXTERNAL_SECRET_ENVIRONMENT_VARIABLES)
 
     for name, value in environ.items():
+        if name == "COVENANT_RADAR_AI__API_KEY":
+            raise SettingsError("Set the model credential using GEMINI_API_KEY.")
         if (
             not name.startswith(ENV_PREFIX)
             or name in {CONFIG_FILE_ENV, DOTENV_ENABLED_ENV, DEPLOYMENT_ENVIRONMENT_ENV}
@@ -661,7 +711,17 @@ def _validate_dependent_settings(settings: Settings) -> None:
     if settings.ai.provider not in {"none", "recorded"}:
         _require_value(settings.ai.endpoint, "ai.endpoint")
         _require_value(settings.ai.model, "ai.model")
-        _require_secret(settings.ai.api_key, "COVENANT_RADAR_AI_API_KEY")
+        _require_secret(
+            settings.ai.api_key,
+            "GEMINI_API_KEY",
+        )
+    if settings.ai.provider == "gemini":
+        if (settings.ai.endpoint or "").rstrip(
+            "/"
+        ) != "https://generativelanguage.googleapis.com/v1beta/openai":
+            raise SettingsError("Gemini must use the official Google Gemini API endpoint.")
+        if not (settings.ai.model or "").startswith("gemini-"):
+            raise SettingsError("ai.model must be a Gemini model ID (gemini-*).")
     if settings.ai.ca_bundle is not None and not settings.ai.ca_bundle.is_file():
         raise SettingsError(
             f"Configuration key 'ai.ca_bundle' names a file that does not exist: "

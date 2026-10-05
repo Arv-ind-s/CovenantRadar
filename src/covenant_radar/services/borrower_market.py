@@ -51,6 +51,7 @@ STATUS_ORDER = (
     "watch",
     "easing",
     "unexposed",
+    "awaiting",
     "no_market",
     "no_data",
 )
@@ -60,7 +61,8 @@ STATUS_LABELS = {
     "tight": "Move uses most of cushion",
     "watch": "Adverse, within cushion",
     "easing": "Moves easing",
-    "unexposed": "No tracked exposure",
+    "unexposed": "No tracked pressure",
+    "awaiting": "Awaiting newer market data",
     "no_market": "Market data unavailable",
     "no_data": "No interest-cover data",
 }
@@ -72,6 +74,7 @@ QUEUE_PRIORITY = {
     # Easing moves are shown on the screen, not flagged in the triage queue.
     "easing": "none",
     "unexposed": "none",
+    "awaiting": "none",
     "no_market": "none",
     "no_data": "none",
 }
@@ -276,7 +279,7 @@ def _components(
                 share=exposure.share,
                 note=exposure.note,
                 qtd=move["qtd_rupee"] if move else None,
-                latest=move["latest_rupee"] if move and move["latest_is_after_period"] else None,
+                latest=move["latest_rupee"] if move and move["latest_beyond_base"] else None,
                 qtd_label=move["qtd_label"] if move else "",
                 latest_date=move["latest_date"] if move else "",
                 latest_label=move["latest_label"] if move else "",
@@ -296,6 +299,11 @@ def _basket(components: list[Component], lens: str) -> float | None:
     ]
     total = sum(share for share, _ in weighted)
     return sum(share * move for share, move in weighted) / total if total else None
+
+
+def _observed_share(components: list[Component], lens: str) -> float:
+    """Assumed revenue share of the components that have data for ``lens``."""
+    return sum(item.share or 0.0 for item in components if getattr(item, lens) is not None)
 
 
 def _status(adverse: float | None, breakeven: float | None, below: bool) -> str:
@@ -324,6 +332,17 @@ def _latest(components: list[Component]) -> tuple[str, str]:
     return max(dated) if dated else ("", "")
 
 
+def _published(channels: Iterable[Channel]) -> str:
+    """Label of the newest observation in any channel, whether or not it is a move."""
+    dated = [
+        (item.latest_date, item.latest_label)
+        for channel in channels
+        for item in channel.components
+        if item.latest_date
+    ]
+    return max(dated)[1] if dated else ""
+
+
 def _summary(components: list[Component]) -> str:
     names = [item.label for item in components]
     if len(names) == 1:
@@ -350,22 +369,40 @@ def assess(position: BorrowerPosition, snapshot: dict[str, Any]) -> MarketAssess
     if start and end:
         costs = _components([e for e in exposures if e.role == "cost"], snapshot, start, end)
         if costs:
-            share = sum(item.share or 0 for item in costs)
             qtd, latest = _basket(costs, "qtd"), _basket(costs, "latest")
+            observed = {name: _observed_share(costs, name) for name in ("qtd", "latest")}
+            # Lenses are ranked by revenue impact, so one covering fewer inputs
+            # cannot win on a bigger average alone.
+            _, lens = _worst(
+                qtd * observed["qtd"] if qtd is not None else None,
+                latest * observed["latest"] if latest is not None else None,
+            )
+            adverse = qtd if lens == "qtd" else latest if lens == "latest" else None
+            # A basket only partly published is sized on the shares observed:
+            # an unpublished input is assumed neither to move with the others
+            # nor to stay flat.
+            share = observed[lens] if lens else sum(item.share or 0 for item in costs)
             breakeven = (
                 cushion / (position.revenue * share) * 100
                 if cushion is not None and cushion > 0 and position.revenue and share
                 else None
             )
-            adverse, lens = _worst(qtd, latest)
             status = _status(adverse, breakeven, below)
+            # Inputs that offset each other to within half a percent are flat,
+            # as the page's trend arrows already show them.
+            if adverse is not None and abs(adverse) < 0.5:
+                status = "flat"
             channels.append(
                 Channel(
                     key="inputs",
                     label="Input costs",
                     role="cost",
                     unit="%",
-                    summary=_summary(costs),
+                    summary=_summary(
+                        [item for item in costs if getattr(item, lens) is not None]
+                        if lens
+                        else costs
+                    ),
                     components=tuple(costs),
                     share=share,
                     qtd=qtd,
@@ -414,7 +451,7 @@ def assess(position: BorrowerPosition, snapshot: dict[str, Any]) -> MarketAssess
         move = driver_move(snapshot, rate, start, end)
         if move is not None:
             qtd = move["qtd_change"]
-            latest = move["latest_change"] if move["latest_is_after_period"] else None
+            latest = move["latest_change"] if move["latest_beyond_base"] else None
             adverse, lens = _worst(qtd, latest)
             status = _status(adverse, tolerance, below)
             if adverse is not None and abs(adverse) < 1:
@@ -468,8 +505,9 @@ def assess(position: BorrowerPosition, snapshot: dict[str, Any]) -> MarketAssess
     elif statuses & {"easing", "supportive"}:
         status = "easing"
     elif not statuses or statuses == {"no_data"}:
-        # Missing market data is not the same as no exposure.
-        status = "no_market"
+        # Missing market data is not the same as no exposure, and a series not
+        # yet published past the quarter is not the same as a missing one.
+        status = "awaiting" if _published(channels) else "no_market"
     else:
         status = "unexposed"
     next_quarter = quarter_label(end, 1)
@@ -547,6 +585,14 @@ def _narrative(
     if cushion_pct is not None and cushion_pct < 15:
         thin = f" The cushion is thin: EBIT can fall only {cushion_pct:.1f}%"
         thin += f", or rates rise {tolerance:.0f} bp, before a breach." if tolerance else "."
+    if status == "awaiting" and position.period_end is not None:
+        end = position.period_end
+        return (
+            f"Market series for this borrower are published only to {_published(channels)}; "
+            f"nothing after the quarter to {end.day} {end:%b %Y} is out yet.",
+            "Monthly IMF and OECD prices arrive about two months in arrears. Nothing is "
+            "estimated until newer data is published." + thin,
+        )
     if status in {"exceeds", "tight", "watch"} and lead is not None and lead.move is not None:
         unit = " bp" if lead.unit == "bp" else "%"
         headline = _move_text(lead, next_quarter)
@@ -566,7 +612,13 @@ def _narrative(
             implication = f"{lead.label}: realisations weaken. Check order book and pricing."
         elif status == "watch":
             implication = "Adverse but within the cushion. No action from market data alone."
-        elif lead.lens == "latest" and (lead.qtd is None or lead.qtd <= 0):
+        elif lead.lens == "latest" and lead.qtd is None:
+            outcome = "is at risk" if status == "exceeds" else f"would lose {used} of its cushion"
+            implication = (
+                f"No {next_quarter} prices are published yet. If {date_text} prices hold, the "
+                f"{next_quarter} test {outcome} unless costs are passed through."
+            )
+        elif lead.lens == "latest" and lead.qtd <= 0:
             outcome = "is at risk" if status == "exceeds" else f"would lose {used} of its cushion"
             implication = (
                 f"The {next_quarter} test should benefit from lower average costs so far, but if "
@@ -601,8 +653,24 @@ def _narrative(
             return _move_text(easing, next_quarter) + ".", implication + (
                 thin or " No action from market data alone."
             )
+    mapped = [channel for channel in channels if channel.role != "rate"]
+    rates = next((channel for channel in channels if channel.role == "rate"), None)
+    drivers = (
+        "No mapped market driver for this sector"
+        if not mapped
+        else "Tracked market moves are flat"
+        if all(channel.status == "flat" for channel in mapped)
+        else "Tracked market moves are flat or without newer data"
+    )
+    rate_text = (
+        "borrowing rates are flat"
+        if rates is not None and rates.status == "flat"
+        else "borrowing-rate data is not yet published past the quarter"
+        if rates is not None
+        else "no borrowing-rate data is available"
+    )
     return (
-        "No mapped market driver for this sector, and borrowing rates are flat.",
+        f"{drivers}, and {rate_text}.",
         "Market data adds no signal here; rely on borrower evidence." + thin,
     )
 
@@ -614,7 +682,13 @@ def _news(snapshot: dict[str, Any], channels: list[Channel]) -> tuple[dict[str, 
         if channel.status in {"flat", "no_data"}:
             continue
         for component in sorted(channel.components, key=lambda item: -(item.share or 0)):
-            for story in snapshot.get("news", {}).get(component.driver, [])[:2]:
+            # A case note cites established press first, then the most recent.
+            reporting = sorted(
+                snapshot.get("news", {}).get(component.driver, []),
+                key=lambda story: (story["established"], story["published_at"]),
+                reverse=True,
+            )
+            for story in reporting[:2]:
                 if story["url"] not in seen:
                     seen.add(story["url"])
                     stories.append({**story, "driver_label": component.label})

@@ -623,8 +623,10 @@ def deep_link(
 
     References supplied by a notification payload are used only as path
     components and are always quoted.  If a subject has no route-specific
-    human reference, the queue route remains a valid, non-disclosing landing
-    page carrying the opaque subject identifiers as query parameters.
+    human reference, the queue (served at ``/``) remains a valid,
+    non-disclosing landing page carrying the opaque subject identifiers as
+    query parameters.  A notice with no subject lands on the queue, or on the
+    job history when it reports a job.
     """
 
     if not isinstance(payload, Mapping):
@@ -639,7 +641,7 @@ def deep_link(
         raise ValidationError("subject_id must be a UUID.", field="subject_id")
     prefix = _base_url(base_url)
     if subject_type is None or subject_id is None:
-        path = "/queue"
+        path = "/admin/jobs" if payload.get("job_name") else "/"
     else:
         normalized_type = subject_type.strip().lower() if isinstance(subject_type, str) else ""
         reference = _payload_reference(payload, normalized_type)
@@ -656,7 +658,7 @@ def deep_link(
                 {"subject_type": normalized_type, "subject_id": str(subject_id)},
                 quote_via=quote,
             )
-            path = f"/queue?{query}"
+            path = f"/?{query}"
     if not prefix:
         return path
     parsed = urlsplit(prefix)

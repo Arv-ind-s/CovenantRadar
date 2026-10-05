@@ -124,7 +124,7 @@ There is no phased "later" list — everything below is funded for general avail
 - **Covenant management:** versioned covenant registry; a 24-ratio library plus validated custom formulas; exceptions, waivers, cure and grace periods; AI-assisted, code-verified intake with maker-checker; compliance certificate workflow.
 - **Intelligence:** deterministic covenant engine with SMA banding; evidence ledger across six signal families; 30/60/90-day and arbitrary-horizon forecasting with dated crossing; driver attribution; intervention simulation; portfolio triage and ranking.
 - **Workflow and output:** case management; grounded intervention memos (PDF/DOCX export); override and disposition capture; configurable action catalogue; notifications and digests; scheduled batch scoring; regulatory exports (CRILC, EWS/RFA, board MIS); search, saved views, bulk export.
-- **Interface:** portfolio queue, borrower case file with horizon control, covenant intake and review, intervention simulator, memo composer, audit and reconstruction, governance/model-oversight views, admin console — in English and Hindi, light and dark themes, accessible to WCAG 2.2 AA.
+- **Interface:** portfolio queue, borrower case file with horizon control, covenant intake and review, intervention simulator, memo composer, audit and reconstruction, governance/model-oversight views, admin console — in English, light and dark themes, accessible to WCAG 2.2 AA.
 - **Platform:** authentication (local + bank SSO), server-enforced role-based access with row-level scoping, maker-checker, encryption of personal data, an append-only audit store, observability and SLOs, versioned migrations, backup/restore, installer/upgrade/rollback, a public REST API, an evaluation harness with a baseline comparison arm, and a model governance registry.
 
 ### 5.2 Permanently out of scope — product posture, not a deferral
@@ -162,7 +162,7 @@ Access and authority are enforced by the system itself (role-based, server-side)
 | **Administrator** | A system that runs, users who can log in, connectors that reconcile | Manage users, roles, connectors, notification channels, action catalogue | Read personal data in the clear without a recorded access purpose |
 | **Data Steward** | Correct, reconciled, provenance-tracked data | Resolve entity-matching conflicts, correct a mis-parsed statement | Alter a covenant test result directly |
 
-**Language and locale:** English is the default; Hindi ships as a second language because not all branch-level desk users are comfortable in English. Currency, dates and quarters follow Indian conventions (₹, lakh/crore, IST, Indian financial-year quarters) throughout.
+**Language and locale:** The interface is English-only. Currency, dates and quarters follow Indian conventions (₹, lakh/crore, IST, Indian financial-year quarters) throughout.
 
 ---
 

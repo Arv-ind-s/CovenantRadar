@@ -12,18 +12,28 @@ from pathlib import Path
 from covenant_radar import cli
 
 ROOT = Path(__file__).resolve().parents[2]
+#: Every top-level module `.importlinter`'s contracts name, so the skeleton
+#: below satisfies the layered contract and only the planted import fails.
 ARCHITECTURE_PACKAGES = (
     "ai",
     "api",
+    "asgi",
     "audit",
+    "cli",
     "config",
+    "core",
     "db",
+    "demo",
     "documents",
     "domain",
+    "i18n",
     "ingestion",
+    "lifecycle",
+    "ml",
     "notifications",
     "observability",
     "ports",
+    "reporting",
     "scheduler",
     "security",
     "services",

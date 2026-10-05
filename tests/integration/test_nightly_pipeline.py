@@ -627,3 +627,31 @@ def test_rerun_identical_and_no_duplicate_notifications(fixture: _Fixture) -> No
     assert len(fixture.triage_entries(forecast_run_id)) == 1
     assert len(fixture.cases(borrower_id=borrower.id)) == 1, "no second case may be opened"
     assert len(fixture.notifications()) == 1, "no second notification may be sent"
+
+
+def test_forecast_history_keeps_the_newest_tests(fixture: _Fixture) -> None:
+    """The nightly test step writes one row per covenant per day, so a year
+    of operation exceeds the history limit.  The forecast must then read the
+    most recent tests, not freeze on the oldest ones."""
+
+    portfolio = fixture.portfolio("HISTORY")
+    borrower = fixture.borrower(portfolio, "B-HISTORY")
+    version = fixture.covenant_version(borrower, threshold=Decimal("3"), direction="max")
+    first_day = date(2025, 8, 1)
+    days = 400
+    for offset in range(days):
+        fixture.seed_test(
+            version,
+            as_of_date=date.fromordinal(first_day.toordinal() + offset),
+            value=Decimal("1.0") + Decimal(offset) / Decimal("1000"),
+        )
+    newest = date.fromordinal(first_day.toordinal() + days - 1)
+
+    service = fixture.build_service()
+    with fixture.session_factory() as session:
+        history = service._test_history(session, version.id, newest)
+
+    dates = [row.as_of_date for row in history]
+    assert dates == sorted(dates), "history must stay in chronological order"
+    assert dates[-1] == newest, "the latest test must be the newest one on file"
+    assert len(history) < days, "the history limit still applies"

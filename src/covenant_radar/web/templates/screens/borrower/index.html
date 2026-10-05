@@ -4,6 +4,7 @@
 {% set state_action_label = "" %}
 {% set state_action_href = "" %}
 
+{% block head %}<link rel="stylesheet" href="/static/css/remediation.css">{% endblock %}
 {% block page_title %}{% if view is defined %}{{ view.borrower_name }}{% if labels is defined %} — {{ labels.title_suffix }}{% endif %}{% elif labels is defined %}{{ labels.title_suffix }}{% else %}Case file{% endif %}{% endblock %}
 {% block h1 %}{% if view is defined %}{{ view.borrower_name }}{% elif labels is defined %}{{ labels.title_suffix }}{% else %}Case file{% endif %}{% endblock %}
 {% block breadcrumb %}{% if view is defined %}<a class="shell-breadcrumb__link" href="/borrowers">{{ tr("navigation.borrowers") }}</a>{{ icons.icon("chevron") }}{{ view.borrower_reference }}{% else %}{{ tr("navigation.borrowers") }}{% endif %}{% endblock %}
@@ -16,7 +17,7 @@
       {% include "screens/borrower/_header.html" %}
     </section>
 
-    {% if walkthrough_received %}<p class="monitoring-walkthrough-note" role="status">Synthetic payment observations were received. The scoring job is being submitted; <a href="/">follow the run and change feed on the portfolio queue</a>.</p>{% endif %}
+    {% if walkthrough_received %}<p class="monitoring-walkthrough-note" role="status">Illustrative scenario observations were received. The scoring job is being submitted; <a href="/">follow the run and change feed on the portfolio queue</a>.</p>{% endif %}
     <section class="monitoring-trace panel" aria-labelledby="monitoring-trace-title">
       <div class="monitoring-feed__heading"><div><p class="monitoring-feed__eyebrow">OBSERVATION → FORECAST → DECISION</p><h2 id="monitoring-trace-title">Latest monitoring trace</h2></div><span>Stored outcomes</span></div>
       <div class="monitoring-trace__grid">

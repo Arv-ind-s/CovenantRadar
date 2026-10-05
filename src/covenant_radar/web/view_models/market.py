@@ -32,10 +32,15 @@ from covenant_radar.services.market_intelligence import (
     SECTOR_EXPOSURES,
     driver_move,
     history,
+    news_feed,
 )
 
 MINUS = "−"
 ATTENTION = ("below", "exceeds", "tight")
+FEED_LIMIT = 12
+# An open page also redraws at least this often, so new statements or a
+# nightly run reach it even while no market series changes.
+REDRAW_SECONDS = 900
 
 
 # --------------------------------------------------------------------------- formatting
@@ -68,6 +73,24 @@ def day(value: str | date | None) -> str:
         return ""
     when = value if isinstance(value, date) else date.fromisoformat(str(value)[:10])
     return f"{when.day} {when:%b %Y}"
+
+
+def workspace_version(snapshot: dict[str, Any]) -> str:
+    """What an open page was drawn from: the series data, within a redraw window."""
+    window = int(datetime.fromisoformat(snapshot["checked_at"]).timestamp() // REDRAW_SECONDS)
+    return f"{snapshot['series_version']}.{window}"
+
+
+def ago(instant: str, now: datetime) -> str:
+    """``"4 min ago"``; the page script keeps these ticking between updates."""
+    seconds = max((now - datetime.fromisoformat(instant)).total_seconds(), 0)
+    if seconds < 60:
+        return "just now"
+    if seconds < 3600:
+        return f"{int(seconds // 60)} min ago"
+    if seconds < 86400:
+        return f"{int(seconds // 3600)} h ago"
+    return f"{int(seconds // 86400)} d ago"
 
 
 def crore(value: float | None) -> str:
@@ -250,7 +273,9 @@ def build_briefing(
         for channel in assessment.channels:
             for component in channel.components:
                 reach[component.driver].append(assessment)
-                if channel.status in {"exceeds", "tight", "watch", "adverse"}:
+                # An input with no move yet is not what puts its basket under pressure.
+                moved = component.qtd is not None or component.latest is not None
+                if moved and channel.status in {"exceeds", "tight", "watch", "adverse"}:
                     hurting[component.driver] += 1
     for assessment in assessments:
         if assessment.position.period_end and not any(
@@ -270,6 +295,8 @@ def build_briefing(
         exposed = reach[item.key]
         sectors = sorted({sector_names.get(a.position.industry_code or "", "") for a in exposed})
         unit = "bp" if item.kind == "rate" else "%"
+        # A series published only to the base it is measured from has no move yet.
+        moved = move if move and move["latest_beyond_base"] else None
         tiles.append(
             {
                 "key": item.key,
@@ -284,14 +311,11 @@ def build_briefing(
                 "latest_date": move["latest_label"] if move else "",
                 "qtd": signed(move["qtd_change"], unit) if move else "—",
                 "qtd_label": move["qtd_label"] if move else "",
-                "latest_change": signed(move["latest_change"], unit) if move else "—",
+                "latest_change": signed(moved["latest_change"], unit) if moved else "—",
                 "qtd_trend": _trend(move["qtd_change"], unit) if move else "flat",
-                "latest_trend": _trend(move["latest_change"], unit) if move else "flat",
-                "rupee": (
-                    signed(move["latest_rupee"], unit)
-                    if move and item.usd_priced and move["latest_is_after_period"]
-                    else ""
-                ),
+                "latest_trend": _trend(moved["latest_change"], unit) if moved else "flat",
+                "pending": bool(move) and not moved,
+                "rupee": signed(moved["latest_rupee"], unit) if moved and item.usd_priced else "",
                 "spark": sparkline(
                     points,
                     reporting,
@@ -300,7 +324,7 @@ def build_briefing(
                 "exposed": len(exposed),
                 "hurting": hurting[item.key],
                 "sectors": [name for name in sectors if name],
-                "size": abs(move["latest_change"] or 0) if move else 0,
+                "size": abs(moved["latest_change"] or 0) if moved else 0,
             }
         )
     relevant = [tile for tile in tiles if tile["exposed"]]
@@ -317,18 +341,8 @@ def build_briefing(
     rows = [borrower_row(a, sector_names) for a in visible]
     counts = Counter(a.status for a in assessments)
 
-    story_keys = [tile["key"] for tile in relevant if snapshot["news"].get(tile["key"])]
-    stories = [
-        {
-            "key": key,
-            "label": DRIVERS_BY_KEY[key].label,
-            "items": [
-                {**story, "published": day(story["published_at"])}
-                for story in snapshot["news"][key][:4]
-            ],
-        }
-        for key in story_keys
-    ]
+    # The feed follows the markets this book is exposed to, or the one selected.
+    feed_drivers = [selected.key] if selected else [tile["key"] for tile in relevant]
     in_book = sorted({a.position.industry_code for a in assessments if a.position.industry_code})
     assumptions = [
         {
@@ -349,6 +363,7 @@ def build_briefing(
     attention = counts["below"] + counts["exceeds"] + counts["tight"]
     return {
         **{key: snapshot[key] for key in ("enabled", "refreshing", "loaded", "cache_error")},
+        "version": workspace_version(snapshot),
         "checked_at": snapshot["checked_at"],
         "refresh_seconds": snapshot["refresh_seconds"],
         "sources": snapshot["sources"],
@@ -366,7 +381,9 @@ def build_briefing(
         "counts": {
             "attention": attention,
             **{status: counts[status] for status in STATUS_ORDER},
-            "calm": sum(counts[key] for key in ("easing", "unexposed", "no_market", "no_data")),
+            "calm": sum(
+                counts[key] for key in ("easing", "unexposed", "awaiting", "no_market", "no_data")
+            ),
         },
         "tiles": relevant,
         "other_tiles": others,
@@ -375,8 +392,45 @@ def build_briefing(
         "attention": [row for row in rows if row["status"] in ATTENTION],
         "watch": [row for row in rows if row["status"] == "watch"],
         "calm": [row for row in rows if row["status"] not in (*ATTENTION, "watch")],
-        "stories": stories,
+        "feed": feed_view(snapshot, feed_drivers),
+        "feed_drivers": ",".join(feed_drivers),
         "assumptions": assumptions,
+    }
+
+
+def feed_view(
+    snapshot: dict[str, Any], drivers: list[str] | None = None, *, limit: int = FEED_LIMIT
+) -> dict[str, Any]:
+    """The live headline stream for the markets in ``drivers`` (all when empty)."""
+    now = datetime.fromisoformat(snapshot["checked_at"])
+    fetched = snapshot.get("news_fetched_at")
+    news_sources = [source for source in snapshot["sources"] if source["kind"] == "news"]
+    return {
+        "items": [
+            {
+                "id": story["id"],
+                "title": story["title"],
+                "url": story["url"],
+                "publisher": story["publisher"],
+                "published_at": story["published_at"],
+                "ago": ago(story["published_at"], now),
+                "markets": " · ".join(story["driver_labels"]),
+            }
+            for story in news_feed(snapshot, drivers, limit=limit)
+        ],
+        "enabled": snapshot["enabled"],
+        "refreshing": snapshot["refreshing"],
+        "fetched_at": fetched,
+        "fetched": ago(fetched, now) if fetched else "",
+        "refresh_seconds": snapshot["news_refresh_seconds"],
+        "sources_current": sum(source["status"] == "Current" for source in news_sources),
+        "sources_total": len(news_sources),
+        # Every source, for the page header's "N/M sources current" line.
+        "health": {
+            "current": sum(source["status"] == "Current" for source in snapshot["sources"]),
+            "total": len(snapshot["sources"]),
+        },
+        "checked_at": snapshot["checked_at"],
     }
 
 
@@ -411,7 +465,7 @@ def review_draft(assessment: MarketAssessment, checked_at: str) -> str:
         f"Assessment: {assessment.label}. {assessment.headline}",
         assessment.implication,
         "",
-        f"Observed market moves since {day(position.period_end)}:",
+        f"Observed market moves against the average of the quarter to {day(position.period_end)}:",
     ]
     for channel in assessment.channels:
         unit = channel.unit

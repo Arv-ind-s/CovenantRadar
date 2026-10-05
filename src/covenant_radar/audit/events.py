@@ -79,6 +79,8 @@ class AuditEventType(str, Enum):
     # Deterministic covenant engine (`services/engine.py`).
     COVENANT_TESTED = "covenant_tested"
     COVENANT_RETEST_QUEUED = "covenant_retest_queued"
+    # Certificate-basis calendar occurrences (`services/certificates.py`).
+    COVENANT_SCHEDULE_GENERATED = "covenant_schedule_generated"
 
     # Documents (`services/documents.py`).
     DOCUMENT_UPLOAD_QUARANTINED = "document_upload_quarantined"

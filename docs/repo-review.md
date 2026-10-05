@@ -53,11 +53,14 @@
 3. **Operational probability naming is broader than its evidence.** The
    deterministic output is a configured risk score; it has not been validated
    as a real borrower breach probability. The UI now explains that distinction.
-4. **The original full gate is not clean.** Broad import contracts contradict
-   the existing service/ORM architecture. A repair needs a deliberate layering
-   refactor; adding blanket ignores would hide the issue. There are also
+4. **The import contracts were redefined, not refactored to.** The original
+   ports-and-adapters contracts contradicted the service/ORM architecture the
+   code was built on and failed on every run. `docs/adr/0004-layered-architecture.md`
+   replaces them with the layering the code has, fixes its two real upward
+   imports, and the contracts are now all kept. Services and screens still use
+   SQLAlchemy directly; repository ports remain future work. There are also
    pre-existing lint debt and unfinished nox sessions outside those fixed
-   here. See the final validation counts below.
+   here.
 5. **Platform checks need dependencies.** PostgreSQL integration/migration
    tests require a running PostgreSQL service. PDF export needs native
    GObject/Pango libraries. These were installed and exercised on this Mac;

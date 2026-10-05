@@ -33,7 +33,7 @@ day's results still serving the queue").
 
 from __future__ import annotations
 
-from collections.abc import Mapping
+from collections.abc import Callable, Mapping
 from dataclasses import dataclass
 from typing import Final
 from uuid import UUID
@@ -135,6 +135,7 @@ def pipeline_job(
     *,
     schedule: str | None = None,
     policy: JobPolicy | None = None,
+    on_failure: Callable[[PipelineRunResult], object] | None = None,
 ) -> JobDefinition:
     """Build the one schedulable job that drives the whole ordered sequence.
 
@@ -153,6 +154,12 @@ def pipeline_job(
             as_of=context.as_of,
         )
         if not result.success:
+            if on_failure is not None:
+                # Telling someone must never mask the failure itself.
+                try:
+                    on_failure(result)
+                except Exception:  # noqa: BLE001 - the halt below is what is reported
+                    pass
             failed = result.failed_step or "unknown"
             completed = ", ".join(result.completed_steps) or "none"
             raise RuntimeError(

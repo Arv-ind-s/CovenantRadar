@@ -24,6 +24,10 @@ if TYPE_CHECKING:
     from covenant_radar.domain.triage.urgency import TriageEntry
 
 
+_ZERO: Final[Decimal] = Decimal("0")
+_SHARE_QUANTUM: Final[Decimal] = Decimal("0.0001")
+
+
 class ChangeType(str, Enum):
     """The finite set of changes a queue row can report."""
 
@@ -527,7 +531,7 @@ def _new_change(
     current_state: str | None = None,
     probability_delta: Decimal | None = None,
 ) -> WhatChanged:
-    dominant_driver, driver_share = _dominant_driver(current, thresholds)
+    dominant_driver, driver_share = _dominant_driver(current, thresholds, previous=previous)
     if dominant_driver is not None and kind is not NEWLY_UNMONITORED:
         assert driver_share is not None
         summary = (
@@ -554,15 +558,60 @@ def _new_change(
 def _dominant_driver(
     entry: _EntryFacts,
     thresholds: ChangeThresholds | None,
+    *,
+    previous: _EntryFacts | None = None,
 ) -> tuple[str | None, Decimal | None]:
+    """Name the driver behind the change, not merely the largest one.
+
+    With a prior forecast, each driver's contribution (share x probability)
+    is compared across the two runs and the driver that moved the probability
+    most in its direction is named, with its share of that movement
+    (`spec §R-13`: attribution of the risk delta).  A late payment that lifts
+    a borrower from watch to amber is then the reason given, even though the
+    covenant's standing cushion is still the largest part of the level.
+    Without a comparable prior forecast the level shares are used.
+    """
+
     if not entry.drivers:
         return None, None
     if thresholds is None:
         raise ValueError("A dominant-driver share threshold must be configured.")
+    moved = _driver_movement(entry, previous)
+    if moved is not None:
+        name, share = moved
+        if share <= thresholds.dominant_driver_share:
+            return None, None
+        return name, share
     name, share = max(entry.drivers.items(), key=lambda item: (item[1], _reverse_text(item[0])))
     if share <= thresholds.dominant_driver_share:
         return None, None
     return name, share
+
+
+def _driver_movement(
+    entry: _EntryFacts, previous: _EntryFacts | None
+) -> tuple[str, Decimal] | None:
+    if (
+        previous is None
+        or not previous.drivers
+        or entry.probability is None
+        or previous.probability is None
+        or entry.probability == previous.probability
+    ):
+        return None
+    rising = entry.probability > previous.probability
+    deltas = {
+        name: entry.drivers.get(name, _ZERO) * entry.probability
+        - previous.drivers.get(name, _ZERO) * previous.probability
+        for name in set(entry.drivers) | set(previous.drivers)
+    }
+    moving = {name: delta for name, delta in deltas.items() if (delta > 0) is rising and delta}
+    total = sum((abs(delta) for delta in moving.values()), _ZERO)
+    if total <= _ZERO:
+        return None
+    name, delta = max(moving.items(), key=lambda item: (abs(item[1]), _reverse_text(item[0])))
+    # Four places, like the stored driver shares it is read beside.
+    return name, (abs(delta) / total).quantize(_SHARE_QUANTUM)
 
 
 def _no_change_summary(delta: Decimal | None, thresholds: ChangeThresholds) -> str:

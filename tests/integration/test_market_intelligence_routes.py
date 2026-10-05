@@ -1,6 +1,6 @@
 """Market pressure routes: scope, escaping, filtering, permissions and the review draft."""
 
-from datetime import UTC, date, datetime
+from datetime import UTC, date, datetime, timedelta
 from decimal import Decimal
 from uuid import uuid4
 
@@ -19,6 +19,7 @@ from covenant_radar.security.permissions import Permission
 from covenant_radar.security.rbac import Principal
 from covenant_radar.services.market_intelligence import MarketIntelligenceService
 from covenant_radar.web.routes.intelligence import create_intelligence_router
+from covenant_radar.web.view_models.market import workspace_version
 from tests.integration.test_queue_screen import _Fixture
 from tests.unit.test_market_intelligence import CAPTURED_AT, fixture_fetch
 
@@ -49,8 +50,9 @@ def add_financials(
     finance_cost: str = "10",
     debt: str = "128",
     threshold: str = "1.50",
+    quarter: tuple[str, date, date] = ("FY26Q2", date(2026, 4, 1), date(2026, 6, 30)),
 ) -> None:
-    """A live interest-cover covenant and one complete reported quarter to 30 Jun 2026."""
+    """A live interest-cover covenant and one complete reported quarter (to 30 Jun 2026)."""
     tag = borrower.reference.lower()
     facility = Facility(
         reference=f"F-{borrower.reference}",
@@ -81,10 +83,10 @@ def add_financials(
     period = FinancialPeriod(
         id=uuid4(),
         borrower_id=borrower.id,
-        fy_label="FY26Q2",
+        fy_label=quarter[0],
         period_type="quarterly",
-        period_start=date(2026, 4, 1),
-        period_end=date(2026, 6, 30),
+        period_start=quarter[1],
+        period_end=quarter[2],
         is_complete=True,
         is_audited=False,
         version=1,
@@ -225,6 +227,55 @@ def test_briefing_sizes_scoped_borrowers_against_real_markets(tmp_path):
         fixture.close()
 
 
+def test_a_quarter_that_just_closed_still_shows_market_pressure(tmp_path):
+    """Regression: once a quarter closes it becomes the reported one before any
+    market series is published past it, which used to blank every borrower."""
+    fixture = _Fixture()
+    try:
+        book = fixture.portfolio("BOOK")
+        fixture.grant_scope(book)
+        add_industries(
+            fixture, ("H51", "Air transport"), ("C24", "Basic metals"), ("F41", "Construction")
+        )
+        air = fixture.borrower(book, "AIR", legal_name="Visible Aviation Private Limited")
+        air.industry_code = "H51"
+        metals = fixture.borrower(book, "METAL", legal_name="Visible Metals Private Limited")
+        metals.industry_code = "C24"
+        # Iron ore (12%) and diesel (5%): only diesel has moved.
+        builder = fixture.borrower(book, "BUILD", legal_name="Visible Builders Private Limited")
+        builder.industry_code = "F41"
+        # The captured markets run to 22 Sep (daily) and Jul 2026 (monthly).
+        closed = ("FY27Q2", date(2026, 7, 1), date(2026, 9, 30))
+        add_financials(fixture, air, ebit="16.2", quarter=closed)
+        add_financials(fixture, metals, ebit="40", quarter=closed)
+        add_financials(fixture, builder, ebit="40", quarter=closed)
+        service = fixture_service(tmp_path)
+        app = create_app(
+            routers=(create_intelligence_router(fixture.session, service=service),),
+            principal_resolver=lambda request: fixture.principal,
+        )
+        with TestClient(app) as client:
+            body = client.get("/intelligence/data").json()
+            assert body["reporting"]["end"] == "30 Sep 2026"
+            assert [row["reference"] for row in body["attention"]] == ["AIR"]
+            assert body["attention"][0]["status"] == "exceeds"
+            assert body["counts"]["awaiting"] == 1 and body["counts"]["no_market"] == 0
+            assert [row["reference"] for row in body["watch"]] == ["BUILD"]
+            tiles = {tile["key"]: tile for tile in body["tiles"]}
+            assert tiles["brent"]["latest_change"].startswith("+")
+            assert not tiles["brent"]["pending"]
+            assert tiles["iron_ore"]["pending"] and tiles["iron_ore"]["latest_change"] == "—"
+            assert tiles["brent"]["hurting"] == 2 and tiles["iron_ore"]["hurting"] == 0
+
+            text = client.get("/intelligence").text
+            assert "1 of 3 borrowers face market moves" in text
+            assert "published only to Jul 2026" in text
+            assert "not yet published past 30 Sep 2026" in text
+            assert "Market data unavailable" not in text
+    finally:
+        fixture.close()
+
+
 def test_review_draft_cites_sources_and_respects_scope(tmp_path):
     fixture = _Fixture()
     try:
@@ -326,5 +377,67 @@ def test_a_later_annual_statement_does_not_replace_the_quarter(tmp_path):
         assert position.fy_label == "FY26Q2"
         assert position.period_end == date(2026, 6, 30)
         assert position.finance_cost == 10.0
+    finally:
+        fixture.close()
+
+
+def test_live_feed_streams_new_headlines_and_idle_polls_cost_nothing(tmp_path):
+    fixture = _Fixture()
+    try:
+        book = fixture.portfolio("BOOK")
+        fixture.grant_scope(book)
+        add_industries(fixture, ("H51", "Air transport"))
+        air = fixture.borrower(book, "AIR", legal_name="Visible Aviation Private Limited")
+        air.industry_code = "H51"
+        add_financials(fixture, air, ebit="16.2")
+        instant = [CAPTURED_AT]
+        breaking = {
+            "id": "breaking",
+            "title": "Brent jumps as Gulf shipping is disrupted overnight",
+            "url": "https://news.example/breaking",
+            "publisher": "Reuters",
+            "publisher_url": "https://www.reuters.com",
+            "published_at": (CAPTURED_AT + timedelta(minutes=2)).isoformat(),
+            "established": True,
+        }
+        upstream: list[dict] = []
+
+        def fetch(source, now):
+            items = fixture_fetch(source, now)
+            return [*upstream, *items] if source.key == "news:brent" else items
+
+        service = MarketIntelligenceService(
+            cache_path=tmp_path / "market.json",
+            fetcher=fetch,
+            clock=lambda: instant[0],
+            background=False,
+        )
+        app = create_app(
+            routers=(create_intelligence_router(fixture.session, service=service),),
+            principal_resolver=lambda request: fixture.principal,
+        )
+        with TestClient(app) as client:
+            page = client.get("/intelligence").text
+            assert 'data-market-feed data-feed-url="/intelligence/feed?drivers=brent' in page
+            assert "Live market news" in page
+            first = client.get("/intelligence/feed?drivers=brent").json()
+            assert first["items"] and first["fetched_at"] == CAPTURED_AT.isoformat()
+            published = [item["published_at"] for item in first["items"]]
+            assert published == sorted(published, reverse=True)
+
+            # A story breaks upstream; two minutes on, the feed carries it first.
+            upstream.append(breaking)
+            instant[0] += timedelta(seconds=service.news_refresh_seconds)
+            latest = client.get("/intelligence/feed?drivers=brent").json()
+            assert latest["items"][0]["id"] == "breaking"
+            assert latest["items"][0]["markets"] == "Brent crude"
+            assert latest["fetched"] == "just now"
+
+            # The workspace re-checks every minute but only redraws for new series data.
+            version = workspace_version(service.snapshot())
+            headers = {"HX-Request": "true"}
+            assert client.get(f"/intelligence?v={version}", headers=headers).status_code == 204
+            redraw = client.get("/intelligence?v=older", headers=headers)
+            assert redraw.status_code == 200 and f"v={version}" in redraw.text
     finally:
         fixture.close()

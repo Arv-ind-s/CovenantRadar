@@ -32,8 +32,10 @@ def test_queue_summary_is_scoped_and_not_page_sized() -> None:
         run = fixture.run(date(2026, 8, 30))
         for rank, (band, exposure, changed) in enumerate(
             (
-                ("act", Decimal("100"), "band worsened"),
-                ("amber", Decimal("200"), "probability increased"),
+                # The tile reads "N band changes": only band moves count, not
+                # a probability drift inside one band or a first review.
+                ("act", Decimal("100"), "new to act; band worsened from amber to act"),
+                ("amber", Decimal("200"), "probability increased by 0.06 from 0.41 to 0.47"),
                 ("watch", Decimal("300"), "no change; probability movement 0.01"),
             ),
             start=1,
@@ -51,7 +53,7 @@ def test_queue_summary_is_scoped_and_not_page_sized() -> None:
         assert summary.act == 1
         assert summary.amber == 1
         assert summary.watch == 1
-        assert summary.what_changed == 2
+        assert summary.what_changed == 1
         assert summary.exposure_total == Decimal("600.0000")
     finally:
         fixture.close()

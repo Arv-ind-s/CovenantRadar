@@ -37,21 +37,6 @@ forbidden_modules =
     covenant_radar.services
     covenant_radar.web
 
-[importlinter:contract:services-adapter-boundary]
-name = Services use ports rather than adapters
-type = forbidden
-source_modules =
-    covenant_radar.services
-forbidden_modules =
-    covenant_radar.ai
-    covenant_radar.api
-    covenant_radar.db
-    covenant_radar.documents
-    covenant_radar.ingestion
-    covenant_radar.notifications
-    covenant_radar.scheduler
-    covenant_radar.web
-
 [importlinter:contract:ai-provider-boundary]
 name = Only the AI client imports providers
 type = forbidden
@@ -72,41 +57,37 @@ source_modules =
 forbidden_modules =
     covenant_radar.ai.providers
 
-[importlinter:contract:presentation-boundary]
-name = Presentation uses services rather than domain internals or adapters
-type = forbidden
-source_modules =
-    covenant_radar.api
-    covenant_radar.web
-forbidden_modules =
-    covenant_radar.ai
-    covenant_radar.db
+[importlinter:contract:layers]
+name = Layered architecture (docs/adr/0004-layered-architecture.md)
+type = layers
+layers =
+    covenant_radar.asgi | covenant_radar.cli
+    covenant_radar.web : covenant_radar.api
+    covenant_radar.services : covenant_radar.demo : covenant_radar.lifecycle
+    covenant_radar.ai : covenant_radar.audit : covenant_radar.db : covenant_radar.documents : covenant_radar.ingestion : covenant_radar.ml : covenant_radar.notifications : covenant_radar.reporting : covenant_radar.scheduler
     covenant_radar.domain
+    covenant_radar.config : covenant_radar.i18n : covenant_radar.observability : covenant_radar.ports : covenant_radar.security
+    covenant_radar.core
 
-[importlinter:contract:session-boundary]
-name = SQLAlchemy sessions stay inside the database adapter
+[importlinter:contract:foundation-framework-free]
+name = The domain and the foundation layers stay free of web and persistence frameworks
 type = forbidden
 source_modules =
-    covenant_radar.ai
-    covenant_radar.api
-    covenant_radar.audit
-    covenant_radar.config
+    covenant_radar.core
     covenant_radar.domain
-    covenant_radar.documents
-    covenant_radar.ingestion
-    covenant_radar.notifications
-    covenant_radar.observability
-    covenant_radar.scheduler
-    covenant_radar.security
-    covenant_radar.services
-    covenant_radar.web
+    covenant_radar.i18n
+    covenant_radar.ports
 forbidden_modules =
-    covenant_radar.db.session
+    fastapi
     sqlalchemy
+    starlette
 
 [importlinter:contract:audit-write-boundary]
 name = Audit writes go through audit.record
 type = forbidden
+# `audit.record` is the sanctioned writer and itself uses `audit.store`; only a
+# direct import of the store from outside the audit package is a violation.
+allow_indirect_imports = True
 source_modules =
     covenant_radar.ai
     covenant_radar.api

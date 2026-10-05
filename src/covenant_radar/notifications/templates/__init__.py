@@ -41,6 +41,9 @@ BAND_CHANGE_TEMPLATE = NotificationTemplate(
         # subject and otherwise falls back to the opaque id, which the
         # reference-keyed `/cases/{reference}` route cannot resolve.
         _slot("case_reference", str, required=False),
+        # The forecast run that raised the alert.  Not rendered; it lets the
+        # nightly dispatch announce a re-escalation once per run.
+        _slot("forecast_run_id", str, required=False),
     ),
 )
 
@@ -51,6 +54,10 @@ MORNING_QUEUE_TEMPLATE = NotificationTemplate(
     slots=(
         _slot("summary", str),
         _slot("entries", str, required=False),
+        # Not rendered: the run that sent it, and the review date that keeps
+        # it to one summary a day however often the review is re-run.
+        _slot("forecast_run_id", str, required=False),
+        _slot("review_date", str, required=False),
     ),
 )
 
@@ -123,7 +130,12 @@ JOB_FAILURE_TEMPLATE = NotificationTemplate(
     name="job_failure",
     subject_template="Covenant Radar job failure: {job_name}",
     body_template="{summary}",
-    slots=(_slot("job_name", str), _slot("summary", str)),
+    slots=(
+        _slot("job_name", str),
+        _slot("summary", str),
+        # Not rendered: one failure notice per pipeline run.
+        _slot("run_id", str, required=False),
+    ),
 )
 
 SECURITY_ALERT_TEMPLATE = NotificationTemplate(

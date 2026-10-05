@@ -14,11 +14,9 @@ from cryptography.x509.oid import NameOID
 
 from covenant_radar.ai import create_provider
 from covenant_radar.ai.errors import ProviderConfigurationError, ProviderUnavailable
-from covenant_radar.ai.providers.anthropic import AnthropicProvider
-from covenant_radar.ai.providers.azure_openai import AzureOpenAIProvider
 from covenant_radar.ai.providers.base import trust_context
+from covenant_radar.ai.providers.gemini import GeminiProvider
 from covenant_radar.ai.providers.recorded import RecordedProvider
-from covenant_radar.ai.providers.tcs_genailab import TCSGenAILabProvider
 from covenant_radar.config.settings import SettingsError, load_settings
 from covenant_radar.ports.llm import CompletionRequest, CompletionResponse, LLMProvider
 
@@ -49,7 +47,7 @@ def _request() -> CompletionRequest:
             {"role": "system", "content": "Answer briefly."},
             {"role": "user", "content": "What is DSCR?"},
         ],
-        model="credit-model",
+        model="gemini-3.8-flash",
     )
 
 
@@ -58,16 +56,6 @@ def test_one_response_shape_across_adapters() -> None:
 
     def handler(request: httpx.Request) -> httpx.Response:
         seen_requests.append(request)
-        if request.url.path.endswith("/messages"):
-            return httpx.Response(
-                200,
-                json={
-                    "model": "claude-returned",
-                    "content": [{"type": "text", "text": "anthropic answer"}],
-                    "usage": {"input_tokens": 4, "output_tokens": 3},
-                },
-                request=request,
-            )
         return httpx.Response(
             200,
             json={
@@ -80,9 +68,11 @@ def test_one_response_shape_across_adapters() -> None:
 
     client = httpx.Client(transport=httpx.MockTransport(handler))
     providers: list[LLMProvider] = [
-        TCSGenAILabProvider(endpoint="https://tcs.example", api_key="key", http_client=client),
-        AzureOpenAIProvider(endpoint="https://azure.example", api_key="key", http_client=client),
-        AnthropicProvider(endpoint="https://anthropic.example", api_key="key", http_client=client),
+        GeminiProvider(
+            endpoint="https://generativelanguage.googleapis.com/v1beta/openai",
+            api_key="key",
+            http_client=client,
+        ),
         RecordedProvider(
             responses={
                 "replay": {
@@ -97,35 +87,28 @@ def test_one_response_shape_across_adapters() -> None:
     ]
     recorded_request = CompletionRequest(
         messages=[{"role": "user", "content": "replay"}],
-        model="credit-model",
+        model="gemini-3.8-flash",
         cassette_key="replay",
     )
 
     try:
-        responses = [provider.complete(_request()) for provider in providers[:3]]
-        responses.append(providers[3].complete(recorded_request))
+        responses = [provider.complete(_request()) for provider in providers[:1]]
+        responses.append(providers[1].complete(recorded_request))
     finally:
         client.close()
 
     assert all(isinstance(response, CompletionResponse) for response in responses)
     assert [response.text for response in responses] == [
         "answer",
-        "answer",
-        "anthropic answer",
         "recorded answer",
     ]
     assert all(response.model for response in responses)
     assert all(response.input_tokens == 4 for response in responses)
     assert all(response.output_tokens == 3 for response in responses)
     assert [request.url.path for request in seen_requests] == [
-        "/v1/chat/completions",
-        "/openai/deployments/credit-model/chat/completions",
-        "/v1/messages",
+        "/v1beta/openai/chat/completions",
     ]
     assert seen_requests[0].headers["authorization"] == "Bearer key"
-    assert seen_requests[1].headers["api-key"] == "key"
-    assert seen_requests[2].headers["x-api-key"] == "key"
-    assert seen_requests[2].headers["anthropic-version"] == "2023-06-01"
 
 
 def test_adapter_does_not_retry() -> None:
@@ -137,8 +120,10 @@ def test_adapter_does_not_retry() -> None:
         raise httpx.ConnectError("fixture transport failure", request=request)
 
     client = httpx.Client(transport=httpx.MockTransport(handler))
-    provider = TCSGenAILabProvider(
-        endpoint="https://tcs.example", api_key="key", http_client=client
+    provider = GeminiProvider(
+        endpoint="https://generativelanguage.googleapis.com/v1beta/openai",
+        api_key="key",
+        http_client=client,
     )
     try:
         with pytest.raises(ProviderUnavailable):
@@ -159,7 +144,7 @@ def test_unknown_provider_refused_at_startup(tmp_path) -> None:
     message = str(raised.value)
     assert "unknown" in message
     assert "recorded" in message
-    assert "azure_openai" in message
+    assert "gemini" in message
 
     with pytest.raises(ProviderConfigurationError, match="Valid providers"):
         create_provider(type("UnknownSettings", (), {"provider": "unknown"})())
@@ -167,7 +152,7 @@ def test_unknown_provider_refused_at_startup(tmp_path) -> None:
 
 @pytest.mark.parametrize(
     "provider_class",
-    [TCSGenAILabProvider, AzureOpenAIProvider, AnthropicProvider],
+    [GeminiProvider],
 )
 def test_tls_verification_cannot_be_disabled(provider_class) -> None:
     with pytest.raises(ValueError, match="TLS certificate verification"):
@@ -181,7 +166,7 @@ def test_ca_bundle_adds_anchors_without_weakening_verification(tmp_path) -> None
     bundle.write_bytes(_self_signed_ca("Covenant Radar Test CA"))
     default_anchors = len(httpx.create_ssl_context().get_ca_certs())
 
-    context = trust_context(bundle, provider="tcs")
+    context = trust_context(bundle, provider="gemini")
 
     assert isinstance(context, ssl.SSLContext)
     assert context.verify_mode is ssl.CERT_REQUIRED
@@ -197,7 +182,7 @@ def test_ca_bundle_adds_anchors_without_weakening_verification(tmp_path) -> None
 
 
 def test_no_ca_bundle_leaves_the_httpx_default_untouched() -> None:
-    assert trust_context(None, provider="tcs") is True
+    assert trust_context(None, provider="gemini") is True
 
 
 def test_unreadable_ca_bundle_is_refused_as_configuration(tmp_path) -> None:
@@ -205,7 +190,11 @@ def test_unreadable_ca_bundle_is_refused_as_configuration(tmp_path) -> None:
     bundle.write_text("this is not PEM\n", encoding="utf-8")
 
     with pytest.raises(ProviderConfigurationError, match="CA bundle"):
-        TCSGenAILabProvider(endpoint="https://tcs.example", api_key="key", ca_bundle=bundle)
+        GeminiProvider(
+            endpoint="https://generativelanguage.googleapis.com/v1beta/openai",
+            api_key="key",
+            ca_bundle=bundle,
+        )
 
 
 def test_ca_bundle_refused_alongside_an_injected_client(tmp_path) -> None:
@@ -214,11 +203,128 @@ def test_ca_bundle_refused_alongside_an_injected_client(tmp_path) -> None:
     client = httpx.Client(transport=httpx.MockTransport(lambda request: httpx.Response(200)))
     try:
         with pytest.raises(ValueError, match="adapter-created client"):
-            TCSGenAILabProvider(
-                endpoint="https://tcs.example",
+            GeminiProvider(
+                endpoint="https://generativelanguage.googleapis.com/v1beta/openai",
                 api_key="key",
                 http_client=client,
                 ca_bundle=bundle,
             )
     finally:
         client.close()
+
+
+def test_gemini_key_enables_default_provider() -> None:
+    settings = load_settings(environ={"GEMINI_API_KEY": "test-gemini-key"})
+    assert settings.ai.provider == "gemini"
+    assert settings.ai.model == "gemini-3.8-flash"
+    assert settings.ai.endpoint == "https://generativelanguage.googleapis.com/v1beta/openai"
+    assert settings.ai.api_key.get_secret_value() == "test-gemini-key"
+    assert "test-gemini-key" not in repr(settings.ai)
+
+    requests: list[httpx.Request] = []
+
+    def handler(request: httpx.Request) -> httpx.Response:
+        requests.append(request)
+        return httpx.Response(
+            200,
+            json={
+                "model": "gemini-3.8-flash",
+                "choices": [{"message": {"content": "Gemini answer"}}],
+                "usage": {"prompt_tokens": 4, "completion_tokens": 3},
+            },
+        )
+
+    provider = create_provider(settings.ai, transport=httpx.MockTransport(handler))
+    try:
+        response = provider.complete(_request())
+    finally:
+        provider.close()
+    assert response.text == "Gemini answer"
+    assert str(requests[0].url) == (
+        "https://generativelanguage.googleapis.com/v1beta/openai/chat/completions"
+    )
+    assert requests[0].headers["authorization"] == "Bearer test-gemini-key"
+
+
+def test_gemini_key_respects_explicit_disabled_provider() -> None:
+    settings = load_settings(
+        environ={"GEMINI_API_KEY": "test-key", "COVENANT_RADAR_AI__PROVIDER": "none"}
+    )
+    assert settings.ai.provider == "none"
+
+
+def test_explicit_gemini_requires_key() -> None:
+    with pytest.raises(SettingsError, match="GEMINI_API_KEY"):
+        load_settings(environ={"COVENANT_RADAR_AI__PROVIDER": "gemini"})
+
+
+@pytest.mark.parametrize("provider", ["azure_openai", "anthropic"])
+def test_non_gemini_live_provider_refused(provider) -> None:
+    with pytest.raises(SettingsError):
+        load_settings(environ={"COVENANT_RADAR_AI__PROVIDER": provider, "GEMINI_API_KEY": "key"})
+    with pytest.raises(ProviderConfigurationError):
+        create_provider(type("LegacySettings", (), {"provider": provider})())
+
+
+def test_gemini_refuses_foreign_endpoint_and_model() -> None:
+    for overrides in [
+        {"COVENANT_RADAR_AI__ENDPOINT": "https://old-gateway.example"},
+        {"COVENANT_RADAR_AI__MODEL": "gpt-5"},
+    ]:
+        with pytest.raises(SettingsError):
+            load_settings(environ={"GEMINI_API_KEY": "test-key", **overrides})
+
+
+def test_old_key_cannot_enable_gemini() -> None:
+    with pytest.raises(SettingsError):
+        load_settings(
+            environ={
+                "COVENANT_RADAR_AI__PROVIDER": "gemini",
+                "COVENANT_RADAR_AI_API_KEY": "old-key",
+            }
+        )
+
+
+def test_gemini_key_is_redacted_from_prompt(monkeypatch) -> None:
+    from covenant_radar.ai.masking import build_outbound
+
+    monkeypatch.setenv("GEMINI_API_KEY", "unique-gemini-credential")
+    prompt = build_outbound({"clause_text": "The credential is unique-gemini-credential."})
+    assert "unique-gemini-credential" not in prompt.content
+
+
+def test_gemini_blocks_key_in_prompt_before_http() -> None:
+    calls: list[httpx.Request] = []
+
+    def handler(request):
+        calls.append(request)
+        return httpx.Response(200, json={})
+
+    with GeminiProvider(
+        api_key="unique-gemini-key", transport=httpx.MockTransport(handler)
+    ) as provider:
+        with pytest.raises(ProviderConfigurationError, match="credential detected"):
+            provider.complete(
+                CompletionRequest(
+                    messages=[{"role": "user", "content": "unique-gemini-key"}],
+                    model="gemini-3.8-flash",
+                )
+            )
+    assert calls == []
+
+
+def test_nested_key_override_cannot_replace_gemini_key() -> None:
+    with pytest.raises(SettingsError, match="GEMINI_API_KEY"):
+        load_settings(
+            environ={
+                "GEMINI_API_KEY": "gemini-credential",
+                "COVENANT_RADAR_AI__API_KEY": "different-credential",
+            }
+        )
+
+
+def test_gemini_key_works_with_default_config_selected_explicitly() -> None:
+    from covenant_radar.config.settings import DEFAULT_CONFIG_PATH
+
+    settings = load_settings(DEFAULT_CONFIG_PATH, environ={"GEMINI_API_KEY": "test-key"})
+    assert settings.ai.provider == "gemini"

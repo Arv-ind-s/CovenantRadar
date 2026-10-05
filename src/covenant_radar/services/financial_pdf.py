@@ -30,6 +30,7 @@ from covenant_radar.db.scoping import Scope, resolve_scope
 from covenant_radar.db.session import is_database_session
 from covenant_radar.domain.statements.chart import default_chart
 from covenant_radar.domain.covenants.calendar import RetestTrigger, RetestTriggerKind
+from covenant_radar.domain.covenants.exceptions import period_label_for_date
 from covenant_radar.security.permissions import Permission
 from covenant_radar.security.rbac import Principal, authorize
 from covenant_radar.services.documents import DocumentService
@@ -194,5 +195,6 @@ def _parse_date(value: str) -> date:
 
 
 def _fy_label(value: date) -> str:
-    quarter = ((value.month - 1) // 3) + 1
-    return f"FY{value.year}-Q{quarter}"
+    # The canonical `FYyyQn` form: exception windows and the statement
+    # importer both reject the old `FY2026-Q2` spelling.
+    return period_label_for_date(value)

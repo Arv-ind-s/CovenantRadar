@@ -143,6 +143,13 @@ _FACTOR_LABELS: Final[Mapping[str, str]] = {
     "velocity": "Rate of deterioration",
     "pressure": "Sustained evidence pressure",
 }
+#: Forecasts scored with the dimensionless inputs (`domain.forecast.inputs`)
+#: record `projected_crossing`; their factor values are shares, not units.
+_RELATIVE_FACTOR_LABELS: Final[Mapping[str, str]] = {
+    "distance": "Cushion to the limit today (share of the threshold)",
+    "velocity": "Trend: share of that cushion used within the horizon",
+    "pressure": "Warning signals: share of that cushion used within the horizon",
+}
 _DRIVER_LABELS: Final[Mapping[str, str]] = {
     "distance": "Proximity to covenant threshold",
     "velocity": "Rate of deterioration",
@@ -283,7 +290,7 @@ class ForecastCitationView:
 class ForecastExplanationView:
     """Human-readable reasoning assembled only from persisted forecast facts.
 
-    This is deliberately not an LLM completion.  The TCS-backed model may
+    This is deliberately not an LLM completion.  The Gemini-backed model may
     draft a stage-7 memo, but the explanation beside a credit-risk prediction
     must remain available during provider outages and must reproduce exactly
     which rule or governed statistical artifact supplied the operational
@@ -1774,6 +1781,9 @@ def _forecast_factor_views(
     terms = probability_formula.get("terms")
     if not isinstance(terms, Mapping):
         return ()
+    labels = (
+        _RELATIVE_FACTOR_LABELS if "projected_crossing" in probability_formula else _FACTOR_LABELS
+    )
     result: list[ForecastFactorView] = []
     for name in ("distance", "velocity", "pressure"):
         raw = terms.get(name)
@@ -1782,7 +1792,7 @@ def _forecast_factor_views(
         result.append(
             ForecastFactorView(
                 name=name,
-                label=_FACTOR_LABELS[name],
+                label=labels[name],
                 input_display=_number_display(raw.get("input_value")),
                 normalized_display=_fraction_or_number_display(raw.get("normalized_value")),
                 weight_display=_number_display(raw.get("weight")),
@@ -1914,6 +1924,19 @@ def _prediction_summary(
     distance = _number_display(probability_formula.get("distance"))
     velocity = _number_display(probability_formula.get("velocity"))
     pressure = _number_display(probability_formula.get("pressure"))
+    if "projected_crossing" in probability_formula:
+        crossing = (
+            " The projected path reaches the limit within the horizon, so the score is "
+            "held at its maximum."
+            if probability_formula.get("projected_crossing") is True
+            else ""
+        )
+        return (
+            f"{method_label} supplied {displayed} for the {forecast.horizon_days}-day horizon "
+            f"from today's cushion to the limit ({distance} of the threshold), the share of "
+            f"that cushion the trend uses within the horizon ({velocity}) and the share "
+            f"sustained warning signals use ({pressure}).{crossing}"
+        )
     return (
         f"{method_label} supplied {displayed} for the {forecast.horizon_days}-day horizon by "
         f"combining threshold distance {distance}, deterioration velocity {velocity}, and "

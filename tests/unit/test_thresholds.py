@@ -116,6 +116,8 @@ def test_twelve_thresholds_present_with_spec_values() -> None:
         "sustained_days": 14,
         "sustained_events": 3,
         "event_window_days": 30,
+        # The daily evidence retention factor the nightly decay step reads.
+        "decay_rate": Decimal("0.95"),
     }
     assert store.get("T4")["headroom_erosion_pct"] == Decimal("0.05")
     assert store.get("T5")["contribution_share"] == Decimal("0.10")

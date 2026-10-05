@@ -58,7 +58,7 @@ from covenant_radar.db.seed import (
     SeedReport,
     deterministic_catalog_hash,
 )
-from covenant_radar.db.seed.demo import seed_demo_covenants
+from covenant_radar.demo.curated import seed_demo_covenants
 from covenant_radar.demo.governance import seed_governance_records
 from covenant_radar.ports.llm import CompletionRequest, CompletionResponse, LLMProvider
 from covenant_radar.scheduler import default_registry
@@ -633,7 +633,8 @@ def _run_demo_covenant_seed(*, database_url: str | None, stream: TextIO) -> int:
                 return 1
         _write(
             stream,
-            "Seeded Phase 7A demo: "
+            "Seeded demo book from NSE filings "
+            f"(quarters to {report.latest_quarter}, retrieved {report.snapshot_retrieved_on}): "
             f"{report.borrowers} borrowers, {report.covenants_created} covenants, "
             f"{report.periods_created} periods, {report.tests_created} tests, "
             f"{report.signal_events} signal events, "

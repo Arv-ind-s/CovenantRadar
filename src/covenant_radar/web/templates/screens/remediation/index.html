@@ -1,0 +1,266 @@
+{% extends "base.html" %}
+{% import "_components/icon.html" as icons %}
+
+{% macro chip(cell) -%}
+  <span class="remedy-chip" data-tone="{{ cell.tone }}">{{ cell.display }}</span>
+{%- endmacro %}
+
+{% block head %}
+  <link rel="stylesheet" href="/static/css/remediation.css">
+  <script src="/static/js/remediation.js" defer></script>
+{% endblock %}
+{% block page_title %}{{ view.borrower_name }} — Remediation planner{% endblock %}
+{% block page_eyebrow %}Remediation planner · {{ view.borrower_reference }}{% endblock %}
+{% block h1 %}{{ view.borrower_name }}{% endblock %}
+{% block breadcrumb %}<a class="shell-breadcrumb__link" href="/borrowers">{{ tr("navigation.borrowers") }}</a>{{ icons.icon("chevron") }}<a class="shell-breadcrumb__link" href="{{ view.case_href }}">{{ view.borrower_reference }}</a>{{ icons.icon("chevron") }}Remediation{% endblock %}
+{% block page_description %}
+  <p class="remedy-intro">Every lever below is sized from this borrower's own filings to {{ view.as_of_label }} and tested against all of its covenants at once, on {{ view.paths_display }} simulated paths across the {{ view.horizon_label }}.</p>
+{% endblock %}
+{% block page_actions %}<a class="button button--secondary" href="{{ view.case_href }}">Back to case file</a>{% endblock %}
+
+{% block content %}
+<div class="remedy" data-status="{{ view.status }}">
+
+  <section class="panel remedy-verdict" data-status="{{ view.status }}" aria-labelledby="remedy-verdict-title">
+    <p class="remedy-eyebrow">Advisory · options to put to the borrower and the lenders, not credit decisions</p>
+    <h2 id="remedy-verdict-title">{{ view.status_title }}</h2>
+    <p class="remedy-verdict__message">{{ view.status_message }}</p>
+    <ul class="remedy-verdict__covenants">
+      {% for covenant in view.covenants %}
+        <li data-at-risk="{{ 'true' if covenant.at_risk else 'false' }}">
+          <span class="remedy-verdict__name">{{ covenant.name }}</span>
+          <span class="remedy-verdict__filed" data-tone="{{ covenant.filed_tone }}">Filed {{ covenant.filed_display }} <small>test {{ covenant.test_display }}</small></span>
+          <span class="remedy-verdict__risk">{{ chip(covenant.baseline) }}{% if covenant.at_risk %}<span aria-hidden="true">→</span><span class="sr-only">with the recommended package</span>{{ chip(covenant.package) }}{% endif %}</span>
+        </li>
+      {% endfor %}
+    </ul>
+    {% if view.unsimulated %}
+      <div class="remedy-verdict__unsimulated">
+        <p class="remedy-subhead">Not projected here</p>
+        <ul>
+          {% for item in view.unsimulated %}
+            <li><strong>{{ item.reference }} · {{ item.name }}</strong> — {{ item.reason }}</li>
+          {% endfor %}
+        </ul>
+      </div>
+    {% endif %}
+  </section>
+
+  {% if view.steps %}
+  <section class="panel remedy-plan" aria-labelledby="remedy-plan-title">
+    <header class="remedy-section-head">
+      <h2 id="remedy-plan-title">Recommended package</h2>
+      <p>Borrower self-help first; lender decisions only for what self-help cannot reach. Each step is sized on the position the earlier steps leave behind. Columns show the chance of failing any projected test after that step.</p>
+    </header>
+    <div class="remedy-table-wrap">
+      <table class="remedy-plan__table">
+        <caption class="sr-only">Recommended package and breach probability after each step</caption>
+        <thead>
+          <tr>
+            <th scope="col">Step</th>
+            <th scope="col" class="remedy-num">Size</th>
+            {% for name in view.at_risk_names %}<th scope="col" class="remedy-num">{{ name }}</th>{% endfor %}
+          </tr>
+        </thead>
+        <tbody>
+          <tr class="remedy-plan__baseline">
+            <th scope="row"><span class="remedy-step__title">Do nothing</span></th>
+            <td class="remedy-num" data-label="Size">—</td>
+            {% for cell in view.baseline_cells %}<td class="remedy-num" data-label="{{ view.at_risk_names[loop.index0] }}">{{ chip(cell) }}</td>{% endfor %}
+          </tr>
+          {% for step in view.steps %}
+            <tr data-lever="{{ step.code }}">
+              <th scope="row">
+                <span class="remedy-step__number" aria-hidden="true">{{ step.number }}</span>
+                <span class="remedy-step__title">{{ step.title }}</span>
+                <span class="remedy-owner">{{ step.owner }}{% if step.lender_decision %} · <strong>lender decision</strong>{% endif %}</span>
+                {% for line in step.rationale %}<p class="remedy-step__why">{{ line }}</p>{% endfor %}
+              </th>
+              <td class="remedy-num remedy-size" data-label="Size">{{ step.size_display }}</td>
+              {% for cell in step.cells %}<td class="remedy-num" data-label="{{ view.at_risk_names[loop.index0] }}">{{ chip(cell) }}</td>{% endfor %}
+            </tr>
+          {% endfor %}
+        </tbody>
+      </table>
+    </div>
+  </section>
+  {% endif %}
+
+  <section class="panel remedy-lab" id="remedy-lab" aria-labelledby="remedy-lab-title">
+    <header class="remedy-section-head">
+      <h2 id="remedy-lab-title">Simulate a package</h2>
+      {% if view.levers %}
+        <p>Move a lever and every path re-runs on the same draws, so a change in the charts is the lever, not sampling noise. Each lever stops at what this borrower actually has.</p>
+      {% else %}
+        <p>No lever is needed: no covenant is at risk on the filed lines or in the projection. The charts show the do-nothing projection.</p>
+      {% endif %}
+    </header>
+    <div class="remedy-lab__grid{% if not view.levers %} remedy-lab__grid--single{% endif %}">
+      {% if view.levers %}
+      <form class="remedy-levers" id="remedy-levers" method="get" action="{{ view.reset_href }}"
+            hx-get="{{ view.reset_href }}" hx-trigger="input delay:0.45s, change"
+            hx-target="#remedy-results" hx-select="#remedy-results" hx-swap="outerHTML"
+            hx-replace-url="true" hx-sync="this:replace" hx-indicator="#remedy-results">
+        {% for lever in view.levers %}
+          <fieldset class="remedy-lever" data-in-plan="{{ 'true' if lever.in_plan else 'false' }}">
+            <legend>{{ lever.title }}</legend>
+            <p class="remedy-owner">{{ lever.owner }}{% if lever.lender_decision %} · <strong>lender decision</strong>{% endif %}</p>
+            <div class="remedy-lever__control">
+              <label for="lever-{{ lever.code }}">Size</label>
+              <output id="lever-{{ lever.code }}-value" for="lever-{{ lever.code }}" data-unit="{{ lever.unit }}">{{ lever.value_display }}</output>
+            </div>
+            <input type="range" id="lever-{{ lever.code }}" name="{{ lever.field_name }}"
+                   min="0" max="{{ lever.maximum }}" step="any" value="{{ lever.value }}"
+                   data-unit="{{ lever.unit }}" aria-describedby="lever-{{ lever.code }}-scale">
+            <p class="remedy-lever__scale" id="lever-{{ lever.code }}-scale"><span>None</span><span>Capacity {{ lever.maximum_display }}</span></p>
+            <p class="remedy-lever__marks">
+              {% if lever.in_plan %}<span class="remedy-tag remedy-tag--plan">Package {{ lever.plan_size_display }}</span>{% endif %}
+              <span class="remedy-tag">Alone: {{ lever.recommended_display }}{% if lever.reaches_target %} cures{% else %} best effort{% endif %}</span>
+              {% if lever.hurts %}<span class="remedy-tag remedy-tag--hurts">Weakens {{ lever.hurts|join(', ')|lower }}</span>{% endif %}
+            </p>
+            <details class="remedy-lever__why">
+              <summary>Why this lever, at this size</summary>
+              <ul>{% for line in lever.rationale %}<li>{{ line }}</li>{% endfor %}</ul>
+              <p class="remedy-subhead">Assumptions</p>
+              <ul>{% for line in lever.assumptions %}<li>{{ line }}</li>{% endfor %}</ul>
+            </details>
+          </fieldset>
+        {% endfor %}
+        <div class="remedy-levers__actions">
+          <button class="button" type="submit">Simulate this package</button>
+          <a class="button button--ghost" href="{{ view.reset_href }}">Reset to recommended</a>
+        </div>
+      </form>
+      {% endif %}
+
+      <div id="remedy-results" class="remedy-results" aria-live="polite">
+        <div class="remedy-results__head">
+          <p class="remedy-results__label">
+            {% if not view.levers %}Do-nothing projection
+            {% elif view.package_is_recommended and not view.steps %}No package is sized · move a lever to test one against doing nothing
+            {% elif view.package_is_recommended %}Recommended package against doing nothing
+            {% else %}<strong>Your package</strong> against doing nothing · <a href="{{ view.page_href }}">link to this package</a>{% endif %}
+          </p>
+          <ul class="remedy-legend" aria-label="Chart legend">
+            <li><span class="remedy-legend__swatch remedy-legend__swatch--baseline" aria-hidden="true"></span>Do nothing</li>
+            {% if view.levers %}<li><span class="remedy-legend__swatch remedy-legend__swatch--package" aria-hidden="true"></span>With package</li>{% endif %}
+            <li><span class="remedy-legend__swatch remedy-legend__swatch--band" aria-hidden="true"></span>Middle 80% of paths</li>
+            <li><span class="remedy-legend__swatch remedy-legend__swatch--threshold" aria-hidden="true"></span>Covenant test</li>
+            {% if view.has_reset %}<li><span class="remedy-legend__swatch remedy-legend__swatch--reset" aria-hidden="true"></span>Test after reset</li>{% endif %}
+          </ul>
+        </div>
+        <div class="remedy-charts">
+          {% for covenant in view.covenants %}
+            <article class="remedy-chart" data-at-risk="{{ 'true' if covenant.at_risk else 'false' }}" aria-labelledby="chart-{{ covenant.reference }}-title">
+              <header>
+                <h3 id="chart-{{ covenant.reference }}-title">{{ covenant.name }}</h3>
+                <span class="remedy-chart__formula">{{ covenant.formula }} · test {{ covenant.test_display }}</span>
+              </header>
+              {{ covenant.chart }}
+              <dl class="remedy-chart__facts">
+                <div><dt>Filed</dt><dd data-tone="{{ covenant.filed_tone }}">{{ covenant.filed_display }}</dd></div>
+                {% if view.levers %}<div><dt>After package</dt><dd>{{ covenant.package_start_display }}</dd></div>{% endif %}
+                <div><dt>Breach risk, do nothing</dt><dd>{{ chip(covenant.baseline) }}</dd></div>
+                {% if view.levers %}<div><dt>With package</dt><dd>{{ chip(covenant.package) }}</dd></div>{% endif %}
+              </dl>
+              <details class="remedy-chart__table">
+                <summary>Quarter by quarter</summary>
+                <table>
+                  <caption class="sr-only">{{ covenant.name }} median projection and breach probability by quarter</caption>
+                  <thead><tr><th scope="col">Quarter</th><th scope="col" class="remedy-num">Do nothing</th>{% if view.levers %}<th scope="col" class="remedy-num">With package</th>{% endif %}<th scope="col" class="remedy-num">Breach, do nothing</th>{% if view.levers %}<th scope="col" class="remedy-num">Breach, package</th>{% endif %}</tr></thead>
+                  <tbody>
+                    {% for row in covenant.quarters %}
+                      <tr><th scope="row">{{ row.label }}</th><td class="remedy-num">{{ row.baseline }}</td>{% if view.levers %}<td class="remedy-num">{{ row.package }}</td>{% endif %}<td class="remedy-num">{{ row.baseline_probability }}</td>{% if view.levers %}<td class="remedy-num">{{ row.package_probability }}</td>{% endif %}</tr>
+                    {% endfor %}
+                  </tbody>
+                </table>
+              </details>
+            </article>
+          {% endfor %}
+        </div>
+
+        {% if view.memo %}
+        <section class="remedy-memo" id="remedy-memo" data-state="{{ view.memo.state }}" aria-labelledby="remedy-memo-title">
+          <div class="remedy-memo__text">
+            <h3 id="remedy-memo-title">{{ view.memo.title }}</h3>
+            <p>{{ view.memo.message }}</p>
+            {% if view.memo.recorded_label %}
+              <p class="remedy-memo__when">{{ view.memo.recorded_label }}</p>
+              {% if view.memo.state == "different" %}
+                <ol class="remedy-memo__steps">
+                  {% for line in view.memo.recorded_steps %}<li>{{ line }}</li>{% endfor %}
+                </ol>
+              {% endif %}
+            {% endif %}
+            {% if view.memo.error %}<p class="remedy-memo__error" role="alert">{{ view.memo.error }}</p>{% endif %}
+          </div>
+          <div class="remedy-memo__actions">
+            {% if view.memo.can_record %}
+              <form method="post" action="{{ view.memo.action_href }}">
+                <input type="hidden" name="csrf_token" value="{{ csrf_token }}">
+                {% for name, value in view.memo.hidden_sizes %}<input type="hidden" name="{{ name }}" value="{{ value }}">{% endfor %}
+                <button class="button" type="submit">{{ view.memo.button_label }}</button>
+              </form>
+            {% endif %}
+            {% if view.memo.state != "no_forecast" %}<a class="button button--ghost" href="{{ view.case_href }}#case-memo">Draft the memo in the case file</a>{% endif %}
+          </div>
+        </section>
+        {% endif %}
+      </div>
+    </div>
+  </section>
+
+  {% if view.stresses %}
+  <section class="panel remedy-stress" aria-labelledby="remedy-stress-title">
+    <header class="remedy-section-head">
+      <h2 id="remedy-stress-title">Does the package hold under stress?</h2>
+      <p>The recommended package re-run with a uniform shock on every path, against doing nothing under the same shock.</p>
+    </header>
+    <div class="remedy-table-wrap">
+      <table class="remedy-stress__table">
+        <caption class="sr-only">Breach probability under stress, do nothing against the package</caption>
+        <thead>
+          <tr><th scope="col">Scenario</th>{% for name in view.stress_headers %}<th scope="col" class="remedy-num">{{ name }}<span class="remedy-stress__sub">do nothing → package</span></th>{% endfor %}</tr>
+        </thead>
+        <tbody>
+          {% for row in view.stresses %}
+            <tr><th scope="row">{{ row.label }}</th>{% for before, after in row.cells %}<td class="remedy-num" data-label="{{ view.stress_headers[loop.index0] }}">{{ chip(before) }}<span aria-hidden="true"> → </span><span class="sr-only"> with package </span>{{ chip(after) }}</td>{% endfor %}</tr>
+          {% endfor %}
+        </tbody>
+      </table>
+    </div>
+  </section>
+  {% endif %}
+
+  {% if view.other_levers %}
+  <section class="panel remedy-considered" aria-labelledby="remedy-considered-title">
+    <header class="remedy-section-head">
+      <h2 id="remedy-considered-title">Levers considered and set aside</h2>
+      <p>Each was sized against this borrower and does not move a covenant at risk, or the borrower does not have the capacity for it.</p>
+    </header>
+    <ul class="remedy-considered__list">
+      {% for lever in view.other_levers %}
+        <li>
+          <strong>{{ lever.title }}</strong>
+          <span class="remedy-considered__reason">{% if lever.unavailable_reason %}{{ lever.unavailable_reason }}{% else %}Available up to {{ lever.maximum_display }}, but it does not move a covenant at risk.{% endif %}</span>
+          {% if lever.rationale %}<span class="remedy-considered__detail">{{ lever.rationale|join(' ') }}</span>{% endif %}
+        </li>
+      {% endfor %}
+    </ul>
+  </section>
+  {% endif %}
+
+  <section class="panel remedy-method" aria-labelledby="remedy-method-title">
+    <header class="remedy-section-head">
+      <h2 id="remedy-method-title">Drivers and method</h2>
+      <p>The drivers every path is built from, estimated from this borrower's filings. Balance-sheet drift uses distinct filed sheets only; carried-forward copies are ignored.</p>
+    </header>
+    <dl class="remedy-drivers">
+      {% for driver in view.drivers %}
+        <div><dt>{{ driver.label }}</dt><dd><strong>{{ driver.value_display }}</strong><span>{{ driver.basis }}</span></dd></div>
+      {% endfor %}
+    </dl>
+    <p class="remedy-method__note">Simulated breach risk: {{ view.paths_display }} paths, seed {{ view.seed_display }}, shared by the do-nothing case and every package. It is a scenario figure for comparing actions and is separate from the forecast risk score on the case file. Target: at most {{ view.target_display }} chance of failing any projected test. Starting values are recomputed through the covenant library from the filed lines and equal the stored tests. Report {{ view.content_hash }}.</p>
+  </section>
+</div>
+{% endblock %}

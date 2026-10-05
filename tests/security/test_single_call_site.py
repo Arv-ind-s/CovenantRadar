@@ -21,6 +21,9 @@ _ALLOWED_IMPORTERS = frozenset(
         # nobody *calls* the model outside the client boundary, which the
         # `outbound_calls` assertion below enforces independently.
         "covenant_radar.web.application",
+        # Readiness composes the same guarded client for stage-1/stage-7 checks;
+        # it never invokes an outbound provider directly.
+        "covenant_radar.demo.readiness",
     }
 )
 
@@ -44,10 +47,8 @@ def test_only_permitted_modules_import_the_client() -> None:
                 if node.func.attr == "complete" and module not in {
                     "covenant_radar.ai.client",
                     "covenant_radar.ai.providers.base",
-                    "covenant_radar.ai.providers.anthropic",
-                    "covenant_radar.ai.providers.azure_openai",
                     "covenant_radar.ai.providers.recorded",
-                    "covenant_radar.ai.providers.tcs_genailab",
+                    "covenant_radar.ai.providers.gemini",
                 }:
                     outbound_calls.add(module)
 

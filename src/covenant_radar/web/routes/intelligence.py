@@ -3,7 +3,7 @@
 from __future__ import annotations
 
 from fastapi import APIRouter, Depends, Query, Request
-from fastapi.responses import HTMLResponse, JSONResponse, RedirectResponse
+from fastapi.responses import HTMLResponse, JSONResponse, RedirectResponse, Response
 from sqlalchemy import select
 from sqlalchemy.orm import Session
 
@@ -16,13 +16,18 @@ from covenant_radar.db.scoping import resolve_scope
 from covenant_radar.security.permissions import Permission
 from covenant_radar.security.rbac import Principal
 from covenant_radar.services.borrower_market import assess, load_positions
-from covenant_radar.services.market_intelligence import MarketIntelligenceService
+from covenant_radar.services.market_intelligence import (
+    DRIVERS_BY_KEY,
+    MarketIntelligenceService,
+)
 from covenant_radar.web.preferences import theme_for_request
 from covenant_radar.web.view_models.market import (
     borrower_row,
     briefing_json,
     build_briefing,
+    feed_view,
     review_draft,
+    workspace_version,
 )
 
 _READ = Depends(requires(Permission.VIEW_QUEUE))
@@ -40,7 +45,7 @@ def create_intelligence_router(
         return request.app.state.templates.get_template(template).render(
             request=request,
             principal=principal,
-            locale=request.cookies.get("covenant_radar_locale", "en"),
+            locale="en",
             theme=theme_for_request(request),
             text_direction="ltr",
             **context,
@@ -50,13 +55,20 @@ def create_intelligence_router(
     def index(
         request: Request,
         driver: str = Query("", max_length=20),
+        v: str = Query("", max_length=64),
         principal: Principal = _READ,
-    ) -> HTMLResponse:
-        view = build_briefing(session, principal, service.snapshot(), driver=driver)
+    ) -> Response:
+        snapshot = service.snapshot()
+        partial = request.headers.get("HX-Request") == "true"
+        # An open page re-checks every minute; until a series gains an
+        # observation (or the redraw window turns) there is nothing new to
+        # draw, so nothing is swapped and no borrower is reassessed. Headlines
+        # update separately via the feed.
+        if partial and v and snapshot["loaded"] and v == workspace_version(snapshot):
+            return Response(status_code=204, headers={"Cache-Control": "no-store"})
+        view = build_briefing(session, principal, snapshot, driver=driver)
         template = (
-            "screens/intelligence/_workspace.html"
-            if request.headers.get("HX-Request") == "true"
-            else "screens/intelligence/index.html"
+            "screens/intelligence/_workspace.html" if partial else "screens/intelligence/index.html"
         )
         return HTMLResponse(
             render(request, principal, template, view=view),
@@ -68,6 +80,18 @@ def create_intelligence_router(
         del principal
         service.snapshot(force=True)
         return RedirectResponse("/intelligence", status_code=303)
+
+    @router.get("/intelligence/feed", name="market_intelligence_feed")
+    def feed(
+        drivers: str = Query("", max_length=300),
+        principal: Principal = _READ,
+    ) -> JSONResponse:
+        """The live headline stream. Public market news only; no borrower data."""
+        del principal
+        keys = [key for key in drivers.split(",") if key in DRIVERS_BY_KEY]
+        return JSONResponse(
+            feed_view(service.snapshot(), keys), headers={"Cache-Control": "no-store"}
+        )
 
     @router.get("/intelligence/data", name="market_intelligence_data")
     def data(

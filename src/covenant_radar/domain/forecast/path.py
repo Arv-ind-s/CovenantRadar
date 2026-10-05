@@ -73,6 +73,12 @@ class Projection:
     requested_pressure: Decimal = _ZERO
     reason: str | None = None
     formula_inputs: Mapping[str, object] = field(default_factory=dict)
+    #: Covenant units per day per unit of evidence pressure, when the caller
+    #: converted the dimensionless materiality into a drift (see `project`).
+    pressure_scale: Decimal | None = None
+    #: Days between the latest observation and the path's day zero (see
+    #: `project`); the trend has already been running for that long.
+    elapsed_days: int = 0
 
     def __post_init__(self) -> None:
         if self.horizon_days < 0:
@@ -131,6 +137,8 @@ def project(
     *,
     recent_periods: int | None = None,
     period_days: int | Decimal | None = None,
+    pressure_scale: Decimal | None = None,
+    elapsed_days: int = 0,
 ) -> Projection:
     """Project a dated series through ``horizon_days`` inclusive.
 
@@ -139,6 +147,22 @@ def project(
     decreases the projected value.  A :class:`PressureResult` may be supplied
     to preserve per-evidence terms; a scalar remains supported by the C-35
     contract.
+
+    Evidence pressure is a dimensionless materiality (a sustained signal at
+    full materiality is one).  ``pressure_scale`` converts it into a daily
+    drift in the covenant's own units — the scorer derives it from the
+    covenant's threshold and reporting period, so a late payment moves a
+    leverage ratio by a sensible fraction of its limit rather than by whole
+    multiples of it each day.  Without a scale the magnitude is applied as a
+    drift directly, which is the C-35 contract for callers already working in
+    covenant units.
+
+    ``elapsed_days`` is the gap between the latest observation and the path's
+    day zero — a quarterly statement is weeks old on the day it is scored.
+    The trend keeps running through that gap, so day zero is the trend's
+    estimate for today rather than the stale reported value; evidence
+    pressure starts at day zero, when it is observed.  Zero keeps the C-35
+    contract that day zero equals the latest value.
 
     If fewer than two usable observations exist, the trend and path are flat.
     The requested pressure is retained in ``formula_inputs`` but is not
@@ -159,8 +183,18 @@ def project(
         normalized_direction,
     )
     sufficient_trend = trend.has_sufficient_observations
-    effective_pressure_term = signed_pressure if sufficient_trend else _ZERO
+    validated_scale = (
+        _non_negative(_decimal(pressure_scale, "pressure_scale"), "pressure_scale")
+        if pressure_scale is not None
+        else None
+    )
+    scaled_pressure = (
+        signed_pressure * validated_scale if validated_scale is not None else signed_pressure
+    )
+    effective_pressure_term = scaled_pressure if sufficient_trend else _ZERO
     net_drift = trend.per_day_drift + effective_pressure_term
+    if isinstance(elapsed_days, bool) or not isinstance(elapsed_days, int) or elapsed_days < 0:
+        raise ValueError("elapsed_days must be a non-negative integer.")
     points: tuple[PathPoint, ...]
     points = tuple(
         PathPoint(
@@ -168,9 +202,11 @@ def project(
             value=(
                 None
                 if trend.current_value is None
-                else trend.current_value + net_drift * Decimal(day)
+                else trend.current_value
+                + trend.per_day_drift * Decimal(elapsed_days + day)
+                + effective_pressure_term * Decimal(day)
             ),
-            trend_component=trend.per_day_drift * Decimal(day),
+            trend_component=trend.per_day_drift * Decimal(elapsed_days + day),
             pressure_component=effective_pressure_term * Decimal(day),
         )
         for day in range(validated_horizon + 1)
@@ -188,6 +224,8 @@ def project(
         "period_length_days": trend.period_length_days,
         "per_day_drift": trend.per_day_drift,
         "requested_pressure": requested_pressure,
+        "pressure_scale": validated_scale,
+        "elapsed_days": elapsed_days,
         "pressure_term": effective_pressure_term,
         "net_per_day_drift": net_drift,
         "usable_observation_count": len(trend.usable_observations),
@@ -221,6 +259,8 @@ def project(
         requested_pressure=requested_pressure,
         reason=reason,
         formula_inputs=formula_inputs,
+        pressure_scale=validated_scale,
+        elapsed_days=elapsed_days,
     )
 
 
@@ -233,6 +273,7 @@ def project_with_evidence(
     *,
     recent_periods: int | None = None,
     period_days: int | Decimal | None = None,
+    pressure_scale: Decimal | None = None,
 ) -> Projection:
     """Compute pressure from evidence and project in one explicit operation."""
 
@@ -246,6 +287,7 @@ def project_with_evidence(
         normalized_direction,
         recent_periods=recent_periods,
         period_days=period_days,
+        pressure_scale=pressure_scale,
     )
 
 

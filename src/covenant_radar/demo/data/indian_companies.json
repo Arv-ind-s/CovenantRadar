@@ -1,0 +1,5767 @@
+{
+ "schema": "indian-companies-v1",
+ "retrieved_on": "2026-10-03",
+ "source": "Quarterly results XBRL filed with the National Stock Exchange of India",
+ "unit": "INR crore",
+ "quarter_ends": [
+  "2024-09-30",
+  "2024-12-31",
+  "2025-03-31",
+  "2025-06-30",
+  "2025-09-30",
+  "2025-12-31",
+  "2026-03-31",
+  "2026-06-30"
+ ],
+ "companies": [
+  {
+   "symbol": "SANDUMA",
+   "legal_name": "Sandur Manganese & Iron Ores Limited",
+   "filed_name": "SANDUR MANGANESE & IRON ORES LIMITED",
+   "business_group": null,
+   "isin": "INE149K01016",
+   "industry_code": "B08",
+   "basis": "consolidated",
+   "source_url": "https://www.nseindia.com/get-quotes/equity?symbol=SANDUMA",
+   "quarters": [
+    {
+     "period_end": "2024-09-30",
+     "filing": {
+      "xbrl_url": "https://nsearchives.nseindia.com/corporate/xbrl/INDAS_116114_1311612_14112024044557.xml",
+      "filed_at": "2024-11-14T16:45:57+05:30",
+      "audited": "Un-Audited"
+     },
+     "profit_and_loss": {
+      "RevenueFromOperations": "260.25",
+      "OtherIncome": "25.15",
+      "FinanceCosts": "4.78",
+      "DepreciationDepletionAndAmortisationExpense": "14.47",
+      "Expenses": "241.95",
+      "ExceptionalItemsBeforeTax": "0.00",
+      "ProfitBeforeTax": "43.45",
+      "TaxExpense": "11.11",
+      "ProfitLossForPeriod": "32.14"
+     },
+     "balance_sheet": {
+      "NonControllingInterest": "0.00",
+      "Goodwill": "0.00",
+      "OtherIntangibleAssets": "0.37",
+      "Inventories": "381.71",
+      "CurrentInvestments": "860.55",
+      "TradeReceivablesCurrent": "10.40",
+      "CashAndCashEquivalents": "156.01",
+      "CurrentAssets": "1816.02",
+      "Assets": "2973.80",
+      "EquityAttributableToOwnersOfParent": "2318.22",
+      "Equity": "2318.22",
+      "BorrowingsNoncurrent": "190.42",
+      "BorrowingsCurrent": "82.78",
+      "TradePayablesCurrent": "194.67",
+      "CurrentLiabilities": "421.45",
+      "Liabilities": "655.58"
+     }
+    },
+    {
+     "period_end": "2024-12-31",
+     "filing": {
+      "xbrl_url": "https://nsearchives.nseindia.com/corporate/xbrl/INDAS_120813_1385820_15022025113454.xml",
+      "filed_at": "2025-02-15T11:34:54+05:30",
+      "audited": "Un-Audited"
+     },
+     "profit_and_loss": {
+      "RevenueFromOperations": "951.87",
+      "OtherIncome": "19.89",
+      "FinanceCosts": "41.39",
+      "DepreciationDepletionAndAmortisationExpense": "38.35",
+      "Expenses": "791.34",
+      "ExceptionalItemsBeforeTax": "0.00",
+      "ProfitBeforeTax": "180.42",
+      "TaxExpense": "41.80",
+      "ProfitLossForPeriod": "137.48"
+     },
+     "balance_sheet": null
+    },
+    {
+     "period_end": "2025-03-31",
+     "filing": {
+      "xbrl_url": "https://nsearchives.nseindia.com/corporate/xbrl/INTEGRATED_FILING_INDAS_1455761_28052025100329_WEB.xml",
+      "filed_at": "2025-05-28T22:03:29+05:30",
+      "audited": "Un-Audited"
+     },
+     "profit_and_loss": {
+      "RevenueFromOperations": "1321.27",
+      "OtherIncome": "9.02",
+      "FinanceCosts": "66.56",
+      "DepreciationDepletionAndAmortisationExpense": "53.98",
+      "Expenses": "1125.83",
+      "ExceptionalItemsBeforeTax": "0.00",
+      "ProfitBeforeTax": "204.46",
+      "TaxExpense": "47.36",
+      "ProfitLossForPeriod": "156.50"
+     },
+     "balance_sheet": {
+      "Goodwill": "340.36",
+      "OtherIntangibleAssets": "47.23",
+      "Inventories": "951.92",
+      "CurrentInvestments": "132.03",
+      "TradeReceivablesCurrent": "374.46",
+      "CashAndCashEquivalents": "14.01",
+      "CurrentAssets": "1795.20",
+      "Assets": "5648.21",
+      "EquityAttributableToOwnersOfParent": "2612.69",
+      "NonControllingInterest": "14.64",
+      "Equity": "2627.33",
+      "BorrowingsNoncurrent": "1335.47",
+      "BorrowingsCurrent": "546.70",
+      "TradePayablesCurrent": "746.76",
+      "CurrentLiabilities": "1556.34",
+      "Liabilities": "3020.88"
+     }
+    },
+    {
+     "period_end": "2025-06-30",
+     "filing": {
+      "xbrl_url": "https://nsearchives.nseindia.com/corporate/xbrl/INTEGRATED_FILING_INDAS_1507071_08082025061156_WEB.xml",
+      "filed_at": "2025-08-08T18:11:56+05:30",
+      "audited": "Un-Audited"
+     },
+     "profit_and_loss": {
+      "RevenueFromOperations": "1135.38",
+      "OtherIncome": "14.78",
+      "FinanceCosts": "53.59",
+      "DepreciationDepletionAndAmortisationExpense": "51.16",
+      "Expenses": "940.80",
+      "ExceptionalItemsBeforeTax": "0.00",
+      "ProfitBeforeTax": "209.36",
+      "TaxExpense": "42.28",
+      "ProfitLossForPeriod": "167.09"
+     },
+     "balance_sheet": null
+    },
+    {
+     "period_end": "2025-09-30",
+     "filing": {
+      "xbrl_url": "https://nsearchives.nseindia.com/corporate/xbrl/INTEGRATED_FILING_INDAS_1568520_07112025074605_WEB.xml",
+      "filed_at": "2025-11-07T19:46:05+05:30",
+      "audited": "Un-Audited"
+     },
+     "profit_and_loss": {
+      "RevenueFromOperations": "1232.34",
+      "OtherIncome": "12.43",
+      "FinanceCosts": "57.14",
+      "DepreciationDepletionAndAmortisationExpense": "53.31",
+      "Expenses": "1070.07",
+      "ExceptionalItemsBeforeTax": "0.00",
+      "ProfitBeforeTax": "174.70",
+      "TaxExpense": "35.89",
+      "ProfitLossForPeriod": "138.87"
+     },
+     "balance_sheet": {
+      "Goodwill": "340.36",
+      "OtherIntangibleAssets": "43.94",
+      "Inventories": "938.52",
+      "CurrentInvestments": "212.81",
+      "TradeReceivablesCurrent": "403.35",
+      "CashAndCashEquivalents": "39.18",
+      "CurrentAssets": "1932.47",
+      "Assets": "5802.21",
+      "EquityAttributableToOwnersOfParent": "2901.73",
+      "NonControllingInterest": "15.48",
+      "Equity": "2917.21",
+      "BorrowingsNoncurrent": "1212.47",
+      "BorrowingsCurrent": "635.33",
+      "TradePayablesCurrent": "683.63",
+      "CurrentLiabilities": "1557.40",
+      "Liabilities": "2885.00"
+     }
+    },
+    {
+     "period_end": "2025-12-31",
+     "filing": {
+      "xbrl_url": "https://nsearchives.nseindia.com/corporate/xbrl/INTEGRATED_FILING_INDAS_1618570_04022026081112_WEB.xml",
+      "filed_at": "2026-02-04T20:11:12+05:30",
+      "audited": "Un-Audited"
+     },
+     "profit_and_loss": {
+      "RevenueFromOperations": "1209.31",
+      "OtherIncome": "27.86",
+      "FinanceCosts": "46.13",
+      "DepreciationDepletionAndAmortisationExpense": "53.60",
+      "Expenses": "1058.36",
+      "ExceptionalItemsBeforeTax": "-32.27",
+      "ProfitBeforeTax": "146.54",
+      "TaxExpense": "30.16",
+      "ProfitLossForPeriod": "115.83"
+     },
+     "balance_sheet": null
+    },
+    {
+     "period_end": "2026-03-31",
+     "filing": {
+      "xbrl_url": "https://nsearchives.nseindia.com/corporate/xbrl/INTEGRATED_FILING_INDAS_1664689_07052026093230_WEB.xml",
+      "filed_at": "2026-05-07T21:32:31+05:30",
+      "audited": "Un-Audited"
+     },
+     "profit_and_loss": {
+      "RevenueFromOperations": "1511.39",
+      "OtherIncome": "19.50",
+      "FinanceCosts": "55.38",
+      "DepreciationDepletionAndAmortisationExpense": "53.75",
+      "Expenses": "1234.00",
+      "ExceptionalItemsBeforeTax": "0.00",
+      "ProfitBeforeTax": "296.89",
+      "TaxExpense": "60.40",
+      "ProfitLossForPeriod": "236.28"
+     },
+     "balance_sheet": {
+      "Goodwill": "340.36",
+      "OtherIntangibleAssets": "41.55",
+      "Inventories": "872.48",
+      "CurrentInvestments": "174.53",
+      "TradeReceivablesCurrent": "437.91",
+      "CashAndCashEquivalents": "52.99",
+      "CurrentAssets": "1801.66",
+      "Assets": "5527.07",
+      "EquityAttributableToOwnersOfParent": "3253.68",
+      "NonControllingInterest": "16.11",
+      "Equity": "3269.79",
+      "BorrowingsNoncurrent": "578.22",
+      "BorrowingsCurrent": "416.57",
+      "TradePayablesCurrent": "852.30",
+      "CurrentLiabilities": "1563.01",
+      "Liabilities": "2257.28"
+     }
+    },
+    {
+     "period_end": "2026-06-30",
+     "filing": {
+      "xbrl_url": "https://nsearchives.nseindia.com/corporate/xbrl/INTEGRATED_FILING_INDAS_1709295_06082026070820_WEB.xml",
+      "filed_at": "2026-08-06T19:08:21+05:30",
+      "audited": "Un-Audited"
+     },
+     "profit_and_loss": {
+      "RevenueFromOperations": "1374.78",
+      "OtherIncome": "14.74",
+      "FinanceCosts": "26.11",
+      "DepreciationDepletionAndAmortisationExpense": "51.05",
+      "Expenses": "1108.45",
+      "ExceptionalItemsBeforeTax": "0.00",
+      "ProfitBeforeTax": "281.07",
+      "TaxExpense": "52.17",
+      "ProfitLossForPeriod": "227.85"
+     },
+     "balance_sheet": null
+    }
+   ]
+  },
+  {
+   "symbol": "LTFOODS",
+   "legal_name": "LT Foods Limited",
+   "filed_name": "LT FOODS LIMITED",
+   "business_group": null,
+   "isin": "INE818H01020",
+   "industry_code": "C10",
+   "basis": "consolidated",
+   "source_url": "https://www.nseindia.com/get-quotes/equity?symbol=LTFOODS",
+   "quarters": [
+    {
+     "period_end": "2024-09-30",
+     "filing": {
+      "xbrl_url": "https://nsearchives.nseindia.com/corporate/xbrl/INDAS_113265_1287794_25102024094327.xml",
+      "filed_at": "2024-10-25T09:43:28+05:30",
+      "audited": "Un-Audited"
+     },
+     "profit_and_loss": {
+      "RevenueFromOperations": "2107.79",
+      "OtherIncome": "26.26",
+      "FinanceCosts": "19.58",
+      "DepreciationDepletionAndAmortisationExpense": "44.83",
+      "Expenses": "1942.92",
+      "ExceptionalItemsBeforeTax": "0.00",
+      "ProfitBeforeTax": "191.13",
+      "TaxExpense": "49.36",
+      "ProfitLossForPeriod": "150.61"
+     },
+     "balance_sheet": {
+      "NonControllingInterest": "58.92",
+      "Goodwill": "28.67",
+      "OtherIntangibleAssets": "58.84",
+      "Inventories": "2966.87",
+      "CurrentInvestments": "0.00",
+      "TradeReceivablesCurrent": "668.55",
+      "CashAndCashEquivalents": "270.30",
+      "CurrentAssets": "4128.20",
+      "Assets": "5872.52",
+      "EquityAttributableToOwnersOfParent": "3653.84",
+      "Equity": "3712.76",
+      "BorrowingsNoncurrent": "15.86",
+      "BorrowingsCurrent": "800.79",
+      "TradePayablesCurrent": "430.72",
+      "CurrentLiabilities": "1656.93",
+      "Liabilities": "2159.76"
+     }
+    },
+    {
+     "period_end": "2024-12-31",
+     "filing": {
+      "xbrl_url": "https://nsearchives.nseindia.com/corporate/xbrl/INDAS_117807_1362541_28012025103350.xml",
+      "filed_at": "2025-01-28T10:33:51+05:30",
+      "audited": "Un-Audited"
+     },
+     "profit_and_loss": {
+      "RevenueFromOperations": "2274.81",
+      "OtherIncome": "13.44",
+      "FinanceCosts": "23.65",
+      "DepreciationDepletionAndAmortisationExpense": "45.79",
+      "Expenses": "2094.42",
+      "ExceptionalItemsBeforeTax": "0.00",
+      "ProfitBeforeTax": "193.83",
+      "TaxExpense": "52.45",
+      "ProfitLossForPeriod": "145.39"
+     },
+     "balance_sheet": null
+    },
+    {
+     "period_end": "2025-03-31",
+     "filing": {
+      "xbrl_url": "https://nsearchives.nseindia.com/corporate/xbrl/INTEGRATED_FILING_INDAS_1706924_03082026035525_WEB.xml",
+      "filed_at": "2026-08-03T15:55:27+05:30",
+      "audited": "Audited"
+     },
+     "profit_and_loss": {
+      "RevenueFromOperations": "2228.36",
+      "OtherIncome": "31.27",
+      "FinanceCosts": "25.71",
+      "DepreciationDepletionAndAmortisationExpense": "53.11",
+      "Expenses": "2048.92",
+      "ExceptionalItemsBeforeTax": "0.00",
+      "ProfitBeforeTax": "210.72",
+      "TaxExpense": "55.42",
+      "ProfitLossForPeriod": "160.52"
+     },
+     "balance_sheet": {
+      "Goodwill": "29.26",
+      "OtherIntangibleAssets": "59.31",
+      "Inventories": "4360.32",
+      "CurrentInvestments": "0.00",
+      "TradeReceivablesCurrent": "752.00",
+      "CashAndCashEquivalents": "142.63",
+      "CurrentAssets": "5464.08",
+      "Assets": "7422.69",
+      "EquityAttributableToOwnersOfParent": "3853.65",
+      "NonControllingInterest": "0.00",
+      "Equity": "3853.65",
+      "BorrowingsNoncurrent": "4.06",
+      "BorrowingsCurrent": "739.36",
+      "TradePayablesCurrent": "1772.58",
+      "CurrentLiabilities": "2949.49",
+      "Liabilities": "3569.04"
+     }
+    },
+    {
+     "period_end": "2025-06-30",
+     "filing": {
+      "xbrl_url": "https://nsearchives.nseindia.com/corporate/xbrl/INTEGRATED_FILING_INDAS_1493064_25072025122654_WEB.xml",
+      "filed_at": "2025-07-25T12:26:56+05:30",
+      "audited": "Un-Audited"
+     },
+     "profit_and_loss": {
+      "RevenueFromOperations": "2463.92",
+      "OtherIncome": "37.06",
+      "FinanceCosts": "27.99",
+      "DepreciationDepletionAndAmortisationExpense": "52.35",
+      "Expenses": "2278.84",
+      "ExceptionalItemsBeforeTax": "0.00",
+      "ProfitBeforeTax": "222.14",
+      "TaxExpense": "59.80",
+      "ProfitLossForPeriod": "168.50"
+     },
+     "balance_sheet": null
+    },
+    {
+     "period_end": "2025-09-30",
+     "filing": {
+      "xbrl_url": "https://nsearchives.nseindia.com/corporate/xbrl/INTEGRATED_FILING_INDAS_1562262_30102025111218_WEB.xml",
+      "filed_at": "2025-10-30T23:12:18+05:30",
+      "audited": "Un-Audited"
+     },
+     "profit_and_loss": {
+      "RevenueFromOperations": "2765.74",
+      "OtherIncome": "6.75",
+      "FinanceCosts": "28.03",
+      "DepreciationDepletionAndAmortisationExpense": "59.88",
+      "Expenses": "2544.19",
+      "ExceptionalItemsBeforeTax": "0.00",
+      "ProfitBeforeTax": "228.29",
+      "TaxExpense": "65.27",
+      "ProfitLossForPeriod": "163.85"
+     },
+     "balance_sheet": {
+      "Goodwill": "119.17",
+      "OtherIntangibleAssets": "60.83",
+      "Inventories": "3538.72",
+      "CurrentInvestments": "0.00",
+      "TradeReceivablesCurrent": "846.20",
+      "CashAndCashEquivalents": "611.22",
+      "CurrentAssets": "5230.22",
+      "Assets": "7634.63",
+      "EquityAttributableToOwnersOfParent": "4187.21",
+      "NonControllingInterest": "0.00",
+      "Equity": "4187.21",
+      "BorrowingsNoncurrent": "4.33",
+      "BorrowingsCurrent": "1178.85",
+      "TradePayablesCurrent": "810.83",
+      "CurrentLiabilities": "2607.63",
+      "Liabilities": "3447.42"
+     }
+    },
+    {
+     "period_end": "2025-12-31",
+     "filing": {
+      "xbrl_url": "https://nsearchives.nseindia.com/corporate/xbrl/INTEGRATED_FILING_INDAS_1613385_29012026061132_WEB.xml",
+      "filed_at": "2026-01-29T18:11:33+05:30",
+      "audited": "Un-Audited"
+     },
+     "profit_and_loss": {
+      "RevenueFromOperations": "2809.20",
+      "OtherIncome": "2.75",
+      "FinanceCosts": "34.95",
+      "DepreciationDepletionAndAmortisationExpense": "62.88",
+      "Expenses": "2592.70",
+      "ExceptionalItemsBeforeTax": "0.00",
+      "ProfitBeforeTax": "219.26",
+      "TaxExpense": "63.02",
+      "ProfitLossForPeriod": "157.35"
+     },
+     "balance_sheet": null
+    },
+    {
+     "period_end": "2026-03-31",
+     "filing": {
+      "xbrl_url": "https://nsearchives.nseindia.com/corporate/xbrl/INTEGRATED_FILING_INDAS_1667478_14052026115316_WEB.xml",
+      "filed_at": "2026-05-14T23:53:17+05:30",
+      "audited": "Audited"
+     },
+     "profit_and_loss": {
+      "RevenueFromOperations": "2906.70",
+      "OtherIncome": "30.94",
+      "FinanceCosts": "39.90",
+      "DepreciationDepletionAndAmortisationExpense": "69.78",
+      "Expenses": "2746.90",
+      "ExceptionalItemsBeforeTax": "0.00",
+      "ProfitBeforeTax": "190.74",
+      "TaxExpense": "52.90",
+      "ProfitLossForPeriod": "135.67"
+     },
+     "balance_sheet": {
+      "Goodwill": "60.05",
+      "OtherIntangibleAssets": "159.70",
+      "Inventories": "4990.60",
+      "CurrentInvestments": "0.00",
+      "TradeReceivablesCurrent": "860.23",
+      "CashAndCashEquivalents": "232.95",
+      "CurrentAssets": "6486.49",
+      "Assets": "9064.44",
+      "EquityAttributableToOwnersOfParent": "4520.44",
+      "Equity": "4520.44",
+      "BorrowingsNoncurrent": "3.30",
+      "BorrowingsCurrent": "969.94",
+      "TradePayablesCurrent": "2030.29",
+      "CurrentLiabilities": "3678.57",
+      "Liabilities": "4544.00"
+     }
+    },
+    {
+     "period_end": "2026-06-30",
+     "filing": {
+      "xbrl_url": "https://nsearchives.nseindia.com/corporate/xbrl/INTEGRATED_FILING_INDAS_1705515_30072026065013_WEB.xml",
+      "filed_at": "2026-07-30T18:50:14+05:30",
+      "audited": "Un-Audited"
+     },
+     "profit_and_loss": {
+      "RevenueFromOperations": "3151.83",
+      "OtherIncome": "9.46",
+      "FinanceCosts": "40.28",
+      "DepreciationDepletionAndAmortisationExpense": "74.06",
+      "Expenses": "2912.29",
+      "ExceptionalItemsBeforeTax": "0.00",
+      "ProfitBeforeTax": "249.00",
+      "TaxExpense": "66.45",
+      "ProfitLossForPeriod": "183.45"
+     },
+     "balance_sheet": null
+    }
+   ]
+  },
+  {
+   "symbol": "WELSPUNLIV",
+   "legal_name": "Welspun Living Limited",
+   "filed_name": "WELSPUN LIVING LIMITED",
+   "business_group": "Welspun Group",
+   "isin": "INE192B01031",
+   "industry_code": "C13",
+   "basis": "consolidated",
+   "source_url": "https://www.nseindia.com/get-quotes/equity?symbol=WELSPUNLIV",
+   "quarters": [
+    {
+     "period_end": "2024-09-30",
+     "filing": {
+      "xbrl_url": "https://nsearchives.nseindia.com/corporate/xbrl/INDAS_113650_1291130_28102024060857.xml",
+      "filed_at": "2024-10-28T18:08:57+05:30",
+      "audited": "Un-Audited"
+     },
+     "profit_and_loss": {
+      "RevenueFromOperations": "2873.09",
+      "OtherIncome": "62.93",
+      "FinanceCosts": "54.86",
+      "DepreciationDepletionAndAmortisationExpense": "85.55",
+      "Expenses": "2655.87",
+      "ExceptionalItemsBeforeTax": "0.00",
+      "ProfitBeforeTax": "280.15",
+      "TaxExpense": "77.92",
+      "ProfitLossForPeriod": "202.40"
+     },
+     "balance_sheet": {
+      "NonControllingInterest": "96.39",
+      "Goodwill": "191.81",
+      "OtherIntangibleAssets": "281.49",
+      "Inventories": "2204.42",
+      "CurrentInvestments": "814.84",
+      "TradeReceivablesCurrent": "1502.28",
+      "CashAndCashEquivalents": "173.61",
+      "CurrentAssets": "5606.29",
+      "Assets": "10420.52",
+      "EquityAttributableToOwnersOfParent": "4557.49",
+      "Equity": "4653.88",
+      "BorrowingsNoncurrent": "903.68",
+      "BorrowingsCurrent": "1974.94",
+      "TradePayablesCurrent": "1076.43",
+      "CurrentLiabilities": "3627.10",
+      "Liabilities": "5766.64"
+     }
+    },
+    {
+     "period_end": "2024-12-31",
+     "filing": {
+      "xbrl_url": "https://nsearchives.nseindia.com/corporate/xbrl/INDAS_118182_1366320_30012025061255.xml",
+      "filed_at": "2025-01-30T18:12:56+05:30",
+      "audited": "Un-Audited"
+     },
+     "profit_and_loss": {
+      "RevenueFromOperations": "2489.61",
+      "OtherIncome": "38.08",
+      "FinanceCosts": "62.33",
+      "DepreciationDepletionAndAmortisationExpense": "98.23",
+      "Expenses": "2369.72",
+      "ExceptionalItemsBeforeTax": "0.00",
+      "ProfitBeforeTax": "157.97",
+      "TaxExpense": "35.51",
+      "ProfitLossForPeriod": "122.87"
+     },
+     "balance_sheet": null
+    },
+    {
+     "period_end": "2025-03-31",
+     "filing": {
+      "xbrl_url": "https://nsearchives.nseindia.com/corporate/xbrl/INTEGRATED_FILING_INDAS_1458488_29052025113809_WEB.xml",
+      "filed_at": "2025-05-29T23:38:10+05:30",
+      "audited": "Audited"
+     },
+     "profit_and_loss": {
+      "RevenueFromOperations": "2645.90",
+      "OtherIncome": "2.26",
+      "FinanceCosts": "56.91",
+      "DepreciationDepletionAndAmortisationExpense": "92.84",
+      "Expenses": "2479.83",
+      "ExceptionalItemsBeforeTax": "0.00",
+      "ProfitBeforeTax": "168.33",
+      "TaxExpense": "35.29",
+      "ProfitLossForPeriod": "132.80"
+     },
+     "balance_sheet": {
+      "Goodwill": "191.55",
+      "OtherIntangibleAssets": "297.74",
+      "Inventories": "2183.37",
+      "CurrentInvestments": "559.29",
+      "TradeReceivablesCurrent": "1644.93",
+      "CashAndCashEquivalents": "283.57",
+      "CurrentAssets": "5468.59",
+      "Assets": "10307.07",
+      "EquityAttributableToOwnersOfParent": "4821.09",
+      "NonControllingInterest": "99.57",
+      "Equity": "4920.66",
+      "BorrowingsNoncurrent": "879.42",
+      "BorrowingsCurrent": "1589.20",
+      "TradePayablesCurrent": "1122.91",
+      "CurrentLiabilities": "3252.86",
+      "Liabilities": "5386.41"
+     }
+    },
+    {
+     "period_end": "2025-06-30",
+     "filing": {
+      "xbrl_url": "https://nsearchives.nseindia.com/corporate/xbrl/INTEGRATED_FILING_INDAS_1498519_30072025074923_WEB.xml",
+      "filed_at": "2025-07-30T19:49:24+05:30",
+      "audited": "Un-Audited"
+     },
+     "profit_and_loss": {
+      "RevenueFromOperations": "2260.57",
+      "OtherIncome": "28.90",
+      "FinanceCosts": "42.45",
+      "DepreciationDepletionAndAmortisationExpense": "87.88",
+      "Expenses": "2165.48",
+      "ExceptionalItemsBeforeTax": "0.00",
+      "ProfitBeforeTax": "123.99",
+      "TaxExpense": "34.69",
+      "ProfitLossForPeriod": "89.30"
+     },
+     "balance_sheet": null
+    },
+    {
+     "period_end": "2025-09-30",
+     "filing": {
+      "xbrl_url": "https://nsearchives.nseindia.com/corporate/xbrl/INTEGRATED_FILING_INDAS_1572279_12112025050737_WEB.xml",
+      "filed_at": "2025-11-12T17:07:38+05:30",
+      "audited": "Un-Audited"
+     },
+     "profit_and_loss": {
+      "RevenueFromOperations": "2440.91",
+      "OtherIncome": "14.75",
+      "FinanceCosts": "43.35",
+      "DepreciationDepletionAndAmortisationExpense": "100.91",
+      "Expenses": "2431.84",
+      "ExceptionalItemsBeforeTax": "0.00",
+      "ProfitBeforeTax": "23.82",
+      "TaxExpense": "8.96",
+      "ProfitLossForPeriod": "14.86"
+     },
+     "balance_sheet": {
+      "Goodwill": "196.80",
+      "OtherIntangibleAssets": "295.59",
+      "Inventories": "2064.22",
+      "CurrentInvestments": "606.02",
+      "TradeReceivablesCurrent": "1478.93",
+      "CashAndCashEquivalents": "196.92",
+      "CurrentAssets": "5354.38",
+      "Assets": "10327.83",
+      "EquityAttributableToOwnersOfParent": "4826.49",
+      "NonControllingInterest": "56.74",
+      "Equity": "4883.23",
+      "BorrowingsNoncurrent": "860.97",
+      "BorrowingsCurrent": "1525.91",
+      "TradePayablesCurrent": "1173.01",
+      "CurrentLiabilities": "3330.13",
+      "Liabilities": "5444.60"
+     }
+    },
+    {
+     "period_end": "2025-12-31",
+     "filing": {
+      "xbrl_url": "https://nsearchives.nseindia.com/corporate/xbrl/INTEGRATED_FILING_INDAS_1639424_24032026042530_WEB.xml",
+      "filed_at": "2026-03-24T16:25:31+05:30",
+      "audited": "Un-Audited"
+     },
+     "profit_and_loss": {
+      "RevenueFromOperations": "2262.20",
+      "OtherIncome": "14.44",
+      "FinanceCosts": "39.09",
+      "DepreciationDepletionAndAmortisationExpense": "102.23",
+      "Expenses": "2243.21",
+      "ExceptionalItemsBeforeTax": "-18.97",
+      "ProfitBeforeTax": "14.46",
+      "TaxExpense": "11.89",
+      "ProfitLossForPeriod": "2.57"
+     },
+     "balance_sheet": null
+    },
+    {
+     "period_end": "2026-03-31",
+     "filing": {
+      "xbrl_url": "https://nsearchives.nseindia.com/corporate/xbrl/INTEGRATED_FILING_INDAS_1668111_15052026093022_WEB.xml",
+      "filed_at": "2026-05-15T21:30:22+05:30",
+      "audited": "Audited"
+     },
+     "profit_and_loss": {
+      "RevenueFromOperations": "2435.43",
+      "OtherIncome": "15.77",
+      "FinanceCosts": "36.59",
+      "DepreciationDepletionAndAmortisationExpense": "103.07",
+      "Expenses": "2326.00",
+      "ExceptionalItemsBeforeTax": "0.00",
+      "ProfitBeforeTax": "125.20",
+      "TaxExpense": "19.04",
+      "ProfitLossForPeriod": "106.16"
+     },
+     "balance_sheet": {
+      "Goodwill": "201.66",
+      "OtherIntangibleAssets": "498.50",
+      "Inventories": "2170.69",
+      "CurrentInvestments": "877.46",
+      "TradeReceivablesCurrent": "1312.24",
+      "CashAndCashEquivalents": "138.07",
+      "CurrentAssets": "5181.14",
+      "Assets": "10455.06",
+      "EquityAttributableToOwnersOfParent": "4917.19",
+      "NonControllingInterest": "60.76",
+      "Equity": "4977.95",
+      "BorrowingsNoncurrent": "870.98",
+      "BorrowingsCurrent": "931.39",
+      "TradePayablesCurrent": "1376.69",
+      "CurrentLiabilities": "3270.98",
+      "Liabilities": "5477.11"
+     }
+    },
+    {
+     "period_end": "2026-06-30",
+     "filing": {
+      "xbrl_url": "https://nsearchives.nseindia.com/corporate/xbrl/INTEGRATED_FILING_INDAS_1713711_13082026060203_WEB.xml",
+      "filed_at": "2026-08-13T18:02:04+05:30",
+      "audited": "Un-Audited"
+     },
+     "profit_and_loss": {
+      "RevenueFromOperations": "2795.45",
+      "OtherIncome": "32.71",
+      "FinanceCosts": "34.36",
+      "DepreciationDepletionAndAmortisationExpense": "100.42",
+      "Expenses": "2609.15",
+      "ExceptionalItemsBeforeTax": "0.00",
+      "ProfitBeforeTax": "219.01",
+      "TaxExpense": "57.75",
+      "ProfitLossForPeriod": "162.61"
+     },
+     "balance_sheet": null
+    }
+   ]
+  },
+  {
+   "symbol": "SUDARSCHEM",
+   "legal_name": "Sudarshan Chemical Industries Limited",
+   "filed_name": "Sudarshan Chemical Industries Limited",
+   "business_group": null,
+   "isin": "INE659A01023",
+   "industry_code": "C20",
+   "basis": "consolidated",
+   "source_url": "https://www.nseindia.com/get-quotes/equity?symbol=SUDARSCHEM",
+   "quarters": [
+    {
+     "period_end": "2024-09-30",
+     "filing": {
+      "xbrl_url": "https://nsearchives.nseindia.com/corporate/xbrl/INDAS_113609_1290662_28102024035511.xml",
+      "filed_at": "2024-10-28T15:55:11+05:30",
+      "audited": "Un-Audited"
+     },
+     "profit_and_loss": {
+      "RevenueFromOperations": "696.09",
+      "OtherIncome": "4.97",
+      "FinanceCosts": "8.88",
+      "DepreciationDepletionAndAmortisationExpense": "36.61",
+      "Expenses": "647.10",
+      "ExceptionalItemsBeforeTax": "-11.16",
+      "ProfitBeforeTax": "42.81",
+      "TaxExpense": "12.90",
+      "ProfitLossForPeriod": "29.90"
+     },
+     "balance_sheet": {
+      "Goodwill": "6.84",
+      "OtherIntangibleAssets": "24.75",
+      "Inventories": "607.96",
+      "CurrentInvestments": "140.99",
+      "TradeReceivablesCurrent": "564.05",
+      "CashAndCashEquivalents": "31.18",
+      "CurrentAssets": "1464.32",
+      "Assets": "2612.37",
+      "EquityAttributableToOwnersOfParent": "1211.85",
+      "Equity": "1211.85",
+      "BorrowingsNoncurrent": "38.63",
+      "BorrowingsCurrent": "492.59",
+      "TradePayablesCurrent": "600.72",
+      "CurrentLiabilities": "1214.48",
+      "Liabilities": "1400.52"
+     }
+    },
+    {
+     "period_end": "2024-12-31",
+     "filing": {
+      "xbrl_url": "https://nsearchives.nseindia.com/corporate/xbrl/INDAS_120637_1384668_14022025053917.xml",
+      "filed_at": "2025-02-14T17:39:17+05:30",
+      "audited": "Un-Audited"
+     },
+     "profit_and_loss": {
+      "RevenueFromOperations": "666.43",
+      "OtherIncome": "4.49",
+      "FinanceCosts": "11.41",
+      "DepreciationDepletionAndAmortisationExpense": "36.55",
+      "Expenses": "635.40",
+      "ExceptionalItemsBeforeTax": "-30.83",
+      "ProfitBeforeTax": "4.69",
+      "TaxExpense": "4.18",
+      "ProfitLossForPeriod": "0.51"
+     },
+     "balance_sheet": null
+    },
+    {
+     "period_end": "2025-03-31",
+     "filing": {
+      "xbrl_url": "https://nsearchives.nseindia.com/corporate/xbrl/INTEGRATED_FILING_INDAS_1494653_26072025104429_WEB.xml",
+      "filed_at": "2025-07-26T22:44:30+05:30",
+      "audited": "Audited"
+     },
+     "profit_and_loss": {
+      "RevenueFromOperations": "1349.44",
+      "OtherIncome": "20.45",
+      "FinanceCosts": "20.96",
+      "DepreciationDepletionAndAmortisationExpense": "57.14",
+      "Expenses": "1300.55",
+      "ExceptionalItemsBeforeTax": "-61.64",
+      "ProfitBeforeTax": "7.70",
+      "TaxExpense": "10.25",
+      "ProfitLossForPeriod": "0.31"
+     },
+     "balance_sheet": {
+      "Goodwill": "6.84",
+      "OtherIntangibleAssets": "130.91",
+      "Inventories": "2465.18",
+      "CurrentInvestments": "328.18",
+      "TradeReceivablesCurrent": "1224.95",
+      "CashAndCashEquivalents": "1104.32",
+      "CurrentAssets": "6167.11",
+      "Assets": "9730.71",
+      "EquityAttributableToOwnersOfParent": "3440.05",
+      "NonControllingInterest": "598.25",
+      "Equity": "4038.30",
+      "BorrowingsNoncurrent": "1631.89",
+      "BorrowingsCurrent": "452.78",
+      "TradePayablesCurrent": "1398.45",
+      "CurrentLiabilities": "2914.55",
+      "Liabilities": "5692.41"
+     }
+    },
+    {
+     "period_end": "2025-06-30",
+     "filing": {
+      "xbrl_url": "https://nsearchives.nseindia.com/corporate/xbrl/INTEGRATED_FILING_INDAS_1531003_23092025063501_WEB.xml",
+      "filed_at": "2025-09-23T18:35:02+05:30",
+      "audited": "Un-Audited"
+     },
+     "profit_and_loss": {
+      "RevenueFromOperations": "2506.90",
+      "OtherIncome": "25.80",
+      "FinanceCosts": "44.10",
+      "DepreciationDepletionAndAmortisationExpense": "99.00",
+      "Expenses": "2457.60",
+      "ExceptionalItemsBeforeTax": "0.00",
+      "ProfitBeforeTax": "75.10",
+      "TaxExpense": "27.20",
+      "ProfitLossForPeriod": "55.00"
+     },
+     "balance_sheet": null
+    },
+    {
+     "period_end": "2025-09-30",
+     "filing": {
+      "xbrl_url": "https://nsearchives.nseindia.com/corporate/xbrl/INTEGRATED_FILING_INDAS_1572762_12112025074443_WEB.xml",
+      "filed_at": "2025-11-12T19:44:43+05:30",
+      "audited": "Un-Audited"
+     },
+     "profit_and_loss": {
+      "RevenueFromOperations": "2387.40",
+      "OtherIncome": "28.80",
+      "FinanceCosts": "43.60",
+      "DepreciationDepletionAndAmortisationExpense": "97.20",
+      "Expenses": "2396.00",
+      "ExceptionalItemsBeforeTax": "0.00",
+      "ProfitBeforeTax": "20.20",
+      "TaxExpense": "10.20",
+      "ProfitLossForPeriod": "19.30"
+     },
+     "balance_sheet": {
+      "Goodwill": "6.80",
+      "OtherIntangibleAssets": "134.00",
+      "Inventories": "2808.50",
+      "CurrentInvestments": "316.80",
+      "TradeReceivablesCurrent": "1207.00",
+      "CashAndCashEquivalents": "772.10",
+      "CurrentAssets": "5988.20",
+      "Assets": "9754.50",
+      "EquityAttributableToOwnersOfParent": "3520.20",
+      "NonControllingInterest": "399.60",
+      "Equity": "3919.80",
+      "BorrowingsNoncurrent": "1819.90",
+      "BorrowingsCurrent": "385.80",
+      "TradePayablesCurrent": "1453.90",
+      "CurrentLiabilities": "2737.10",
+      "Liabilities": "5834.70"
+     }
+    },
+    {
+     "period_end": "2025-12-31",
+     "filing": {
+      "xbrl_url": "https://nsearchives.nseindia.com/corporate/xbrl/INTEGRATED_FILING_INDAS_1624613_12022026080753_WEB.xml",
+      "filed_at": "2026-02-12T20:07:54+05:30",
+      "audited": "Un-Audited"
+     },
+     "profit_and_loss": {
+      "RevenueFromOperations": "2103.00",
+      "OtherIncome": "14.20",
+      "FinanceCosts": "36.40",
+      "DepreciationDepletionAndAmortisationExpense": "100.60",
+      "Expenses": "2202.10",
+      "ExceptionalItemsBeforeTax": "-45.40",
+      "ProfitBeforeTax": "-130.30",
+      "TaxExpense": "-6.80",
+      "ProfitLossForPeriod": "-116.00"
+     },
+     "balance_sheet": null
+    },
+    {
+     "period_end": "2026-03-31",
+     "filing": {
+      "xbrl_url": "https://nsearchives.nseindia.com/corporate/xbrl/INTEGRATED_FILING_INDAS_1672830_25052026105404_WEB.xml",
+      "filed_at": "2026-05-25T22:54:04+05:30",
+      "audited": "Audited"
+     },
+     "profit_and_loss": {
+      "RevenueFromOperations": "2789.90",
+      "OtherIncome": "10.40",
+      "FinanceCosts": "40.80",
+      "DepreciationDepletionAndAmortisationExpense": "50.40",
+      "Expenses": "2653.70",
+      "ExceptionalItemsBeforeTax": "15.70",
+      "ProfitBeforeTax": "162.30",
+      "TaxExpense": "85.20",
+      "ProfitLossForPeriod": "82.50"
+     },
+     "balance_sheet": {
+      "Goodwill": "6.80",
+      "OtherIntangibleAssets": "119.30",
+      "Inventories": "2443.60",
+      "CurrentInvestments": "323.00",
+      "TradeReceivablesCurrent": "1679.00",
+      "CashAndCashEquivalents": "932.90",
+      "CurrentAssets": "5964.40",
+      "Assets": "9723.30",
+      "EquityAttributableToOwnersOfParent": "3450.20",
+      "NonControllingInterest": "403.80",
+      "Equity": "3854.00",
+      "BorrowingsNoncurrent": "1647.90",
+      "BorrowingsCurrent": "471.10",
+      "TradePayablesCurrent": "1534.00",
+      "CurrentLiabilities": "2897.50",
+      "Liabilities": "5869.30"
+     }
+    },
+    {
+     "period_end": "2026-06-30",
+     "filing": {
+      "xbrl_url": "https://nsearchives.nseindia.com/corporate/xbrl/INTEGRATED_FILING_INDAS_1713120_12082026083817_WEB.xml",
+      "filed_at": "2026-08-12T20:38:17+05:30",
+      "audited": "Un-Audited"
+     },
+     "profit_and_loss": {
+      "RevenueFromOperations": "2642.10",
+      "OtherIncome": "19.00",
+      "FinanceCosts": "40.50",
+      "DepreciationDepletionAndAmortisationExpense": "93.10",
+      "Expenses": "2516.90",
+      "ExceptionalItemsBeforeTax": "0.00",
+      "ProfitBeforeTax": "144.20",
+      "TaxExpense": "54.00",
+      "ProfitLossForPeriod": "103.40"
+     },
+     "balance_sheet": null
+    }
+   ]
+  },
+  {
+   "symbol": "GRANULES",
+   "legal_name": "Granules India Limited",
+   "filed_name": "GRANULES INDIA LIMITED",
+   "business_group": null,
+   "isin": "INE101D01020",
+   "industry_code": "C21",
+   "basis": "consolidated",
+   "source_url": "https://www.nseindia.com/get-quotes/equity?symbol=GRANULES",
+   "quarters": [
+    {
+     "period_end": "2024-09-30",
+     "filing": {
+      "xbrl_url": "https://nsearchives.nseindia.com/corporate/xbrl/INDAS_114245_1298565_06112024040227.xml",
+      "filed_at": "2024-11-06T16:02:28+05:30",
+      "audited": "Un-Audited"
+     },
+     "profit_and_loss": {
+      "RevenueFromOperations": "966.62",
+      "OtherIncome": "3.26",
+      "FinanceCosts": "25.67",
+      "DepreciationDepletionAndAmortisationExpense": "52.52",
+      "Expenses": "841.49",
+      "ExceptionalItemsBeforeTax": "0.00",
+      "ProfitBeforeTax": "128.38",
+      "TaxExpense": "31.15",
+      "ProfitLossForPeriod": "97.23"
+     },
+     "balance_sheet": {
+      "NonControllingInterest": "0.00",
+      "Goodwill": "0.00",
+      "OtherIntangibleAssets": "224.01",
+      "Inventories": "1395.44",
+      "CurrentInvestments": "0.00",
+      "TradeReceivablesCurrent": "726.73",
+      "CashAndCashEquivalents": "208.85",
+      "CurrentAssets": "2605.34",
+      "Assets": "5432.70",
+      "EquityAttributableToOwnersOfParent": "3427.24",
+      "Equity": "3427.24",
+      "BorrowingsNoncurrent": "156.76",
+      "BorrowingsCurrent": "852.64",
+      "TradePayablesCurrent": "635.15",
+      "CurrentLiabilities": "1691.82",
+      "Liabilities": "2005.47"
+     }
+    },
+    {
+     "period_end": "2024-12-31",
+     "filing": {
+      "xbrl_url": "https://nsearchives.nseindia.com/corporate/xbrl/INDAS_117604_1360155_24012025024650.xml",
+      "filed_at": "2025-01-24T14:46:51+05:30",
+      "audited": "Un-Audited"
+     },
+     "profit_and_loss": {
+      "RevenueFromOperations": "1137.70",
+      "OtherIncome": "5.68",
+      "FinanceCosts": "26.57",
+      "DepreciationDepletionAndAmortisationExpense": "56.61",
+      "Expenses": "990.58",
+      "ExceptionalItemsBeforeTax": "0.00",
+      "ProfitBeforeTax": "152.79",
+      "TaxExpense": "35.19",
+      "ProfitLossForPeriod": "117.60"
+     },
+     "balance_sheet": null
+    },
+    {
+     "period_end": "2025-03-31",
+     "filing": {
+      "xbrl_url": "https://nsearchives.nseindia.com/corporate/xbrl/INTEGRATED_FILING_INDAS_1454462_28052025031103_WEB.xml",
+      "filed_at": "2025-05-28T15:11:04+05:30",
+      "audited": "Audited"
+     },
+     "profit_and_loss": {
+      "RevenueFromOperations": "1197.43",
+      "OtherIncome": "1.92",
+      "FinanceCosts": "23.98",
+      "DepreciationDepletionAndAmortisationExpense": "63.50",
+      "Expenses": "1032.55",
+      "ExceptionalItemsBeforeTax": "30.75",
+      "ProfitBeforeTax": "197.55",
+      "TaxExpense": "45.52",
+      "ProfitLossForPeriod": "152.03"
+     },
+     "balance_sheet": {
+      "Goodwill": "0.00",
+      "OtherIntangibleAssets": "209.04",
+      "Inventories": "1342.82",
+      "CurrentInvestments": "0.00",
+      "TradeReceivablesCurrent": "942.22",
+      "CashAndCashEquivalents": "466.11",
+      "CurrentAssets": "3115.48",
+      "Assets": "6252.56",
+      "EquityAttributableToOwnersOfParent": "3715.58",
+      "NonControllingInterest": "0.00",
+      "Equity": "3715.58",
+      "BorrowingsNoncurrent": "311.51",
+      "BorrowingsCurrent": "974.28",
+      "TradePayablesCurrent": "726.07",
+      "CurrentLiabilities": "2003.16",
+      "Liabilities": "2536.98"
+     }
+    },
+    {
+     "period_end": "2025-06-30",
+     "filing": {
+      "xbrl_url": "https://nsearchives.nseindia.com/corporate/xbrl/INTEGRATED_FILING_INDAS_1509390_12082025032705_WEB.xml",
+      "filed_at": "2025-08-12T15:27:06+05:30",
+      "audited": "Un-Audited"
+     },
+     "profit_and_loss": {
+      "RevenueFromOperations": "1210.11",
+      "OtherIncome": "16.34",
+      "FinanceCosts": "23.78",
+      "DepreciationDepletionAndAmortisationExpense": "68.85",
+      "Expenses": "1056.02",
+      "ExceptionalItemsBeforeTax": "-25.91",
+      "ProfitBeforeTax": "144.52",
+      "TaxExpense": "31.89",
+      "ProfitLossForPeriod": "112.64"
+     },
+     "balance_sheet": null
+    },
+    {
+     "period_end": "2025-09-30",
+     "filing": {
+      "xbrl_url": "https://nsearchives.nseindia.com/corporate/xbrl/INTEGRATED_FILING_INDAS_1573433_13112025040140_WEB.xml",
+      "filed_at": "2025-11-13T16:01:40+05:30",
+      "audited": "Un-Audited"
+     },
+     "profit_and_loss": {
+      "RevenueFromOperations": "1296.99",
+      "OtherIncome": "-1.15",
+      "FinanceCosts": "29.19",
+      "DepreciationDepletionAndAmortisationExpense": "72.02",
+      "Expenses": "1119.97",
+      "ExceptionalItemsBeforeTax": "0.00",
+      "ProfitBeforeTax": "175.86",
+      "TaxExpense": "45.26",
+      "ProfitLossForPeriod": "130.61"
+     },
+     "balance_sheet": {
+      "Goodwill": "11.66",
+      "OtherIntangibleAssets": "189.11",
+      "Inventories": "1488.29",
+      "CurrentInvestments": "0.00",
+      "TradeReceivablesCurrent": "760.54",
+      "CashAndCashEquivalents": "608.60",
+      "CurrentAssets": "3086.88",
+      "Assets": "6943.68",
+      "EquityAttributableToOwnersOfParent": "3982.78",
+      "NonControllingInterest": "0.00",
+      "Equity": "3982.78",
+      "BorrowingsNoncurrent": "317.57",
+      "BorrowingsCurrent": "1319.87",
+      "TradePayablesCurrent": "755.08",
+      "CurrentLiabilities": "2417.29",
+      "Liabilities": "2960.90"
+     }
+    },
+    {
+     "period_end": "2025-12-31",
+     "filing": {
+      "xbrl_url": "https://nsearchives.nseindia.com/corporate/xbrl/INTEGRATED_FILING_INDAS_1609280_23012026052406_WEB.xml",
+      "filed_at": "2026-01-23T17:24:06+05:30",
+      "audited": "Un-Audited"
+     },
+     "profit_and_loss": {
+      "RevenueFromOperations": "1387.94",
+      "OtherIncome": "-3.64",
+      "FinanceCosts": "28.69",
+      "DepreciationDepletionAndAmortisationExpense": "73.53",
+      "Expenses": "1182.06",
+      "ExceptionalItemsBeforeTax": "0.00",
+      "ProfitBeforeTax": "202.23",
+      "TaxExpense": "52.02",
+      "ProfitLossForPeriod": "150.21"
+     },
+     "balance_sheet": null
+    },
+    {
+     "period_end": "2026-03-31",
+     "filing": {
+      "xbrl_url": "https://nsearchives.nseindia.com/corporate/xbrl/INTEGRATED_FILING_INDAS_1661194_29042026045741_WEB.xml",
+      "filed_at": "2026-04-29T16:57:42+05:30",
+      "audited": "Audited"
+     },
+     "profit_and_loss": {
+      "RevenueFromOperations": "1470.61",
+      "OtherIncome": "8.77",
+      "FinanceCosts": "32.69",
+      "DepreciationDepletionAndAmortisationExpense": "81.74",
+      "Expenses": "1232.94",
+      "ExceptionalItemsBeforeTax": "15.92",
+      "ProfitBeforeTax": "262.36",
+      "TaxExpense": "60.79",
+      "ProfitLossForPeriod": "201.57"
+     },
+     "balance_sheet": {
+      "Goodwill": "11.66",
+      "OtherIntangibleAssets": "187.05",
+      "Inventories": "1673.02",
+      "CurrentInvestments": "0.00",
+      "TradeReceivablesCurrent": "909.37",
+      "CashAndCashEquivalents": "880.24",
+      "CurrentAssets": "3767.65",
+      "Assets": "7719.95",
+      "EquityAttributableToOwnersOfParent": "5085.00",
+      "Equity": "5085.00",
+      "BorrowingsNoncurrent": "297.15",
+      "BorrowingsCurrent": "1040.98",
+      "TradePayablesCurrent": "672.80",
+      "CurrentLiabilities": "2092.03",
+      "Liabilities": "2634.96"
+     }
+    },
+    {
+     "period_end": "2026-06-30",
+     "filing": {
+      "xbrl_url": "https://nsearchives.nseindia.com/corporate/xbrl/INTEGRATED_FILING_INDAS_1698037_21072026021740_WEB.xml",
+      "filed_at": "2026-07-21T14:17:41+05:30",
+      "audited": "Un-Audited"
+     },
+     "profit_and_loss": {
+      "RevenueFromOperations": "1476.77",
+      "OtherIncome": "2.27",
+      "FinanceCosts": "21.12",
+      "DepreciationDepletionAndAmortisationExpense": "79.65",
+      "Expenses": "1238.64",
+      "ExceptionalItemsBeforeTax": "0.00",
+      "ProfitBeforeTax": "240.40",
+      "TaxExpense": "60.44",
+      "ProfitLossForPeriod": "179.96"
+     },
+     "balance_sheet": null
+    }
+   ]
+  },
+  {
+   "symbol": "JSL",
+   "legal_name": "Jindal Stainless Limited",
+   "filed_name": "JINDAL STAINLESS LIMITED",
+   "business_group": null,
+   "isin": "INE220G01021",
+   "industry_code": "C24",
+   "basis": "consolidated",
+   "source_url": "https://www.nseindia.com/get-quotes/equity?symbol=JSL",
+   "quarters": [
+    {
+     "period_end": "2024-09-30",
+     "filing": {
+      "xbrl_url": "https://nsearchives.nseindia.com/corporate/xbrl/INDAS_112862_1276536_18102024114636.xml",
+      "filed_at": "2024-10-18T11:46:37+05:30",
+      "audited": "Un-Audited"
+     },
+     "profit_and_loss": {
+      "RevenueFromOperations": "9776.83",
+      "OtherIncome": "47.05",
+      "FinanceCosts": "158.59",
+      "DepreciationDepletionAndAmortisationExpense": "240.90",
+      "Expenses": "8989.61",
+      "ExceptionalItemsBeforeTax": "0.00",
+      "ProfitBeforeTax": "834.27",
+      "TaxExpense": "224.85",
+      "ProfitLossForPeriod": "609.42"
+     },
+     "balance_sheet": {
+      "NonControllingInterest": "21.83",
+      "Goodwill": "1553.37",
+      "OtherIntangibleAssets": "814.70",
+      "Inventories": "8711.44",
+      "CurrentInvestments": "3.54",
+      "TradeReceivablesCurrent": "3098.55",
+      "CashAndCashEquivalents": "924.06",
+      "CurrentAssets": "15271.91",
+      "Assets": "34113.09",
+      "EquityAttributableToOwnersOfParent": "15461.56",
+      "Equity": "15483.39",
+      "BorrowingsNoncurrent": "4429.48",
+      "BorrowingsCurrent": "1937.23",
+      "TradePayablesCurrent": "8207.60",
+      "CurrentLiabilities": "12337.93",
+      "Liabilities": "18629.70"
+     }
+    },
+    {
+     "period_end": "2024-12-31",
+     "filing": {
+      "xbrl_url": "https://nsearchives.nseindia.com/corporate/xbrl/INDAS_118066_1365107_29012025072429.xml",
+      "filed_at": "2025-01-29T19:24:29+05:30",
+      "audited": "Audited"
+     },
+     "profit_and_loss": {
+      "RevenueFromOperations": "9907.30",
+      "OtherIncome": "99.11",
+      "FinanceCosts": "160.51",
+      "DepreciationDepletionAndAmortisationExpense": "241.63",
+      "Expenses": "9116.41",
+      "ExceptionalItemsBeforeTax": "0.00",
+      "ProfitBeforeTax": "890.00",
+      "TaxExpense": "235.73",
+      "ProfitLossForPeriod": "654.27"
+     },
+     "balance_sheet": null
+    },
+    {
+     "period_end": "2025-03-31",
+     "filing": {
+      "xbrl_url": "https://nsearchives.nseindia.com/corporate/xbrl/INTEGRATED_FILING_INDAS_1434375_08052025083740_WEB.xml",
+      "filed_at": "2025-05-08T20:37:40+05:30",
+      "audited": "Audited"
+     },
+     "profit_and_loss": {
+      "RevenueFromOperations": "10198.32",
+      "OtherIncome": "93.95",
+      "FinanceCosts": "149.81",
+      "DepreciationDepletionAndAmortisationExpense": "241.23",
+      "Expenses": "9556.46",
+      "ExceptionalItemsBeforeTax": "-7.06",
+      "ProfitBeforeTax": "728.75",
+      "TaxExpense": "138.79",
+      "ProfitLossForPeriod": "589.96"
+     },
+     "balance_sheet": {
+      "Goodwill": "899.24",
+      "OtherIntangibleAssets": "794.79",
+      "Inventories": "9700.28",
+      "CurrentInvestments": "4.50",
+      "TradeReceivablesCurrent": "3107.01",
+      "CashAndCashEquivalents": "632.54",
+      "CurrentAssets": "16605.86",
+      "Assets": "36158.05",
+      "EquityAttributableToOwnersOfParent": "16687.94",
+      "NonControllingInterest": "20.27",
+      "Equity": "16708.21",
+      "BorrowingsNoncurrent": "4319.72",
+      "BorrowingsCurrent": "1978.01",
+      "TradePayablesCurrent": "9139.88",
+      "CurrentLiabilities": "13225.05",
+      "Liabilities": "19449.84"
+     }
+    },
+    {
+     "period_end": "2025-06-30",
+     "filing": {
+      "xbrl_url": "https://nsearchives.nseindia.com/corporate/xbrl/INTEGRATED_FILING_INDAS_1504120_06082025051801_WEB.xml",
+      "filed_at": "2025-08-06T17:18:01+05:30",
+      "audited": "Un-Audited"
+     },
+     "profit_and_loss": {
+      "RevenueFromOperations": "10207.14",
+      "OtherIncome": "68.87",
+      "FinanceCosts": "144.12",
+      "DepreciationDepletionAndAmortisationExpense": "251.84",
+      "Expenses": "9306.96",
+      "ExceptionalItemsBeforeTax": "0.00",
+      "ProfitBeforeTax": "969.05",
+      "TaxExpense": "254.39",
+      "ProfitLossForPeriod": "714.66"
+     },
+     "balance_sheet": null
+    },
+    {
+     "period_end": "2025-09-30",
+     "filing": {
+      "xbrl_url": "https://nsearchives.nseindia.com/corporate/xbrl/INTEGRATED_FILING_INDAS_1570393_10112025080221_WEB.xml",
+      "filed_at": "2025-11-10T20:02:21+05:30",
+      "audited": "Un-Audited"
+     },
+     "profit_and_loss": {
+      "RevenueFromOperations": "10892.78",
+      "OtherIncome": "89.68",
+      "FinanceCosts": "140.83",
+      "DepreciationDepletionAndAmortisationExpense": "261.90",
+      "Expenses": "9921.45",
+      "ExceptionalItemsBeforeTax": "17.41",
+      "ProfitBeforeTax": "1078.42",
+      "TaxExpense": "270.50",
+      "ProfitLossForPeriod": "807.92"
+     },
+     "balance_sheet": {
+      "Goodwill": "1284.73",
+      "OtherIntangibleAssets": "747.66",
+      "Inventories": "10079.32",
+      "CurrentInvestments": "3.60",
+      "TradeReceivablesCurrent": "3050.61",
+      "CashAndCashEquivalents": "623.67",
+      "CurrentAssets": "17221.69",
+      "Assets": "39077.58",
+      "EquityAttributableToOwnersOfParent": "18079.28",
+      "NonControllingInterest": "26.67",
+      "Equity": "18105.95",
+      "BorrowingsNoncurrent": "4058.73",
+      "BorrowingsCurrent": "2669.04",
+      "TradePayablesCurrent": "10354.59",
+      "CurrentLiabilities": "15069.46",
+      "Liabilities": "20971.63"
+     }
+    },
+    {
+     "period_end": "2025-12-31",
+     "filing": {
+      "xbrl_url": "https://nsearchives.nseindia.com/corporate/xbrl/INTEGRATED_FILING_INDAS_1607608_21012026070608_WEB.xml",
+      "filed_at": "2026-01-21T19:06:09+05:30",
+      "audited": "Un-Audited"
+     },
+     "profit_and_loss": {
+      "RevenueFromOperations": "10517.55",
+      "OtherIncome": "102.21",
+      "FinanceCosts": "134.18",
+      "DepreciationDepletionAndAmortisationExpense": "268.90",
+      "Expenses": "9507.43",
+      "ExceptionalItemsBeforeTax": "-30.05",
+      "ProfitBeforeTax": "1082.28",
+      "TaxExpense": "254.50",
+      "ProfitLossForPeriod": "827.78"
+     },
+     "balance_sheet": null
+    },
+    {
+     "period_end": "2026-03-31",
+     "filing": {
+      "xbrl_url": "https://nsearchives.nseindia.com/corporate/xbrl/INTEGRATED_FILING_INDAS_1663441_04052026082016_WEB.xml",
+      "filed_at": "2026-05-04T20:20:16+05:30",
+      "audited": "Audited"
+     },
+     "profit_and_loss": {
+      "RevenueFromOperations": "11337.19",
+      "OtherIncome": "90.72",
+      "FinanceCosts": "148.80",
+      "DepreciationDepletionAndAmortisationExpense": "277.66",
+      "Expenses": "10269.89",
+      "ExceptionalItemsBeforeTax": "-45.70",
+      "ProfitBeforeTax": "1112.32",
+      "TaxExpense": "278.11",
+      "ProfitLossForPeriod": "834.21"
+     },
+     "balance_sheet": {
+      "Goodwill": "1247.38",
+      "OtherIntangibleAssets": "718.02",
+      "Inventories": "9507.52",
+      "CurrentInvestments": "1.12",
+      "TradeReceivablesCurrent": "3085.62",
+      "CashAndCashEquivalents": "415.12",
+      "CurrentAssets": "17312.51",
+      "Assets": "40703.62",
+      "EquityAttributableToOwnersOfParent": "19791.28",
+      "NonControllingInterest": "90.89",
+      "Equity": "19882.17",
+      "BorrowingsNoncurrent": "4935.93",
+      "BorrowingsCurrent": "2405.66",
+      "TradePayablesCurrent": "8265.87",
+      "CurrentLiabilities": "13923.75",
+      "Liabilities": "20821.45"
+     }
+    },
+    {
+     "period_end": "2026-06-30",
+     "filing": {
+      "xbrl_url": "https://nsearchives.nseindia.com/corporate/xbrl/INTEGRATED_FILING_INDAS_1706964_03082026043437_WEB.xml",
+      "filed_at": "2026-08-03T16:34:38+05:30",
+      "audited": "Un-Audited"
+     },
+     "profit_and_loss": {
+      "RevenueFromOperations": "11278.54",
+      "OtherIncome": "118.39",
+      "FinanceCosts": "146.19",
+      "DepreciationDepletionAndAmortisationExpense": "302.36",
+      "Expenses": "10363.34",
+      "ExceptionalItemsBeforeTax": "0.00",
+      "ProfitBeforeTax": "1033.59",
+      "TaxExpense": "264.93",
+      "ProfitLossForPeriod": "768.66"
+     },
+     "balance_sheet": null
+    }
+   ]
+  },
+  {
+   "symbol": "JINDALSAW",
+   "legal_name": "Jindal Saw Limited",
+   "filed_name": "Jindal Saw Limited",
+   "business_group": null,
+   "isin": "INE324A01032",
+   "industry_code": "C25",
+   "basis": "consolidated",
+   "source_url": "https://www.nseindia.com/get-quotes/equity?symbol=JINDALSAW",
+   "quarters": [
+    {
+     "period_end": "2024-09-30",
+     "filing": {
+      "xbrl_url": "https://nsearchives.nseindia.com/corporate/xbrl/INDAS_114233_1298369_06112024021318.xml",
+      "filed_at": "2024-11-06T14:13:18+05:30",
+      "audited": "Un-Audited"
+     },
+     "profit_and_loss": {
+      "RevenueFromOperations": "5571.92",
+      "OtherIncome": "30.38",
+      "FinanceCosts": "157.63",
+      "DepreciationDepletionAndAmortisationExpense": "150.69",
+      "Expenses": "4966.13",
+      "ExceptionalItemsBeforeTax": "0.00",
+      "ProfitBeforeTax": "636.17",
+      "TaxExpense": "167.65",
+      "ProfitLossForPeriod": "475.31"
+     },
+     "balance_sheet": {
+      "NonControllingInterest": "-775.11",
+      "Goodwill": "61.05",
+      "OtherIntangibleAssets": "5.91",
+      "Inventories": "5035.72",
+      "CurrentInvestments": "1.15",
+      "TradeReceivablesCurrent": "3678.36",
+      "CashAndCashEquivalents": "510.55",
+      "CurrentAssets": "10501.18",
+      "Assets": "21115.83",
+      "EquityAttributableToOwnersOfParent": "10909.95",
+      "Equity": "10134.84",
+      "BorrowingsNoncurrent": "1602.11",
+      "BorrowingsCurrent": "3923.77",
+      "TradePayablesCurrent": "2529.00",
+      "CurrentLiabilities": "8353.15",
+      "Liabilities": "10980.99"
+     }
+    },
+    {
+     "period_end": "2024-12-31",
+     "filing": {
+      "xbrl_url": "https://nsearchives.nseindia.com/corporate/xbrl/INDAS_117615_1360269_24012025034725.xml",
+      "filed_at": "2025-01-24T15:47:25+05:30",
+      "audited": "Un-Audited"
+     },
+     "profit_and_loss": {
+      "RevenueFromOperations": "5271.30",
+      "OtherIncome": "21.95",
+      "FinanceCosts": "172.86",
+      "DepreciationDepletionAndAmortisationExpense": "150.65",
+      "Expenses": "4655.39",
+      "ExceptionalItemsBeforeTax": "0.00",
+      "ProfitBeforeTax": "637.86",
+      "TaxExpense": "165.88",
+      "ProfitLossForPeriod": "479.38"
+     },
+     "balance_sheet": null
+    },
+    {
+     "period_end": "2025-03-31",
+     "filing": {
+      "xbrl_url": "https://nsearchives.nseindia.com/corporate/xbrl/INTEGRATED_FILING_INDAS_1430662_02052025055219_WEB.xml",
+      "filed_at": "2025-05-02T17:52:20+05:30",
+      "audited": "Audited"
+     },
+     "profit_and_loss": {
+      "RevenueFromOperations": "5046.59",
+      "OtherIncome": "20.89",
+      "FinanceCosts": "138.77",
+      "DepreciationDepletionAndAmortisationExpense": "152.62",
+      "Expenses": "4601.82",
+      "ExceptionalItemsBeforeTax": "0.00",
+      "ProfitBeforeTax": "465.66",
+      "TaxExpense": "385.59",
+      "ProfitLossForPeriod": "86.92"
+     },
+     "balance_sheet": {
+      "Goodwill": "61.05",
+      "OtherIntangibleAssets": "4.64",
+      "Inventories": "4920.51",
+      "CurrentInvestments": "1.80",
+      "TradeReceivablesCurrent": "3563.82",
+      "CashAndCashEquivalents": "655.42",
+      "CurrentAssets": "10105.42",
+      "Assets": "20779.00",
+      "EquityAttributableToOwnersOfParent": "11410.96",
+      "NonControllingInterest": "-456.88",
+      "Equity": "10954.08",
+      "BorrowingsNoncurrent": "1783.13",
+      "BorrowingsCurrent": "3076.04",
+      "TradePayablesCurrent": "2522.21",
+      "CurrentLiabilities": "6983.30",
+      "Liabilities": "9824.92"
+     }
+    },
+    {
+     "period_end": "2025-06-30",
+     "filing": {
+      "xbrl_url": "https://nsearchives.nseindia.com/corporate/xbrl/INTEGRATED_FILING_INDAS_1502702_05082025041005_WEB.xml",
+      "filed_at": "2025-08-05T16:10:07+05:30",
+      "audited": "Un-Audited"
+     },
+     "profit_and_loss": {
+      "RevenueFromOperations": "4084.68",
+      "OtherIncome": "18.27",
+      "FinanceCosts": "171.14",
+      "DepreciationDepletionAndAmortisationExpense": "153.33",
+      "Expenses": "3739.04",
+      "ExceptionalItemsBeforeTax": "0.00",
+      "ProfitBeforeTax": "363.91",
+      "TaxExpense": "-41.17",
+      "ProfitLossForPeriod": "415.47"
+     },
+     "balance_sheet": null
+    },
+    {
+     "period_end": "2025-09-30",
+     "filing": {
+      "xbrl_url": "https://nsearchives.nseindia.com/corporate/xbrl/INTEGRATED_FILING_INDAS_1551726_17102025032513_WEB.xml",
+      "filed_at": "2025-10-17T15:25:14+05:30",
+      "audited": "Un-Audited"
+     },
+     "profit_and_loss": {
+      "RevenueFromOperations": "4233.60",
+      "OtherIncome": "30.44",
+      "FinanceCosts": "152.91",
+      "DepreciationDepletionAndAmortisationExpense": "155.51",
+      "Expenses": "4090.90",
+      "ExceptionalItemsBeforeTax": "0.00",
+      "ProfitBeforeTax": "173.14",
+      "TaxExpense": "44.01",
+      "ProfitLossForPeriod": "138.56"
+     },
+     "balance_sheet": {
+      "Goodwill": "61.05",
+      "OtherIntangibleAssets": "4.27",
+      "Inventories": "5528.69",
+      "CurrentInvestments": "5.17",
+      "TradeReceivablesCurrent": "3073.75",
+      "CashAndCashEquivalents": "150.97",
+      "CurrentAssets": "10047.76",
+      "Assets": "21194.56",
+      "EquityAttributableToOwnersOfParent": "12082.91",
+      "NonControllingInterest": "-265.41",
+      "Equity": "11817.50",
+      "BorrowingsNoncurrent": "1748.32",
+      "BorrowingsCurrent": "3445.80",
+      "TradePayablesCurrent": "2125.19",
+      "CurrentLiabilities": "6565.52",
+      "Liabilities": "9377.06"
+     }
+    },
+    {
+     "period_end": "2025-12-31",
+     "filing": {
+      "xbrl_url": "https://nsearchives.nseindia.com/corporate/xbrl/INTEGRATED_FILING_INDAS_1602491_16012026050513_WEB.xml",
+      "filed_at": "2026-01-16T17:05:13+05:30",
+      "audited": "Un-Audited"
+     },
+     "profit_and_loss": {
+      "RevenueFromOperations": "4943.41",
+      "OtherIncome": "19.61",
+      "FinanceCosts": "132.81",
+      "DepreciationDepletionAndAmortisationExpense": "154.91",
+      "Expenses": "4618.50",
+      "ExceptionalItemsBeforeTax": "0.00",
+      "ProfitBeforeTax": "344.52",
+      "TaxExpense": "99.57",
+      "ProfitLossForPeriod": "247.62"
+     },
+     "balance_sheet": null
+    },
+    {
+     "period_end": "2026-03-31",
+     "filing": {
+      "xbrl_url": "https://nsearchives.nseindia.com/corporate/xbrl/INTEGRATED_FILING_INDAS_1659625_27042026063427_WEB.xml",
+      "filed_at": "2026-04-27T18:34:28+05:30",
+      "audited": "Audited"
+     },
+     "profit_and_loss": {
+      "RevenueFromOperations": "4633.48",
+      "OtherIncome": "23.37",
+      "FinanceCosts": "162.70",
+      "DepreciationDepletionAndAmortisationExpense": "166.74",
+      "Expenses": "4482.04",
+      "ExceptionalItemsBeforeTax": "0.00",
+      "ProfitBeforeTax": "174.81",
+      "TaxExpense": "47.97",
+      "ProfitLossForPeriod": "123.68"
+     },
+     "balance_sheet": {
+      "Goodwill": "61.05",
+      "OtherIntangibleAssets": "3.75",
+      "Inventories": "5267.29",
+      "CurrentInvestments": "12.30",
+      "TradeReceivablesCurrent": "3093.55",
+      "CashAndCashEquivalents": "406.72",
+      "CurrentAssets": "9972.57",
+      "Assets": "21686.20",
+      "EquityAttributableToOwnersOfParent": "12574.24",
+      "NonControllingInterest": "-291.53",
+      "Equity": "12282.71",
+      "BorrowingsNoncurrent": "2123.52",
+      "BorrowingsCurrent": "2567.22",
+      "TradePayablesCurrent": "2623.12",
+      "CurrentLiabilities": "6187.68",
+      "Liabilities": "9403.49"
+     }
+    },
+    {
+     "period_end": "2026-06-30",
+     "filing": {
+      "xbrl_url": "https://nsearchives.nseindia.com/corporate/xbrl/INTEGRATED_FILING_INDAS_1692200_14072026033717_WEB.xml",
+      "filed_at": "2026-07-14T15:37:18+05:30",
+      "audited": "Un-Audited"
+     },
+     "profit_and_loss": {
+      "RevenueFromOperations": "4452.31",
+      "OtherIncome": "23.67",
+      "FinanceCosts": "108.43",
+      "DepreciationDepletionAndAmortisationExpense": "163.70",
+      "Expenses": "4327.74",
+      "ExceptionalItemsBeforeTax": "0.00",
+      "ProfitBeforeTax": "148.24",
+      "TaxExpense": "52.08",
+      "ProfitLossForPeriod": "90.79"
+     },
+     "balance_sheet": null
+    }
+   ]
+  },
+  {
+   "symbol": "CRAFTSMAN",
+   "legal_name": "Craftsman Automation Limited",
+   "filed_name": "CRAFTSMAN AUTOMATION LIMITED",
+   "business_group": null,
+   "isin": "INE00LO01017",
+   "industry_code": "C29",
+   "basis": "consolidated",
+   "source_url": "https://www.nseindia.com/get-quotes/equity?symbol=CRAFTSMAN",
+   "quarters": [
+    {
+     "period_end": "2024-09-30",
+     "filing": {
+      "xbrl_url": "https://nsearchives.nseindia.com/corporate/xbrl/INDAS_113117_1286268_23102024060703.xml",
+      "filed_at": "2024-10-23T18:07:03+05:30",
+      "audited": "Un-Audited"
+     },
+     "profit_and_loss": {
+      "RevenueFromOperations": "1213.95",
+      "OtherIncome": "6.44",
+      "FinanceCosts": "41.32",
+      "DepreciationDepletionAndAmortisationExpense": "76.15",
+      "Expenses": "1138.64",
+      "ExceptionalItemsBeforeTax": "0.00",
+      "ProfitBeforeTax": "81.75",
+      "TaxExpense": "20.46",
+      "ProfitLossForPeriod": "61.69"
+     },
+     "balance_sheet": {
+      "Goodwill": "189.99",
+      "OtherIntangibleAssets": "265.19",
+      "Inventories": "1143.12",
+      "CurrentInvestments": "0.00",
+      "TradeReceivablesCurrent": "623.69",
+      "CashAndCashEquivalents": "131.28",
+      "CurrentAssets": "2508.90",
+      "Assets": "5930.06",
+      "EquityAttributableToOwnersOfParent": "2784.25",
+      "Equity": "2784.25",
+      "BorrowingsNoncurrent": "1089.87",
+      "BorrowingsCurrent": "642.22",
+      "TradePayablesCurrent": "734.47",
+      "CurrentLiabilities": "1762.15",
+      "Liabilities": "3145.81"
+     }
+    },
+    {
+     "period_end": "2024-12-31",
+     "filing": {
+      "xbrl_url": "https://nsearchives.nseindia.com/corporate/xbrl/INDAS_118039_1364852_29012025054500.xml",
+      "filed_at": "2025-01-29T17:45:00+05:30",
+      "audited": "Un-Audited"
+     },
+     "profit_and_loss": {
+      "RevenueFromOperations": "1576.09",
+      "OtherIncome": "8.56",
+      "FinanceCosts": "58.25",
+      "DepreciationDepletionAndAmortisationExpense": "103.48",
+      "Expenses": "1538.84",
+      "ExceptionalItemsBeforeTax": "-14.76",
+      "ProfitBeforeTax": "31.05",
+      "TaxExpense": "18.33",
+      "ProfitLossForPeriod": "12.93"
+     },
+     "balance_sheet": null
+    },
+    {
+     "period_end": "2025-03-31",
+     "filing": {
+      "xbrl_url": "https://nsearchives.nseindia.com/corporate/xbrl/INTEGRATED_FILING_INDAS_1433521_07052025105227_WEB.xml",
+      "filed_at": "2025-05-07T22:52:28+05:30",
+      "audited": "Audited"
+     },
+     "profit_and_loss": {
+      "RevenueFromOperations": "1749.25",
+      "OtherIncome": "5.23",
+      "FinanceCosts": "67.92",
+      "DepreciationDepletionAndAmortisationExpense": "94.90",
+      "Expenses": "1668.45",
+      "ExceptionalItemsBeforeTax": "-10.71",
+      "ProfitBeforeTax": "75.32",
+      "TaxExpense": "8.77",
+      "ProfitLossForPeriod": "66.76"
+     },
+     "balance_sheet": {
+      "Goodwill": "190.06",
+      "OtherIntangibleAssets": "416.76",
+      "Inventories": "1332.05",
+      "CurrentInvestments": "0.00",
+      "TradeReceivablesCurrent": "920.59",
+      "CashAndCashEquivalents": "97.42",
+      "CurrentAssets": "2548.93",
+      "Assets": "7116.44",
+      "EquityAttributableToOwnersOfParent": "2856.74",
+      "Equity": "2856.74",
+      "BorrowingsNoncurrent": "1651.86",
+      "BorrowingsCurrent": "402.40",
+      "TradePayablesCurrent": "1334.33",
+      "CurrentLiabilities": "2387.73",
+      "Liabilities": "4259.70"
+     }
+    },
+    {
+     "period_end": "2025-06-30",
+     "filing": {
+      "xbrl_url": "https://nsearchives.nseindia.com/corporate/xbrl/INTEGRATED_FILING_INDAS_1496265_29072025031053_WEB.xml",
+      "filed_at": "2025-07-29T15:10:53+05:30",
+      "audited": "Un-Audited"
+     },
+     "profit_and_loss": {
+      "RevenueFromOperations": "1784.00",
+      "OtherIncome": "4.97",
+      "FinanceCosts": "66.30",
+      "DepreciationDepletionAndAmortisationExpense": "101.87",
+      "Expenses": "1687.23",
+      "ExceptionalItemsBeforeTax": "-8.24",
+      "ProfitBeforeTax": "93.50",
+      "TaxExpense": "24.11",
+      "ProfitLossForPeriod": "69.60"
+     },
+     "balance_sheet": null
+    },
+    {
+     "period_end": "2025-09-30",
+     "filing": {
+      "xbrl_url": "https://nsearchives.nseindia.com/corporate/xbrl/INTEGRATED_FILING_INDAS_1569211_08112025055243_WEB.xml",
+      "filed_at": "2025-11-08T17:52:44+05:30",
+      "audited": "Un-Audited"
+     },
+     "profit_and_loss": {
+      "RevenueFromOperations": "2001.59",
+      "OtherIncome": "9.59",
+      "FinanceCosts": "77.01",
+      "DepreciationDepletionAndAmortisationExpense": "109.01",
+      "Expenses": "1885.71",
+      "ExceptionalItemsBeforeTax": "-0.49",
+      "ProfitBeforeTax": "124.98",
+      "TaxExpense": "34.47",
+      "ProfitLossForPeriod": "90.86"
+     },
+     "balance_sheet": {
+      "Goodwill": "190.06",
+      "OtherIntangibleAssets": "467.01",
+      "Inventories": "1614.19",
+      "CurrentInvestments": "0.00",
+      "TradeReceivablesCurrent": "1144.91",
+      "CashAndCashEquivalents": "142.11",
+      "CurrentAssets": "3164.00",
+      "Assets": "8265.91",
+      "EquityAttributableToOwnersOfParent": "3029.86",
+      "Equity": "3029.86",
+      "BorrowingsNoncurrent": "1926.46",
+      "BorrowingsCurrent": "1112.67",
+      "TradePayablesCurrent": "1321.37",
+      "CurrentLiabilities": "3100.63",
+      "Liabilities": "5236.05"
+     }
+    },
+    {
+     "period_end": "2025-12-31",
+     "filing": {
+      "xbrl_url": "https://nsearchives.nseindia.com/corporate/xbrl/INTEGRATED_FILING_INDAS_1611675_28012026043156_WEB.xml",
+      "filed_at": "2026-01-28T16:31:57+05:30",
+      "audited": "Un-Audited"
+     },
+     "profit_and_loss": {
+      "RevenueFromOperations": "2057.28",
+      "OtherIncome": "27.69",
+      "FinanceCosts": "79.39",
+      "DepreciationDepletionAndAmortisationExpense": "114.88",
+      "Expenses": "1939.33",
+      "ExceptionalItemsBeforeTax": "-3.68",
+      "ProfitBeforeTax": "141.96",
+      "TaxExpense": "35.11",
+      "ProfitLossForPeriod": "107.11"
+     },
+     "balance_sheet": null
+    },
+    {
+     "period_end": "2026-03-31",
+     "filing": {
+      "xbrl_url": "https://nsearchives.nseindia.com/corporate/xbrl/INTEGRATED_FILING_INDAS_1664635_07052026080450_WEB.xml",
+      "filed_at": "2026-05-07T20:04:51+05:30",
+      "audited": "Audited"
+     },
+     "profit_and_loss": {
+      "RevenueFromOperations": "2226.40",
+      "OtherIncome": "19.11",
+      "FinanceCosts": "86.27",
+      "DepreciationDepletionAndAmortisationExpense": "118.09",
+      "Expenses": "2072.23",
+      "ExceptionalItemsBeforeTax": "-0.54",
+      "ProfitBeforeTax": "172.74",
+      "TaxExpense": "56.62",
+      "ProfitLossForPeriod": "116.42"
+     },
+     "balance_sheet": {
+      "Goodwill": "190.06",
+      "OtherIntangibleAssets": "505.52",
+      "Inventories": "1745.41",
+      "CurrentInvestments": "0.00",
+      "TradeReceivablesCurrent": "1110.54",
+      "CashAndCashEquivalents": "144.83",
+      "CurrentAssets": "3271.77",
+      "Assets": "8978.30",
+      "EquityAttributableToOwnersOfParent": "3264.06",
+      "NonControllingInterest": "0.00",
+      "Equity": "3264.06",
+      "BorrowingsNoncurrent": "2410.98",
+      "BorrowingsCurrent": "929.65",
+      "TradePayablesCurrent": "1460.08",
+      "CurrentLiabilities": "3064.89",
+      "Liabilities": "5714.24"
+     }
+    },
+    {
+     "period_end": "2026-06-30",
+     "filing": {
+      "xbrl_url": "https://nsearchives.nseindia.com/corporate/xbrl/INTEGRATED_FILING_INDAS_1704274_29072026061112_WEB.xml",
+      "filed_at": "2026-07-29T18:11:12+05:30",
+      "audited": "Un-Audited"
+     },
+     "profit_and_loss": {
+      "RevenueFromOperations": "2431.58",
+      "OtherIncome": "23.08",
+      "FinanceCosts": "86.16",
+      "DepreciationDepletionAndAmortisationExpense": "120.39",
+      "Expenses": "2254.26",
+      "ExceptionalItemsBeforeTax": "0.00",
+      "ProfitBeforeTax": "200.40",
+      "TaxExpense": "50.47",
+      "ProfitLossForPeriod": "150.55"
+     },
+     "balance_sheet": null
+    }
+   ]
+  },
+  {
+   "symbol": "UNOMINDA",
+   "legal_name": "Uno Minda Limited",
+   "filed_name": "UNO MINDA LIMITED",
+   "business_group": null,
+   "isin": "INE405E01023",
+   "industry_code": "C29",
+   "basis": "consolidated",
+   "source_url": "https://www.nseindia.com/get-quotes/equity?symbol=UNOMINDA",
+   "quarters": [
+    {
+     "period_end": "2024-09-30",
+     "filing": {
+      "xbrl_url": "https://nsearchives.nseindia.com/corporate/xbrl/INDAS_115173_1306073_12112024050038.xml",
+      "filed_at": "2024-11-12T17:00:39+05:30",
+      "audited": "Un-Audited"
+     },
+     "profit_and_loss": {
+      "RevenueFromOperations": "4244.79",
+      "OtherIncome": "2.16",
+      "FinanceCosts": "46.03",
+      "DepreciationDepletionAndAmortisationExpense": "150.86",
+      "Expenses": "3959.31",
+      "ExceptionalItemsBeforeTax": "8.54",
+      "ProfitBeforeTax": "296.18",
+      "TaxExpense": "78.45",
+      "ProfitLossForPeriod": "266.16"
+     },
+     "balance_sheet": {
+      "NonControllingInterest": "353.81",
+      "Goodwill": "343.09",
+      "OtherIntangibleAssets": "649.07",
+      "Inventories": "1738.78",
+      "CurrentInvestments": "9.95",
+      "TradeReceivablesCurrent": "2289.42",
+      "CashAndCashEquivalents": "207.70",
+      "CurrentAssets": "4956.81",
+      "Assets": "10937.01",
+      "EquityAttributableToOwnersOfParent": "5325.57",
+      "Equity": "5679.38",
+      "BorrowingsNoncurrent": "1032.63",
+      "BorrowingsCurrent": "940.00",
+      "TradePayablesCurrent": "2115.56",
+      "CurrentLiabilities": "3905.59",
+      "Liabilities": "5257.63"
+     }
+    },
+    {
+     "period_end": "2024-12-31",
+     "filing": {
+      "xbrl_url": "https://nsearchives.nseindia.com/corporate/xbrl/INDAS_118859_1372823_06022025035412.xml",
+      "filed_at": "2025-02-06T15:54:12+05:30",
+      "audited": "Un-Audited"
+     },
+     "profit_and_loss": {
+      "RevenueFromOperations": "4183.99",
+      "OtherIncome": "8.45",
+      "FinanceCosts": "47.30",
+      "DepreciationDepletionAndAmortisationExpense": "157.63",
+      "Expenses": "3931.93",
+      "ExceptionalItemsBeforeTax": "0.00",
+      "ProfitBeforeTax": "260.51",
+      "TaxExpense": "46.62",
+      "ProfitLossForPeriod": "254.37"
+     },
+     "balance_sheet": null
+    },
+    {
+     "period_end": "2025-03-31",
+     "filing": {
+      "xbrl_url": "https://nsearchives.nseindia.com/corporate/xbrl/INTEGRATED_FILING_INDAS_1446304_21052025085616_WEB.xml",
+      "filed_at": "2025-05-21T20:56:17+05:30",
+      "audited": "Audited"
+     },
+     "profit_and_loss": {
+      "RevenueFromOperations": "4528.32",
+      "OtherIncome": "7.64",
+      "FinanceCosts": "40.78",
+      "DepreciationDepletionAndAmortisationExpense": "164.71",
+      "Expenses": "4207.10",
+      "ExceptionalItemsBeforeTax": "0.00",
+      "ProfitBeforeTax": "328.86",
+      "TaxExpense": "94.29",
+      "ProfitLossForPeriod": "289.24"
+     },
+     "balance_sheet": {
+      "Goodwill": "347.88",
+      "OtherIntangibleAssets": "699.32",
+      "Inventories": "1716.77",
+      "CurrentInvestments": "3.18",
+      "TradeReceivablesCurrent": "2495.61",
+      "CashAndCashEquivalents": "197.90",
+      "CurrentAssets": "5106.53",
+      "Assets": "11743.49",
+      "EquityAttributableToOwnersOfParent": "5727.20",
+      "NonControllingInterest": "386.22",
+      "Equity": "6113.42",
+      "BorrowingsNoncurrent": "1238.50",
+      "BorrowingsCurrent": "1055.96",
+      "TradePayablesCurrent": "2163.53",
+      "CurrentLiabilities": "4059.80",
+      "Liabilities": "5630.07"
+     }
+    },
+    {
+     "period_end": "2025-06-30",
+     "filing": {
+      "xbrl_url": "https://nsearchives.nseindia.com/corporate/xbrl/INTEGRATED_FILING_INDAS_1503940_06082025040354_WEB.xml",
+      "filed_at": "2025-08-06T16:03:55+05:30",
+      "audited": "Un-Audited"
+     },
+     "profit_and_loss": {
+      "RevenueFromOperations": "4489.09",
+      "OtherIncome": "12.03",
+      "FinanceCosts": "43.99",
+      "DepreciationDepletionAndAmortisationExpense": "159.31",
+      "Expenses": "4149.27",
+      "ExceptionalItemsBeforeTax": "0.00",
+      "ProfitBeforeTax": "351.85",
+      "TaxExpense": "90.08",
+      "ProfitLossForPeriod": "309.03"
+     },
+     "balance_sheet": null
+    },
+    {
+     "period_end": "2025-09-30",
+     "filing": {
+      "xbrl_url": "https://nsearchives.nseindia.com/corporate/xbrl/INTEGRATED_FILING_INDAS_1569856_10112025044845_WEB.xml",
+      "filed_at": "2025-11-10T16:48:45+05:30",
+      "audited": "Un-Audited"
+     },
+     "profit_and_loss": {
+      "RevenueFromOperations": "4814.03",
+      "OtherIncome": "12.93",
+      "FinanceCosts": "45.39",
+      "DepreciationDepletionAndAmortisationExpense": "173.42",
+      "Expenses": "4481.08",
+      "ExceptionalItemsBeforeTax": "0.00",
+      "ProfitBeforeTax": "345.88",
+      "TaxExpense": "86.46",
+      "ProfitLossForPeriod": "322.79"
+     },
+     "balance_sheet": {
+      "Goodwill": "353.63",
+      "OtherIntangibleAssets": "260.50",
+      "Inventories": "1800.08",
+      "CurrentInvestments": "38.28",
+      "TradeReceivablesCurrent": "2658.31",
+      "CashAndCashEquivalents": "297.35",
+      "CurrentAssets": "5641.33",
+      "Assets": "12767.70",
+      "EquityAttributableToOwnersOfParent": "6228.26",
+      "NonControllingInterest": "382.74",
+      "Equity": "6611.00",
+      "BorrowingsNoncurrent": "1540.23",
+      "BorrowingsCurrent": "1126.31",
+      "TradePayablesCurrent": "2282.12",
+      "CurrentLiabilities": "4244.12",
+      "Liabilities": "6156.70"
+     }
+    },
+    {
+     "period_end": "2025-12-31",
+     "filing": {
+      "xbrl_url": "https://nsearchives.nseindia.com/corporate/xbrl/INTEGRATED_FILING_INDAS_1618972_05022026033910_WEB.xml",
+      "filed_at": "2026-02-05T15:39:10+05:30",
+      "audited": "Un-Audited"
+     },
+     "profit_and_loss": {
+      "RevenueFromOperations": "5018.06",
+      "OtherIncome": "3.73",
+      "FinanceCosts": "52.78",
+      "DepreciationDepletionAndAmortisationExpense": "179.02",
+      "Expenses": "4696.34",
+      "ExceptionalItemsBeforeTax": "-27.57",
+      "ProfitBeforeTax": "297.88",
+      "TaxExpense": "71.40",
+      "ProfitLossForPeriod": "300.48"
+     },
+     "balance_sheet": null
+    },
+    {
+     "period_end": "2026-03-31",
+     "filing": {
+      "xbrl_url": "https://nsearchives.nseindia.com/corporate/xbrl/INTEGRATED_FILING_INDAS_1668431_16052026093718_WEB.xml",
+      "filed_at": "2026-05-16T21:37:18+05:30",
+      "audited": "Audited"
+     },
+     "profit_and_loss": {
+      "RevenueFromOperations": "5336.41",
+      "OtherIncome": "5.74",
+      "FinanceCosts": "44.86",
+      "DepreciationDepletionAndAmortisationExpense": "191.81",
+      "Expenses": "4970.25",
+      "ExceptionalItemsBeforeTax": "0.00",
+      "ProfitBeforeTax": "371.90",
+      "TaxExpense": "84.38",
+      "ProfitLossForPeriod": "351.76"
+     },
+     "balance_sheet": {
+      "Goodwill": "356.08",
+      "OtherIntangibleAssets": "241.63",
+      "Inventories": "2131.02",
+      "CurrentInvestments": "3.37",
+      "TradeReceivablesCurrent": "2706.27",
+      "CashAndCashEquivalents": "276.99",
+      "CurrentAssets": "5995.88",
+      "Assets": "13705.36",
+      "EquityAttributableToOwnersOfParent": "6829.57",
+      "NonControllingInterest": "430.90",
+      "Equity": "7260.47",
+      "BorrowingsNoncurrent": "1069.26",
+      "BorrowingsCurrent": "1468.03",
+      "TradePayablesCurrent": "2582.09",
+      "CurrentLiabilities": "5001.47",
+      "Liabilities": "6444.89"
+     }
+    },
+    {
+     "period_end": "2026-06-30",
+     "filing": {
+      "xbrl_url": "https://nsearchives.nseindia.com/corporate/xbrl/INTEGRATED_FILING_INDAS_1707667_04082026051508_WEB.xml",
+      "filed_at": "2026-08-04T17:15:08+05:30",
+      "audited": "Un-Audited"
+     },
+     "profit_and_loss": {
+      "RevenueFromOperations": "5556.85",
+      "OtherIncome": "6.31",
+      "FinanceCosts": "46.06",
+      "DepreciationDepletionAndAmortisationExpense": "176.63",
+      "Expenses": "5207.86",
+      "ExceptionalItemsBeforeTax": "0.00",
+      "ProfitBeforeTax": "355.30",
+      "TaxExpense": "87.34",
+      "ProfitLossForPeriod": "315.51"
+     },
+     "balance_sheet": null
+    }
+   ]
+  },
+  {
+   "symbol": "JSWENERGY",
+   "legal_name": "JSW Energy Limited",
+   "filed_name": "JSW Energy Limited",
+   "business_group": "JSW Group",
+   "isin": "INE121E01018",
+   "industry_code": "D35",
+   "basis": "consolidated",
+   "source_url": "https://www.nseindia.com/get-quotes/equity?symbol=JSWENERGY",
+   "quarters": [
+    {
+     "period_end": "2024-09-30",
+     "filing": {
+      "xbrl_url": "https://nsearchives.nseindia.com/corporate/xbrl/INDAS_113233_1287549_24102024070657.xml",
+      "filed_at": "2024-10-24T19:06:58+05:30",
+      "audited": "Un-Audited"
+     },
+     "profit_and_loss": {
+      "RevenueFromOperations": "3237.66",
+      "OtherIncome": "221.74",
+      "FinanceCosts": "518.29",
+      "DepreciationDepletionAndAmortisationExpense": "391.81",
+      "Expenses": "2462.89",
+      "ExceptionalItemsBeforeTax": "0.00",
+      "ProfitBeforeTax": "996.51",
+      "TaxExpense": "128.17",
+      "ProfitLossForPeriod": "876.76"
+     },
+     "balance_sheet": {
+      "NonControllingInterest": "311.38",
+      "Goodwill": "639.82",
+      "OtherIntangibleAssets": "2164.40",
+      "Inventories": "715.36",
+      "CurrentInvestments": "2688.09",
+      "TradeReceivablesCurrent": "2399.72",
+      "CashAndCashEquivalents": "1937.39",
+      "CurrentAssets": "10811.37",
+      "Assets": "64931.71",
+      "EquityAttributableToOwnersOfParent": "27970.75",
+      "Equity": "28282.13",
+      "BorrowingsNoncurrent": "27966.05",
+      "BorrowingsCurrent": "2627.86",
+      "TradePayablesCurrent": "878.88",
+      "CurrentLiabilities": "6009.33",
+      "Liabilities": "36649.58"
+     }
+    },
+    {
+     "period_end": "2024-12-31",
+     "filing": {
+      "xbrl_url": "https://nsearchives.nseindia.com/corporate/xbrl/INDAS_117918_1363739_28012025080705.xml",
+      "filed_at": "2025-01-28T20:07:05+05:30",
+      "audited": "Un-Audited"
+     },
+     "profit_and_loss": {
+      "RevenueFromOperations": "2438.88",
+      "OtherIncome": "201.16",
+      "FinanceCosts": "564.50",
+      "DepreciationDepletionAndAmortisationExpense": "405.52",
+      "Expenses": "2495.17",
+      "ExceptionalItemsBeforeTax": "0.00",
+      "ProfitBeforeTax": "144.87",
+      "TaxExpense": "-7.41",
+      "ProfitLossForPeriod": "157.45"
+     },
+     "balance_sheet": null
+    },
+    {
+     "period_end": "2025-03-31",
+     "filing": {
+      "xbrl_url": "https://nsearchives.nseindia.com/corporate/xbrl/INTEGRATED_FILING_INDAS_1440369_15052025080958_WEB.xml",
+      "filed_at": "2025-05-15T20:09:59+05:30",
+      "audited": "Un-Audited"
+     },
+     "profit_and_loss": {
+      "RevenueFromOperations": "3189.39",
+      "OtherIncome": "308.00",
+      "FinanceCosts": "675.28",
+      "DepreciationDepletionAndAmortisationExpense": "481.86",
+      "Expenses": "3142.05",
+      "ExceptionalItemsBeforeTax": "0.00",
+      "ProfitBeforeTax": "355.34",
+      "TaxExpense": "-53.80",
+      "ProfitLossForPeriod": "414.51"
+     },
+     "balance_sheet": {
+      "Goodwill": "639.82",
+      "OtherIntangibleAssets": "7802.40",
+      "Inventories": "905.33",
+      "CurrentInvestments": "2101.60",
+      "TradeReceivablesCurrent": "2614.36",
+      "CashAndCashEquivalents": "3233.53",
+      "CurrentAssets": "12418.53",
+      "Assets": "89938.98",
+      "EquityAttributableToOwnersOfParent": "27361.43",
+      "NonControllingInterest": "1723.63",
+      "Equity": "29085.06",
+      "BorrowingsNoncurrent": "44896.85",
+      "BorrowingsCurrent": "4724.45",
+      "TradePayablesCurrent": "1409.45",
+      "CurrentLiabilities": "11715.42",
+      "Liabilities": "60853.92"
+     }
+    },
+    {
+     "period_end": "2025-06-30",
+     "filing": {
+      "xbrl_url": "https://nsearchives.nseindia.com/corporate/xbrl/INTEGRATED_FILING_INDAS_1499889_01082025120918_WEB.xml",
+      "filed_at": "2025-08-01T12:09:20+05:30",
+      "audited": "Un-Audited"
+     },
+     "profit_and_loss": {
+      "RevenueFromOperations": "5143.37",
+      "OtherIncome": "267.87",
+      "FinanceCosts": "1305.52",
+      "DepreciationDepletionAndAmortisationExpense": "738.59",
+      "Expenses": "4398.82",
+      "ExceptionalItemsBeforeTax": "0.00",
+      "ProfitBeforeTax": "1012.42",
+      "TaxExpense": "179.55",
+      "ProfitLossForPeriod": "835.86"
+     },
+     "balance_sheet": null
+    },
+    {
+     "period_end": "2025-09-30",
+     "filing": {
+      "xbrl_url": "https://nsearchives.nseindia.com/corporate/xbrl/INTEGRATED_FILING_INDAS_1552583_17102025064217_WEB.xml",
+      "filed_at": "2025-10-17T18:42:17+05:30",
+      "audited": "Audited"
+     },
+     "profit_and_loss": {
+      "RevenueFromOperations": "5177.42",
+      "OtherIncome": "183.65",
+      "FinanceCosts": "1417.56",
+      "DepreciationDepletionAndAmortisationExpense": "809.02",
+      "Expenses": "4407.54",
+      "ExceptionalItemsBeforeTax": "0.00",
+      "ProfitBeforeTax": "953.53",
+      "TaxExpense": "131.22",
+      "ProfitLossForPeriod": "824.27"
+     },
+     "balance_sheet": {
+      "Goodwill": "639.82",
+      "OtherIntangibleAssets": "12100.62",
+      "Inventories": "978.40",
+      "CurrentInvestments": "2216.44",
+      "TradeReceivablesCurrent": "3254.35",
+      "CashAndCashEquivalents": "3678.11",
+      "CurrentAssets": "13760.84",
+      "Assets": "113687.03",
+      "EquityAttributableToOwnersOfParent": "29123.57",
+      "NonControllingInterest": "2478.60",
+      "Equity": "31602.17",
+      "BorrowingsNoncurrent": "58032.28",
+      "BorrowingsCurrent": "10108.42",
+      "TradePayablesCurrent": "1346.52",
+      "CurrentLiabilities": "17891.17",
+      "Liabilities": "82084.86"
+     }
+    },
+    {
+     "period_end": "2025-12-31",
+     "filing": {
+      "xbrl_url": "https://nsearchives.nseindia.com/corporate/xbrl/INTEGRATED_FILING_INDAS_1609540_23012026070626_WEB.xml",
+      "filed_at": "2026-01-23T19:06:27+05:30",
+      "audited": "Un-Audited"
+     },
+     "profit_and_loss": {
+      "RevenueFromOperations": "4081.76",
+      "OtherIncome": "172.78",
+      "FinanceCosts": "1484.88",
+      "DepreciationDepletionAndAmortisationExpense": "828.70",
+      "Expenses": "4365.77",
+      "ExceptionalItemsBeforeTax": "-65.19",
+      "ProfitBeforeTax": "-176.42",
+      "TaxExpense": "-701.63",
+      "ProfitLossForPeriod": "528.75"
+     },
+     "balance_sheet": null
+    },
+    {
+     "period_end": "2026-03-31",
+     "filing": {
+      "xbrl_url": "https://nsearchives.nseindia.com/corporate/xbrl/INTEGRATED_FILING_INDAS_1665718_11052026083347_WEB.xml",
+      "filed_at": "2026-05-11T20:33:47+05:30",
+      "audited": "Un-Audited"
+     },
+     "profit_and_loss": {
+      "RevenueFromOperations": "4498.58",
+      "OtherIncome": "352.29",
+      "FinanceCosts": "1608.49",
+      "DepreciationDepletionAndAmortisationExpense": "808.96",
+      "Expenses": "4666.31",
+      "ExceptionalItemsBeforeTax": "0.00",
+      "ProfitBeforeTax": "184.56",
+      "TaxExpense": "-385.73",
+      "ProfitLossForPeriod": "573.53"
+     },
+     "balance_sheet": {
+      "Goodwill": "659.18",
+      "OtherIntangibleAssets": "12057.76",
+      "Inventories": "960.58",
+      "CurrentInvestments": "3264.86",
+      "TradeReceivablesCurrent": "2973.26",
+      "CashAndCashEquivalents": "4142.45",
+      "CurrentAssets": "15406.67",
+      "Assets": "124181.69",
+      "EquityAttributableToOwnersOfParent": "30751.51",
+      "NonControllingInterest": "2825.85",
+      "Equity": "33577.36",
+      "BorrowingsNoncurrent": "64875.02",
+      "BorrowingsCurrent": "10971.12",
+      "TradePayablesCurrent": "1423.31",
+      "CurrentLiabilities": "20230.02",
+      "Liabilities": "90604.33"
+     }
+    },
+    {
+     "period_end": "2026-06-30",
+     "filing": {
+      "xbrl_url": "https://nsearchives.nseindia.com/corporate/xbrl/INTEGRATED_FILING_INDAS_1699250_22072026035115_WEB.xml",
+      "filed_at": "2026-07-22T15:51:16+05:30",
+      "audited": "Un-Audited"
+     },
+     "profit_and_loss": {
+      "RevenueFromOperations": "5207.13",
+      "OtherIncome": "229.44",
+      "FinanceCosts": "1519.28",
+      "DepreciationDepletionAndAmortisationExpense": "889.64",
+      "Expenses": "4742.90",
+      "ExceptionalItemsBeforeTax": "0.00",
+      "ProfitBeforeTax": "693.67",
+      "TaxExpense": "163.11",
+      "ProfitLossForPeriod": "532.70"
+     },
+     "balance_sheet": null
+    }
+   ]
+  },
+  {
+   "symbol": "IONEXCHANG",
+   "legal_name": "Ion Exchange (India) Limited",
+   "filed_name": "Ion Exchange (India) Limited",
+   "business_group": null,
+   "isin": "INE570A01022",
+   "industry_code": "E36",
+   "basis": "consolidated",
+   "source_url": "https://www.nseindia.com/get-quotes/equity?symbol=IONEXCHANG",
+   "quarters": [
+    {
+     "period_end": "2024-09-30",
+     "filing": {
+      "xbrl_url": "https://nsearchives.nseindia.com/corporate/xbrl/INDAS_115630_1308720_13112024045207.xml",
+      "filed_at": "2024-11-13T16:52:08+05:30",
+      "audited": "Un-Audited"
+     },
+     "profit_and_loss": {
+      "RevenueFromOperations": "644.47",
+      "OtherIncome": "14.35",
+      "FinanceCosts": "3.62",
+      "DepreciationDepletionAndAmortisationExpense": "10.89",
+      "Expenses": "590.68",
+      "ExceptionalItemsBeforeTax": "0.00",
+      "ProfitBeforeTax": "68.14",
+      "TaxExpense": "17.68",
+      "ProfitLossForPeriod": "50.64"
+     },
+     "balance_sheet": {
+      "NonControllingInterest": "1.61",
+      "Goodwill": "10.21",
+      "OtherIntangibleAssets": "15.31",
+      "Inventories": "296.31",
+      "CurrentInvestments": "0.53",
+      "TradeReceivablesCurrent": "981.61",
+      "CashAndCashEquivalents": "111.05",
+      "CurrentAssets": "2013.66",
+      "Assets": "2624.56",
+      "EquityAttributableToOwnersOfParent": "1095.98",
+      "Equity": "1097.59",
+      "BorrowingsNoncurrent": "152.58",
+      "BorrowingsCurrent": "41.95",
+      "TradePayablesCurrent": "665.95",
+      "CurrentLiabilities": "1309.26",
+      "Liabilities": "1526.97"
+     }
+    },
+    {
+     "period_end": "2024-12-31",
+     "filing": {
+      "xbrl_url": "https://nsearchives.nseindia.com/corporate/xbrl/INDAS_117613_1360256_24012025033844.xml",
+      "filed_at": "2025-01-24T15:38:45+05:30",
+      "audited": "Un-Audited"
+     },
+     "profit_and_loss": {
+      "RevenueFromOperations": "690.51",
+      "OtherIncome": "8.35",
+      "FinanceCosts": "3.30",
+      "DepreciationDepletionAndAmortisationExpense": "11.33",
+      "Expenses": "629.67",
+      "ExceptionalItemsBeforeTax": "0.00",
+      "ProfitBeforeTax": "69.19",
+      "TaxExpense": "20.16",
+      "ProfitLossForPeriod": "49.59"
+     },
+     "balance_sheet": null
+    },
+    {
+     "period_end": "2025-03-31",
+     "filing": {
+      "xbrl_url": "https://nsearchives.nseindia.com/corporate/xbrl/INTEGRATED_FILING_INDAS_1456650_29052025034230_WEB.xml",
+      "filed_at": "2025-05-29T15:42:31+05:30",
+      "audited": "Un-Audited"
+     },
+     "profit_and_loss": {
+      "RevenueFromOperations": "834.56",
+      "OtherIncome": "14.84",
+      "FinanceCosts": "3.61",
+      "DepreciationDepletionAndAmortisationExpense": "11.83",
+      "Expenses": "764.16",
+      "ExceptionalItemsBeforeTax": "0.00",
+      "ProfitBeforeTax": "85.24",
+      "TaxExpense": "21.90",
+      "ProfitLossForPeriod": "63.24"
+     },
+     "balance_sheet": {
+      "Goodwill": "10.21",
+      "OtherIntangibleAssets": "14.67",
+      "Inventories": "298.99",
+      "CurrentInvestments": "0.41",
+      "TradeReceivablesCurrent": "1133.91",
+      "CashAndCashEquivalents": "149.29",
+      "CurrentAssets": "2180.27",
+      "Assets": "2986.93",
+      "EquityAttributableToOwnersOfParent": "1207.88",
+      "NonControllingInterest": "1.61",
+      "Equity": "1209.49",
+      "BorrowingsNoncurrent": "252.06",
+      "BorrowingsCurrent": "50.96",
+      "TradePayablesCurrent": "778.98",
+      "CurrentLiabilities": "1468.15",
+      "Liabilities": "1777.44"
+     }
+    },
+    {
+     "period_end": "2025-06-30",
+     "filing": {
+      "xbrl_url": "https://nsearchives.nseindia.com/corporate/xbrl/INTEGRATED_FILING_INDAS_1498174_30072025060235_WEB.xml",
+      "filed_at": "2025-07-30T18:02:35+05:30",
+      "audited": "Un-Audited"
+     },
+     "profit_and_loss": {
+      "RevenueFromOperations": "583.19",
+      "OtherIncome": "17.74",
+      "FinanceCosts": "2.56",
+      "DepreciationDepletionAndAmortisationExpense": "12.26",
+      "Expenses": "535.47",
+      "ExceptionalItemsBeforeTax": "0.00",
+      "ProfitBeforeTax": "65.46",
+      "TaxExpense": "17.48",
+      "ProfitLossForPeriod": "48.44"
+     },
+     "balance_sheet": null
+    },
+    {
+     "period_end": "2025-09-30",
+     "filing": {
+      "xbrl_url": "https://nsearchives.nseindia.com/corporate/xbrl/INTEGRATED_FILING_INDAS_1565240_04112025083302_WEB.xml",
+      "filed_at": "2025-11-04T20:33:03+05:30",
+      "audited": "Un-Audited"
+     },
+     "profit_and_loss": {
+      "RevenueFromOperations": "733.94",
+      "OtherIncome": "14.26",
+      "FinanceCosts": "3.08",
+      "DepreciationDepletionAndAmortisationExpense": "12.17",
+      "Expenses": "680.70",
+      "ExceptionalItemsBeforeTax": "0.00",
+      "ProfitBeforeTax": "67.50",
+      "TaxExpense": "17.94",
+      "ProfitLossForPeriod": "49.92"
+     },
+     "balance_sheet": {
+      "Goodwill": "10.21",
+      "OtherIntangibleAssets": "13.62",
+      "Inventories": "386.14",
+      "CurrentInvestments": "0.57",
+      "TradeReceivablesCurrent": "1044.63",
+      "CashAndCashEquivalents": "204.52",
+      "CurrentAssets": "2182.43",
+      "Assets": "3110.49",
+      "EquityAttributableToOwnersOfParent": "1292.62",
+      "NonControllingInterest": "2.21",
+      "Equity": "1294.83",
+      "BorrowingsNoncurrent": "346.26",
+      "BorrowingsCurrent": "54.55",
+      "TradePayablesCurrent": "728.08",
+      "CurrentLiabilities": "1410.14",
+      "Liabilities": "1815.66"
+     }
+    },
+    {
+     "period_end": "2025-12-31",
+     "filing": {
+      "xbrl_url": "https://nsearchives.nseindia.com/corporate/xbrl/INTEGRATED_FILING_INDAS_1613795_29012026083522_WEB.xml",
+      "filed_at": "2026-01-29T20:35:22+05:30",
+      "audited": "Un-Audited"
+     },
+     "profit_and_loss": {
+      "RevenueFromOperations": "734.44",
+      "OtherIncome": "11.52",
+      "FinanceCosts": "7.57",
+      "DepreciationDepletionAndAmortisationExpense": "18.57",
+      "Expenses": "701.33",
+      "ExceptionalItemsBeforeTax": "-16.97",
+      "ProfitBeforeTax": "27.66",
+      "TaxExpense": "8.12",
+      "ProfitLossForPeriod": "20.56"
+     },
+     "balance_sheet": null
+    },
+    {
+     "period_end": "2026-03-31",
+     "filing": {
+      "xbrl_url": "https://nsearchives.nseindia.com/corporate/xbrl/INTEGRATED_FILING_INDAS_1673661_26052026110823_WEB.xml",
+      "filed_at": "2026-05-26T23:08:24+05:30",
+      "audited": "Un-Audited"
+     },
+     "profit_and_loss": {
+      "RevenueFromOperations": "863.27",
+      "OtherIncome": "43.05",
+      "FinanceCosts": "10.79",
+      "DepreciationDepletionAndAmortisationExpense": "19.60",
+      "Expenses": "873.79",
+      "ExceptionalItemsBeforeTax": "0.08",
+      "ProfitBeforeTax": "32.61",
+      "TaxExpense": "8.19",
+      "ProfitLossForPeriod": "24.29"
+     },
+     "balance_sheet": {
+      "Goodwill": "10.21",
+      "OtherIntangibleAssets": "13.11",
+      "Inventories": "441.39",
+      "CurrentInvestments": "0.60",
+      "TradeReceivablesCurrent": "1074.69",
+      "CashAndCashEquivalents": "184.56",
+      "CurrentAssets": "2356.72",
+      "Assets": "3379.93",
+      "EquityAttributableToOwnersOfParent": "1339.03",
+      "NonControllingInterest": "1.29",
+      "Equity": "1340.32",
+      "BorrowingsNoncurrent": "357.58",
+      "BorrowingsCurrent": "96.83",
+      "TradePayablesCurrent": "899.67",
+      "CurrentLiabilities": "1613.42",
+      "Liabilities": "2039.61"
+     }
+    },
+    {
+     "period_end": "2026-06-30",
+     "filing": {
+      "xbrl_url": "https://nsearchives.nseindia.com/corporate/xbrl/INTEGRATED_FILING_INDAS_1708657_05082026082219_WEB.xml",
+      "filed_at": "2026-08-05T20:22:20+05:30",
+      "audited": "Un-Audited"
+     },
+     "profit_and_loss": {
+      "RevenueFromOperations": "700.46",
+      "OtherIncome": "5.95",
+      "FinanceCosts": "8.95",
+      "DepreciationDepletionAndAmortisationExpense": "21.75",
+      "Expenses": "699.42",
+      "ExceptionalItemsBeforeTax": "0.00",
+      "ProfitBeforeTax": "6.99",
+      "TaxExpense": "4.34",
+      "ProfitLossForPeriod": "3.06"
+     },
+     "balance_sheet": null
+    }
+   ]
+  },
+  {
+   "symbol": "NCC",
+   "legal_name": "NCC Limited",
+   "filed_name": "NCC LIMITED",
+   "business_group": null,
+   "isin": "INE868B01028",
+   "industry_code": "F41",
+   "basis": "consolidated",
+   "source_url": "https://www.nseindia.com/get-quotes/equity?symbol=NCC",
+   "quarters": [
+    {
+     "period_end": "2024-09-30",
+     "filing": {
+      "xbrl_url": "https://nsearchives.nseindia.com/corporate/xbrl/INDAS_114514_1301242_08112024025747.xml",
+      "filed_at": "2024-11-08T14:57:47+05:30",
+      "audited": "Un-Audited"
+     },
+     "profit_and_loss": {
+      "RevenueFromOperations": "5195.98",
+      "OtherIncome": "28.38",
+      "FinanceCosts": "166.72",
+      "DepreciationDepletionAndAmortisationExpense": "54.53",
+      "Expenses": "4974.28",
+      "ExceptionalItemsBeforeTax": "0.00",
+      "ProfitBeforeTax": "250.08",
+      "TaxExpense": "75.57",
+      "ProfitLossForPeriod": "174.79"
+     },
+     "balance_sheet": {
+      "NonControllingInterest": "181.22",
+      "Goodwill": "0.63",
+      "OtherIntangibleAssets": "15.92",
+      "Inventories": "1806.64",
+      "CurrentInvestments": "15.39",
+      "TradeReceivablesCurrent": "3224.62",
+      "CashAndCashEquivalents": "198.32",
+      "CurrentAssets": "16382.68",
+      "Assets": "19661.50",
+      "EquityAttributableToOwnersOfParent": "6870.73",
+      "Equity": "7051.95",
+      "BorrowingsNoncurrent": "56.96",
+      "BorrowingsCurrent": "1669.43",
+      "TradePayablesCurrent": "7611.74",
+      "CurrentLiabilities": "12444.15",
+      "Liabilities": "12609.55"
+     }
+    },
+    {
+     "period_end": "2024-12-31",
+     "filing": {
+      "xbrl_url": "https://nsearchives.nseindia.com/corporate/xbrl/INDAS_118895_1373196_06022025052431.xml",
+      "filed_at": "2025-02-06T17:24:31+05:30",
+      "audited": "Un-Audited"
+     },
+     "profit_and_loss": {
+      "RevenueFromOperations": "5344.52",
+      "OtherIncome": "38.34",
+      "FinanceCosts": "165.65",
+      "DepreciationDepletionAndAmortisationExpense": "53.67",
+      "Expenses": "5122.94",
+      "ExceptionalItemsBeforeTax": "0.00",
+      "ProfitBeforeTax": "259.92",
+      "TaxExpense": "64.17",
+      "ProfitLossForPeriod": "205.86"
+     },
+     "balance_sheet": null
+    },
+    {
+     "period_end": "2025-03-31",
+     "filing": {
+      "xbrl_url": "https://nsearchives.nseindia.com/corporate/xbrl/INTEGRATED_FILING_INDAS_1440471_15052025083932_WEB.xml",
+      "filed_at": "2025-05-15T20:39:32+05:30",
+      "audited": "Audited"
+     },
+     "profit_and_loss": {
+      "RevenueFromOperations": "6130.88",
+      "OtherIncome": "58.48",
+      "FinanceCosts": "192.56",
+      "DepreciationDepletionAndAmortisationExpense": "53.99",
+      "Expenses": "5821.12",
+      "ExceptionalItemsBeforeTax": "0.00",
+      "ProfitBeforeTax": "368.24",
+      "TaxExpense": "102.09",
+      "ProfitLossForPeriod": "265.07"
+     },
+     "balance_sheet": {
+      "Goodwill": "0.63",
+      "OtherIntangibleAssets": "21.12",
+      "Inventories": "1809.79",
+      "CurrentInvestments": "5.41",
+      "TradeReceivablesCurrent": "3354.62",
+      "CashAndCashEquivalents": "988.40",
+      "CurrentAssets": "17634.53",
+      "Assets": "21006.38",
+      "EquityAttributableToOwnersOfParent": "7323.71",
+      "NonControllingInterest": "178.73",
+      "Equity": "7502.44",
+      "BorrowingsNoncurrent": "264.61",
+      "BorrowingsCurrent": "1328.97",
+      "TradePayablesCurrent": "8205.52",
+      "CurrentLiabilities": "13128.03",
+      "Liabilities": "13503.94"
+     }
+    },
+    {
+     "period_end": "2025-06-30",
+     "filing": {
+      "xbrl_url": "https://nsearchives.nseindia.com/corporate/xbrl/INTEGRATED_FILING_INDAS_1503146_05082025063611_WEB.xml",
+      "filed_at": "2025-08-05T18:36:12+05:30",
+      "audited": "Un-Audited"
+     },
+     "profit_and_loss": {
+      "RevenueFromOperations": "5178.99",
+      "OtherIncome": "28.94",
+      "FinanceCosts": "163.62",
+      "DepreciationDepletionAndAmortisationExpense": "55.04",
+      "Expenses": "4941.53",
+      "ExceptionalItemsBeforeTax": "0.00",
+      "ProfitBeforeTax": "266.40",
+      "TaxExpense": "63.72",
+      "ProfitLossForPeriod": "204.64"
+     },
+     "balance_sheet": null
+    },
+    {
+     "period_end": "2025-09-30",
+     "filing": {
+      "xbrl_url": "https://nsearchives.nseindia.com/corporate/xbrl/INTEGRATED_FILING_INDAS_1567225_06112025065245_WEB.xml",
+      "filed_at": "2025-11-06T18:52:46+05:30",
+      "audited": "Un-Audited"
+     },
+     "profit_and_loss": {
+      "RevenueFromOperations": "4543.01",
+      "OtherIncome": "42.05",
+      "FinanceCosts": "171.82",
+      "DepreciationDepletionAndAmortisationExpense": "56.91",
+      "Expenses": "4378.43",
+      "ExceptionalItemsBeforeTax": "0.00",
+      "ProfitBeforeTax": "206.63",
+      "TaxExpense": "41.29",
+      "ProfitLossForPeriod": "167.33"
+     },
+     "balance_sheet": {
+      "Goodwill": "0.63",
+      "OtherIntangibleAssets": "19.02",
+      "Inventories": "2235.62",
+      "CurrentInvestments": "4.18",
+      "TradeReceivablesCurrent": "3514.66",
+      "CashAndCashEquivalents": "211.88",
+      "CurrentAssets": "19843.52",
+      "Assets": "23440.47",
+      "EquityAttributableToOwnersOfParent": "7534.05",
+      "NonControllingInterest": "179.21",
+      "Equity": "7713.26",
+      "BorrowingsNoncurrent": "940.69",
+      "BorrowingsCurrent": "1982.07",
+      "TradePayablesCurrent": "8181.37",
+      "CurrentLiabilities": "14653.77",
+      "Liabilities": "15727.21"
+     }
+    },
+    {
+     "period_end": "2025-12-31",
+     "filing": {
+      "xbrl_url": "https://nsearchives.nseindia.com/corporate/xbrl/INTEGRATED_FILING_INDAS_1619329_05022026061020_WEB.xml",
+      "filed_at": "2026-02-05T18:10:21+05:30",
+      "audited": "Un-Audited"
+     },
+     "profit_and_loss": {
+      "RevenueFromOperations": "4868.29",
+      "OtherIncome": "32.14",
+      "FinanceCosts": "196.38",
+      "DepreciationDepletionAndAmortisationExpense": "58.57",
+      "Expenses": "4687.00",
+      "ExceptionalItemsBeforeTax": "-33.67",
+      "ProfitBeforeTax": "179.76",
+      "TaxExpense": "46.37",
+      "ProfitLossForPeriod": "135.22"
+     },
+     "balance_sheet": null
+    },
+    {
+     "period_end": "2026-03-31",
+     "filing": {
+      "xbrl_url": "https://nsearchives.nseindia.com/corporate/xbrl/INTEGRATED_FILING_INDAS_1719935_01092026061126_WEB.xml",
+      "filed_at": "2026-09-01T18:11:27+05:30",
+      "audited": "Audited"
+     },
+     "profit_and_loss": {
+      "RevenueFromOperations": "6232.71",
+      "OtherIncome": "18.27",
+      "FinanceCosts": "213.47",
+      "DepreciationDepletionAndAmortisationExpense": "64.60",
+      "Expenses": "5960.37",
+      "ExceptionalItemsBeforeTax": "0.00",
+      "ProfitBeforeTax": "290.61",
+      "TaxExpense": "76.82",
+      "ProfitLossForPeriod": "216.77"
+     },
+     "balance_sheet": {
+      "Goodwill": "0.63",
+      "OtherIntangibleAssets": "16.76",
+      "Inventories": "2445.10",
+      "CurrentInvestments": "2.09",
+      "TradeReceivablesCurrent": "3783.54",
+      "CashAndCashEquivalents": "642.15",
+      "CurrentAssets": "22243.43",
+      "Assets": "26006.07",
+      "EquityAttributableToOwnersOfParent": "7868.95",
+      "NonControllingInterest": "160.17",
+      "Equity": "8029.12",
+      "BorrowingsNoncurrent": "1492.52",
+      "BorrowingsCurrent": "1964.48",
+      "TradePayablesCurrent": "7896.07",
+      "CurrentLiabilities": "16332.88",
+      "Liabilities": "17976.95"
+     }
+    },
+    {
+     "period_end": "2026-06-30",
+     "filing": {
+      "xbrl_url": "https://nsearchives.nseindia.com/corporate/xbrl/INTEGRATED_FILING_INDAS_1709230_06082026063437_WEB.xml",
+      "filed_at": "2026-08-06T18:34:37+05:30",
+      "audited": "Un-Audited"
+     },
+     "profit_and_loss": {
+      "RevenueFromOperations": "5811.83",
+      "OtherIncome": "30.65",
+      "FinanceCosts": "198.02",
+      "DepreciationDepletionAndAmortisationExpense": "69.31",
+      "Expenses": "5534.04",
+      "ExceptionalItemsBeforeTax": "0.00",
+      "ProfitBeforeTax": "308.44",
+      "TaxExpense": "82.74",
+      "ProfitLossForPeriod": "228.90"
+     },
+     "balance_sheet": null
+    }
+   ]
+  },
+  {
+   "symbol": "REDINGTON",
+   "legal_name": "Redington Limited",
+   "filed_name": "REDINGTON LIMITED",
+   "business_group": null,
+   "isin": "INE891D01026",
+   "industry_code": "G46",
+   "basis": "consolidated",
+   "source_url": "https://www.nseindia.com/get-quotes/equity?symbol=REDINGTON",
+   "quarters": [
+    {
+     "period_end": "2024-09-30",
+     "filing": {
+      "xbrl_url": "https://nsearchives.nseindia.com/corporate/xbrl/INDAS_114027_1294651_30102024062354.xml",
+      "filed_at": "2024-10-30T18:23:54+05:30",
+      "audited": "Un-Audited"
+     },
+     "profit_and_loss": {
+      "RevenueFromOperations": "24895.56",
+      "OtherIncome": "56.66",
+      "FinanceCosts": "84.07",
+      "DepreciationDepletionAndAmortisationExpense": "49.49",
+      "Expenses": "24570.89",
+      "ExceptionalItemsBeforeTax": "0.00",
+      "ProfitBeforeTax": "381.33",
+      "TaxExpense": "98.45",
+      "ProfitLossForPeriod": "282.88"
+     },
+     "balance_sheet": {
+      "NonControllingInterest": "255.60",
+      "Goodwill": "94.31",
+      "OtherIntangibleAssets": "305.96",
+      "Inventories": "6629.77",
+      "CurrentInvestments": "0.00",
+      "TradeReceivablesCurrent": "15840.67",
+      "CashAndCashEquivalents": "1710.76",
+      "CurrentAssets": "25150.86",
+      "Assets": "26508.63",
+      "EquityAttributableToOwnersOfParent": "7604.94",
+      "Equity": "7860.54",
+      "BorrowingsNoncurrent": "23.45",
+      "BorrowingsCurrent": "1553.84",
+      "TradePayablesCurrent": "15153.54",
+      "CurrentLiabilities": "18317.08",
+      "Liabilities": "18648.09"
+     }
+    },
+    {
+     "period_end": "2024-12-31",
+     "filing": {
+      "xbrl_url": "https://nsearchives.nseindia.com/corporate/xbrl/INDAS_118872_1373002_06022025043706.xml",
+      "filed_at": "2025-02-06T16:37:06+05:30",
+      "audited": "Un-Audited"
+     },
+     "profit_and_loss": {
+      "RevenueFromOperations": "26716.08",
+      "OtherIncome": "48.35",
+      "FinanceCosts": "83.98",
+      "DepreciationDepletionAndAmortisationExpense": "53.99",
+      "Expenses": "26251.55",
+      "ExceptionalItemsBeforeTax": "0.00",
+      "ProfitBeforeTax": "512.88",
+      "TaxExpense": "109.92",
+      "ProfitLossForPeriod": "402.96"
+     },
+     "balance_sheet": null
+    },
+    {
+     "period_end": "2025-03-31",
+     "filing": {
+      "xbrl_url": "https://nsearchives.nseindia.com/corporate/xbrl/INTEGRATED_FILING_INDAS_1443518_19052025084643_WEB.xml",
+      "filed_at": "2025-05-19T20:46:43+05:30",
+      "audited": "Audited"
+     },
+     "profit_and_loss": {
+      "RevenueFromOperations": "26439.68",
+      "OtherIncome": "70.10",
+      "FinanceCosts": "81.55",
+      "DepreciationDepletionAndAmortisationExpense": "63.09",
+      "Expenses": "25987.41",
+      "ExceptionalItemsBeforeTax": "625.77",
+      "ProfitBeforeTax": "1148.14",
+      "TaxExpense": "230.40",
+      "ProfitLossForPeriod": "917.74"
+     },
+     "balance_sheet": {
+      "Goodwill": "75.37",
+      "OtherIntangibleAssets": "285.62",
+      "Inventories": "6286.54",
+      "CurrentInvestments": "0.00",
+      "TradeReceivablesCurrent": "17330.49",
+      "CashAndCashEquivalents": "1357.08",
+      "CurrentAssets": "26225.51",
+      "Assets": "27584.17",
+      "EquityAttributableToOwnersOfParent": "8721.04",
+      "NonControllingInterest": "476.16",
+      "Equity": "9197.20",
+      "BorrowingsNoncurrent": "15.90",
+      "BorrowingsCurrent": "2603.28",
+      "TradePayablesCurrent": "13391.55",
+      "CurrentLiabilities": "18021.61",
+      "Liabilities": "18386.97"
+     }
+    },
+    {
+     "period_end": "2025-06-30",
+     "filing": {
+      "xbrl_url": "https://nsearchives.nseindia.com/corporate/xbrl/INTEGRATED_FILING_INDAS_1497959_30072025050404_WEB.xml",
+      "filed_at": "2025-07-30T17:04:05+05:30",
+      "audited": "Un-Audited"
+     },
+     "profit_and_loss": {
+      "RevenueFromOperations": "25951.99",
+      "OtherIncome": "49.53",
+      "FinanceCosts": "91.62",
+      "DepreciationDepletionAndAmortisationExpense": "53.82",
+      "Expenses": "25697.19",
+      "ExceptionalItemsBeforeTax": "0.00",
+      "ProfitBeforeTax": "304.33",
+      "TaxExpense": "71.35",
+      "ProfitLossForPeriod": "232.98"
+     },
+     "balance_sheet": null
+    },
+    {
+     "period_end": "2025-09-30",
+     "filing": {
+      "xbrl_url": "https://nsearchives.nseindia.com/corporate/xbrl/INTEGRATED_FILING_INDAS_1566165_05112025080047_WEB.xml",
+      "filed_at": "2025-11-05T20:00:48+05:30",
+      "audited": "Un-Audited"
+     },
+     "profit_and_loss": {
+      "RevenueFromOperations": "29075.61",
+      "OtherIncome": "42.76",
+      "FinanceCosts": "116.43",
+      "DepreciationDepletionAndAmortisationExpense": "55.46",
+      "Expenses": "28658.61",
+      "ExceptionalItemsBeforeTax": "0.00",
+      "ProfitBeforeTax": "459.76",
+      "TaxExpense": "109.56",
+      "ProfitLossForPeriod": "350.20"
+     },
+     "balance_sheet": {
+      "Goodwill": "18.84",
+      "OtherIntangibleAssets": "270.66",
+      "Inventories": "6821.31",
+      "CurrentInvestments": "0.00",
+      "TradeReceivablesCurrent": "18882.14",
+      "CashAndCashEquivalents": "1359.69",
+      "CurrentAssets": "28329.66",
+      "Assets": "29793.35",
+      "EquityAttributableToOwnersOfParent": "9012.16",
+      "NonControllingInterest": "383.75",
+      "Equity": "9395.91",
+      "BorrowingsNoncurrent": "12.25",
+      "BorrowingsCurrent": "2407.66",
+      "TradePayablesCurrent": "15664.71",
+      "CurrentLiabilities": "20020.75",
+      "Liabilities": "20397.44"
+     }
+    },
+    {
+     "period_end": "2025-12-31",
+     "filing": {
+      "xbrl_url": "https://nsearchives.nseindia.com/corporate/xbrl/INTEGRATED_FILING_INDAS_1618438_04022026065121_WEB.xml",
+      "filed_at": "2026-02-04T18:51:22+05:30",
+      "audited": "Un-Audited"
+     },
+     "profit_and_loss": {
+      "RevenueFromOperations": "30921.73",
+      "OtherIncome": "37.24",
+      "FinanceCosts": "78.58",
+      "DepreciationDepletionAndAmortisationExpense": "46.78",
+      "Expenses": "30421.19",
+      "ExceptionalItemsBeforeTax": "0.00",
+      "ProfitBeforeTax": "537.78",
+      "TaxExpense": "124.39",
+      "ProfitLossForPeriod": "413.39"
+     },
+     "balance_sheet": null
+    },
+    {
+     "period_end": "2026-03-31",
+     "filing": {
+      "xbrl_url": "https://nsearchives.nseindia.com/corporate/xbrl/INTEGRATED_FILING_INDAS_1666737_13052026091725_WEB.xml",
+      "filed_at": "2026-05-13T21:17:25+05:30",
+      "audited": "Audited"
+     },
+     "profit_and_loss": {
+      "RevenueFromOperations": "33213.03",
+      "OtherIncome": "55.54",
+      "FinanceCosts": "72.03",
+      "DepreciationDepletionAndAmortisationExpense": "50.37",
+      "Expenses": "32721.04",
+      "ExceptionalItemsBeforeTax": "-152.31",
+      "ProfitBeforeTax": "395.22",
+      "TaxExpense": "107.64",
+      "ProfitLossForPeriod": "287.58"
+     },
+     "balance_sheet": {
+      "Goodwill": "9.82",
+      "OtherIntangibleAssets": "120.40",
+      "Inventories": "8170.70",
+      "CurrentInvestments": "0.00",
+      "TradeReceivablesCurrent": "21569.46",
+      "CashAndCashEquivalents": "1109.76",
+      "CurrentAssets": "32528.54",
+      "Assets": "33838.94",
+      "EquityAttributableToOwnersOfParent": "10160.73",
+      "NonControllingInterest": "263.25",
+      "Equity": "10423.98",
+      "BorrowingsNoncurrent": "0.00",
+      "BorrowingsCurrent": "2637.45",
+      "TradePayablesCurrent": "18039.13",
+      "CurrentLiabilities": "23016.59",
+      "Liabilities": "23414.96"
+     }
+    },
+    {
+     "period_end": "2026-06-30",
+     "filing": {
+      "xbrl_url": "https://nsearchives.nseindia.com/corporate/xbrl/INTEGRATED_FILING_INDAS_1704189_29072026054316_WEB.xml",
+      "filed_at": "2026-07-29T17:43:16+05:30",
+      "audited": "Un-Audited"
+     },
+     "profit_and_loss": {
+      "RevenueFromOperations": "34922.47",
+      "OtherIncome": "43.16",
+      "FinanceCosts": "89.34",
+      "DepreciationDepletionAndAmortisationExpense": "50.70",
+      "Expenses": "34354.76",
+      "ExceptionalItemsBeforeTax": "0.00",
+      "ProfitBeforeTax": "610.87",
+      "TaxExpense": "157.38",
+      "ProfitLossForPeriod": "453.49"
+     },
+     "balance_sheet": null
+    }
+   ]
+  },
+  {
+   "symbol": "ARVINDFASN",
+   "legal_name": "Arvind Fashions Limited",
+   "filed_name": "ARVIND FASHIONS LIMITED",
+   "business_group": "Lalbhai Group",
+   "isin": "INE955V01021",
+   "industry_code": "G47",
+   "basis": "consolidated",
+   "source_url": "https://www.nseindia.com/get-quotes/equity?symbol=ARVINDFASN",
+   "quarters": [
+    {
+     "period_end": "2024-09-30",
+     "filing": {
+      "xbrl_url": "https://nsearchives.nseindia.com/corporate/xbrl/INDAS_113681_1291343_28102024070344.xml",
+      "filed_at": "2024-10-28T19:03:44+05:30",
+      "audited": "Un-Audited"
+     },
+     "profit_and_loss": {
+      "RevenueFromOperations": "1273.18",
+      "OtherIncome": "7.19",
+      "FinanceCosts": "38.61",
+      "DepreciationDepletionAndAmortisationExpense": "64.29",
+      "Expenses": "1213.77",
+      "ExceptionalItemsBeforeTax": "0.00",
+      "ProfitBeforeTax": "66.60",
+      "TaxExpense": "21.45",
+      "ProfitLossForPeriod": "45.03"
+     },
+     "balance_sheet": {
+      "NonControllingInterest": "167.05",
+      "Goodwill": "111.23",
+      "OtherIntangibleAssets": "35.54",
+      "Inventories": "955.70",
+      "CurrentInvestments": "0.00",
+      "TradeReceivablesCurrent": "814.50",
+      "CashAndCashEquivalents": "139.42",
+      "CurrentAssets": "2398.16",
+      "Assets": "3873.93",
+      "EquityAttributableToOwnersOfParent": "1022.07",
+      "Equity": "1189.12",
+      "BorrowingsNoncurrent": "15.96",
+      "BorrowingsCurrent": "430.11",
+      "TradePayablesCurrent": "1188.57",
+      "CurrentLiabilities": "1926.11",
+      "Liabilities": "2684.81"
+     }
+    },
+    {
+     "period_end": "2024-12-31",
+     "filing": {
+      "xbrl_url": "https://nsearchives.nseindia.com/corporate/xbrl/INDAS_118735_1371648_05022025043309.xml",
+      "filed_at": "2025-02-05T16:33:10+05:30",
+      "audited": "Un-Audited"
+     },
+     "profit_and_loss": {
+      "RevenueFromOperations": "1202.76",
+      "OtherIncome": "8.67",
+      "FinanceCosts": "40.25",
+      "DepreciationDepletionAndAmortisationExpense": "65.36",
+      "Expenses": "1142.86",
+      "ExceptionalItemsBeforeTax": "0.00",
+      "ProfitBeforeTax": "68.57",
+      "TaxExpense": "20.92",
+      "ProfitLossForPeriod": "46.52"
+     },
+     "balance_sheet": null
+    },
+    {
+     "period_end": "2025-03-31",
+     "filing": {
+      "xbrl_url": "https://nsearchives.nseindia.com/corporate/xbrl/INTEGRATED_FILING_INDAS_1442941_19052025035904_WEB.xml",
+      "filed_at": "2025-05-19T15:59:05+05:30",
+      "audited": "Un-Audited"
+     },
+     "profit_and_loss": {
+      "RevenueFromOperations": "1189.06",
+      "OtherIncome": "11.33",
+      "FinanceCosts": "38.83",
+      "DepreciationDepletionAndAmortisationExpense": "64.81",
+      "Expenses": "1134.03",
+      "ExceptionalItemsBeforeTax": "0.00",
+      "ProfitBeforeTax": "66.36",
+      "TaxExpense": "138.54",
+      "ProfitLossForPeriod": "-72.49"
+     },
+     "balance_sheet": {
+      "Goodwill": "111.23",
+      "OtherIntangibleAssets": "37.13",
+      "Inventories": "1080.05",
+      "CurrentInvestments": "0.00",
+      "TradeReceivablesCurrent": "729.42",
+      "CashAndCashEquivalents": "150.88",
+      "CurrentAssets": "2429.27",
+      "Assets": "3809.18",
+      "EquityAttributableToOwnersOfParent": "957.12",
+      "NonControllingInterest": "207.38",
+      "Equity": "1164.50",
+      "BorrowingsNoncurrent": "8.33",
+      "BorrowingsCurrent": "381.24",
+      "TradePayablesCurrent": "1171.98",
+      "CurrentLiabilities": "1871.46",
+      "Liabilities": "2644.68"
+     }
+    },
+    {
+     "period_end": "2025-06-30",
+     "filing": {
+      "xbrl_url": "https://nsearchives.nseindia.com/corporate/xbrl/INTEGRATED_FILING_INDAS_1495719_28072025073848_WEB.xml",
+      "filed_at": "2025-07-28T19:38:49+05:30",
+      "audited": "Un-Audited"
+     },
+     "profit_and_loss": {
+      "RevenueFromOperations": "1107.31",
+      "OtherIncome": "14.55",
+      "FinanceCosts": "40.56",
+      "DepreciationDepletionAndAmortisationExpense": "68.51",
+      "Expenses": "1083.02",
+      "ExceptionalItemsBeforeTax": "0.00",
+      "ProfitBeforeTax": "38.84",
+      "TaxExpense": "13.71",
+      "ProfitLossForPeriod": "24.86"
+     },
+     "balance_sheet": null
+    },
+    {
+     "period_end": "2025-09-30",
+     "filing": {
+      "xbrl_url": "https://nsearchives.nseindia.com/corporate/xbrl/INTEGRATED_FILING_INDAS_1563858_03112025052655_WEB.xml",
+      "filed_at": "2025-11-03T17:26:55+05:30",
+      "audited": "Un-Audited"
+     },
+     "profit_and_loss": {
+      "RevenueFromOperations": "1417.51",
+      "OtherIncome": "13.01",
+      "FinanceCosts": "41.60",
+      "DepreciationDepletionAndAmortisationExpense": "71.29",
+      "Expenses": "1343.10",
+      "ExceptionalItemsBeforeTax": "0.00",
+      "ProfitBeforeTax": "87.42",
+      "TaxExpense": "30.81",
+      "ProfitLossForPeriod": "56.35"
+     },
+     "balance_sheet": {
+      "Goodwill": "111.23",
+      "OtherIntangibleAssets": "42.01",
+      "Inventories": "1279.55",
+      "CurrentInvestments": "0.00",
+      "TradeReceivablesCurrent": "936.17",
+      "CashAndCashEquivalents": "31.79",
+      "CurrentAssets": "2769.90",
+      "Assets": "4146.93",
+      "EquityAttributableToOwnersOfParent": "993.23",
+      "NonControllingInterest": "189.83",
+      "Equity": "1183.06",
+      "BorrowingsNoncurrent": "31.66",
+      "BorrowingsCurrent": "408.82",
+      "TradePayablesCurrent": "1467.47",
+      "CurrentLiabilities": "2179.84",
+      "Liabilities": "2963.87"
+     }
+    },
+    {
+     "period_end": "2025-12-31",
+     "filing": {
+      "xbrl_url": "https://nsearchives.nseindia.com/corporate/xbrl/INTEGRATED_FILING_INDAS_1611448_28012026025918_WEB.xml",
+      "filed_at": "2026-01-28T14:59:18+05:30",
+      "audited": "Un-Audited"
+     },
+     "profit_and_loss": {
+      "RevenueFromOperations": "1376.58",
+      "OtherIncome": "5.89",
+      "FinanceCosts": "43.36",
+      "DepreciationDepletionAndAmortisationExpense": "74.82",
+      "Expenses": "1299.93",
+      "ExceptionalItemsBeforeTax": "-29.01",
+      "ProfitBeforeTax": "53.53",
+      "TaxExpense": "17.15",
+      "ProfitLossForPeriod": "36.11"
+     },
+     "balance_sheet": null
+    },
+    {
+     "period_end": "2026-03-31",
+     "filing": {
+      "xbrl_url": "https://nsearchives.nseindia.com/corporate/xbrl/INTEGRATED_FILING_INDAS_1664172_06052026071318_WEB.xml",
+      "filed_at": "2026-05-06T19:13:19+05:30",
+      "audited": "Audited"
+     },
+     "profit_and_loss": {
+      "RevenueFromOperations": "1364.79",
+      "OtherIncome": "7.34",
+      "FinanceCosts": "44.93",
+      "DepreciationDepletionAndAmortisationExpense": "75.06",
+      "Expenses": "1295.70",
+      "ExceptionalItemsBeforeTax": "5.69",
+      "ProfitBeforeTax": "82.12",
+      "TaxExpense": "15.37",
+      "ProfitLossForPeriod": "66.34"
+     },
+     "balance_sheet": {
+      "Goodwill": "111.23",
+      "OtherIntangibleAssets": "41.68",
+      "Inventories": "1389.56",
+      "CurrentInvestments": "0.00",
+      "TradeReceivablesCurrent": "751.58",
+      "CashAndCashEquivalents": "50.81",
+      "CurrentAssets": "2777.78",
+      "Assets": "4215.78",
+      "EquityAttributableToOwnersOfParent": "943.64",
+      "NonControllingInterest": "216.87",
+      "Equity": "1160.51",
+      "BorrowingsNoncurrent": "104.92",
+      "BorrowingsCurrent": "426.42",
+      "TradePayablesCurrent": "1387.07",
+      "CurrentLiabilities": "2192.15",
+      "Liabilities": "3055.27"
+     }
+    },
+    {
+     "period_end": "2026-06-30",
+     "filing": {
+      "xbrl_url": "https://nsearchives.nseindia.com/corporate/xbrl/INTEGRATED_FILING_INDAS_1698547_21072026055127_WEB.xml",
+      "filed_at": "2026-07-21T17:51:28+05:30",
+      "audited": "Un-Audited"
+     },
+     "profit_and_loss": {
+      "RevenueFromOperations": "1278.50",
+      "OtherIncome": "7.01",
+      "FinanceCosts": "47.69",
+      "DepreciationDepletionAndAmortisationExpense": "78.81",
+      "Expenses": "1245.48",
+      "ExceptionalItemsBeforeTax": "0.00",
+      "ProfitBeforeTax": "40.03",
+      "TaxExpense": "12.01",
+      "ProfitLossForPeriod": "27.61"
+     },
+     "balance_sheet": null
+    }
+   ]
+  },
+  {
+   "symbol": "TRENT",
+   "legal_name": "Trent Limited",
+   "filed_name": "Trent Limited",
+   "business_group": "Tata Group",
+   "isin": "INE849A01020",
+   "industry_code": "G47",
+   "basis": "consolidated",
+   "source_url": "https://www.nseindia.com/get-quotes/equity?symbol=TRENT",
+   "quarters": [
+    {
+     "period_end": "2024-09-30",
+     "filing": {
+      "xbrl_url": "https://nsearchives.nseindia.com/corporate/xbrl/INDAS_114461_1300815_08112024104143.xml",
+      "filed_at": "2024-11-08T10:41:43+05:30",
+      "audited": "Un-Audited"
+     },
+     "profit_and_loss": {
+      "RevenueFromOperations": "4156.67",
+      "OtherIncome": "47.98",
+      "FinanceCosts": "33.00",
+      "DepreciationDepletionAndAmortisationExpense": "196.95",
+      "Expenses": "3743.61",
+      "ExceptionalItemsBeforeTax": "0.00",
+      "ProfitBeforeTax": "461.04",
+      "TaxExpense": "131.75",
+      "ProfitLossForPeriod": "335.06"
+     },
+     "balance_sheet": {
+      "NonControllingInterest": "39.84",
+      "Goodwill": "27.19",
+      "OtherIntangibleAssets": "1338.81",
+      "Inventories": "2012.02",
+      "CurrentInvestments": "769.77",
+      "TradeReceivablesCurrent": "62.41",
+      "CashAndCashEquivalents": "217.25",
+      "CurrentAssets": "3670.40",
+      "Assets": "8274.05",
+      "EquityAttributableToOwnersOfParent": "4679.70",
+      "Equity": "4719.54",
+      "BorrowingsNoncurrent": "498.88",
+      "BorrowingsCurrent": "0.00",
+      "TradePayablesCurrent": "980.74",
+      "CurrentLiabilities": "2048.96",
+      "Liabilities": "3554.51"
+     }
+    },
+    {
+     "period_end": "2024-12-31",
+     "filing": {
+      "xbrl_url": "https://nsearchives.nseindia.com/corporate/xbrl/INDAS_118848_1372740_06022025034057.xml",
+      "filed_at": "2025-02-06T15:40:57+05:30",
+      "audited": "Un-Audited"
+     },
+     "profit_and_loss": {
+      "RevenueFromOperations": "4656.56",
+      "OtherIncome": "59.08",
+      "FinanceCosts": "36.52",
+      "DepreciationDepletionAndAmortisationExpense": "244.93",
+      "Expenses": "4096.08",
+      "ExceptionalItemsBeforeTax": "0.00",
+      "ProfitBeforeTax": "619.56",
+      "TaxExpense": "149.25",
+      "ProfitLossForPeriod": "496.54"
+     },
+     "balance_sheet": null
+    },
+    {
+     "period_end": "2025-03-31",
+     "filing": {
+      "xbrl_url": "https://nsearchives.nseindia.com/corporate/xbrl/INTEGRATED_FILING_INDAS_1427747_29042025044145_WEB.xml",
+      "filed_at": "2025-04-29T16:41:45+05:30",
+      "audited": "Un-Audited"
+     },
+     "profit_and_loss": {
+      "RevenueFromOperations": "4216.94",
+      "OtherIncome": "74.34",
+      "FinanceCosts": "37.52",
+      "DepreciationDepletionAndAmortisationExpense": "271.98",
+      "Expenses": "3874.43",
+      "ExceptionalItemsBeforeTax": "0.00",
+      "ProfitBeforeTax": "416.85",
+      "TaxExpense": "104.15",
+      "ProfitLossForPeriod": "311.60"
+     },
+     "balance_sheet": {
+      "Goodwill": "27.19",
+      "OtherIntangibleAssets": "1772.84",
+      "Inventories": "2045.05",
+      "CurrentInvestments": "634.69",
+      "TradeReceivablesCurrent": "62.95",
+      "CashAndCashEquivalents": "338.47",
+      "CurrentAssets": "3664.31",
+      "Assets": "9419.64",
+      "EquityAttributableToOwnersOfParent": "5461.74",
+      "NonControllingInterest": "121.62",
+      "Equity": "5583.36",
+      "BorrowingsNoncurrent": "499.20",
+      "BorrowingsCurrent": "0.00",
+      "TradePayablesCurrent": "928.19",
+      "CurrentLiabilities": "2010.69",
+      "Liabilities": "3836.28"
+     }
+    },
+    {
+     "period_end": "2025-06-30",
+     "filing": {
+      "xbrl_url": "https://nsearchives.nseindia.com/corporate/xbrl/INTEGRATED_FILING_INDAS_1504297_06082025062222_WEB.xml",
+      "filed_at": "2025-08-06T18:22:22+05:30",
+      "audited": "Un-Audited"
+     },
+     "profit_and_loss": {
+      "RevenueFromOperations": "4883.48",
+      "OtherIncome": "40.59",
+      "FinanceCosts": "40.04",
+      "DepreciationDepletionAndAmortisationExpense": "292.93",
+      "Expenses": "4368.59",
+      "ExceptionalItemsBeforeTax": "0.00",
+      "ProfitBeforeTax": "555.48",
+      "TaxExpense": "139.99",
+      "ProfitLossForPeriod": "424.70"
+     },
+     "balance_sheet": null
+    },
+    {
+     "period_end": "2025-09-30",
+     "filing": {
+      "xbrl_url": "https://nsearchives.nseindia.com/corporate/xbrl/INTEGRATED_FILING_INDAS_1568155_07112025053948_WEB.xml",
+      "filed_at": "2025-11-07T17:39:49+05:30",
+      "audited": "Un-Audited"
+     },
+     "profit_and_loss": {
+      "RevenueFromOperations": "4817.68",
+      "OtherIncome": "27.55",
+      "FinanceCosts": "41.62",
+      "DepreciationDepletionAndAmortisationExpense": "324.93",
+      "Expenses": "4367.15",
+      "ExceptionalItemsBeforeTax": "0.00",
+      "ProfitBeforeTax": "478.08",
+      "TaxExpense": "103.56",
+      "ProfitLossForPeriod": "373.42"
+     },
+     "balance_sheet": {
+      "Goodwill": "27.19",
+      "OtherIntangibleAssets": "1868.55",
+      "Inventories": "2242.46",
+      "CurrentInvestments": "683.63",
+      "TradeReceivablesCurrent": "58.60",
+      "CashAndCashEquivalents": "193.34",
+      "CurrentAssets": "3886.01",
+      "Assets": "10735.42",
+      "EquityAttributableToOwnersOfParent": "6101.56",
+      "NonControllingInterest": "113.17",
+      "Equity": "6214.73",
+      "BorrowingsNoncurrent": "0.00",
+      "BorrowingsCurrent": "499.54",
+      "TradePayablesCurrent": "1486.21",
+      "CurrentLiabilities": "3138.15",
+      "Liabilities": "4520.69"
+     }
+    },
+    {
+     "period_end": "2025-12-31",
+     "filing": {
+      "xbrl_url": "https://nsearchives.nseindia.com/corporate/xbrl/INTEGRATED_FILING_INDAS_1618232_04022026054548_WEB.xml",
+      "filed_at": "2026-02-04T17:45:49+05:30",
+      "audited": "Un-Audited"
+     },
+     "profit_and_loss": {
+      "RevenueFromOperations": "5345.06",
+      "OtherIncome": "18.79",
+      "FinanceCosts": "42.94",
+      "DepreciationDepletionAndAmortisationExpense": "366.74",
+      "Expenses": "4673.67",
+      "ExceptionalItemsBeforeTax": "-26.11",
+      "ProfitBeforeTax": "664.07",
+      "TaxExpense": "165.83",
+      "ProfitLossForPeriod": "510.11"
+     },
+     "balance_sheet": null
+    },
+    {
+     "period_end": "2026-03-31",
+     "filing": {
+      "xbrl_url": "https://nsearchives.nseindia.com/corporate/xbrl/INTEGRATED_FILING_INDAS_1657412_22042026080159_WEB.xml",
+      "filed_at": "2026-04-22T20:01:59+05:30",
+      "audited": "Un-Audited"
+     },
+     "profit_and_loss": {
+      "RevenueFromOperations": "5027.99",
+      "OtherIncome": "27.91",
+      "FinanceCosts": "43.75",
+      "DepreciationDepletionAndAmortisationExpense": "376.59",
+      "Expenses": "4520.95",
+      "ExceptionalItemsBeforeTax": "0.00",
+      "ProfitBeforeTax": "534.95",
+      "TaxExpense": "105.77",
+      "ProfitLossForPeriod": "413.10"
+     },
+     "balance_sheet": {
+      "Goodwill": "27.19",
+      "OtherIntangibleAssets": "2095.70",
+      "Inventories": "2289.01",
+      "CurrentInvestments": "647.53",
+      "TradeReceivablesCurrent": "51.14",
+      "CashAndCashEquivalents": "281.36",
+      "CurrentAssets": "4058.30",
+      "Assets": "11728.58",
+      "EquityAttributableToOwnersOfParent": "6984.68",
+      "NonControllingInterest": "123.28",
+      "Equity": "7107.96",
+      "BorrowingsNoncurrent": "0.00",
+      "BorrowingsCurrent": "499.89",
+      "TradePayablesCurrent": "1210.66",
+      "CurrentLiabilities": "3210.99",
+      "Liabilities": "4620.62"
+     }
+    },
+    {
+     "period_end": "2026-06-30",
+     "filing": {
+      "xbrl_url": "https://nsearchives.nseindia.com/corporate/xbrl/INTEGRATED_FILING_INDAS_1709071_06082026050711_WEB.xml",
+      "filed_at": "2026-08-06T17:07:12+05:30",
+      "audited": "Un-Audited"
+     },
+     "profit_and_loss": {
+      "RevenueFromOperations": "5754.71",
+      "OtherIncome": "29.83",
+      "FinanceCosts": "46.99",
+      "DepreciationDepletionAndAmortisationExpense": "410.16",
+      "Expenses": "5082.96",
+      "ExceptionalItemsBeforeTax": "0.00",
+      "ProfitBeforeTax": "701.58",
+      "TaxExpense": "173.77",
+      "ProfitLossForPeriod": "518.07"
+     },
+     "balance_sheet": null
+    }
+   ]
+  },
+  {
+   "symbol": "TCI",
+   "legal_name": "Transport Corporation of India Limited",
+   "filed_name": "TRANSPORT CORPORATION OF INDIA LIMITED",
+   "business_group": "TCI Group",
+   "isin": "INE688A01022",
+   "industry_code": "H49",
+   "basis": "consolidated",
+   "source_url": "https://www.nseindia.com/get-quotes/equity?symbol=TCI",
+   "quarters": [
+    {
+     "period_end": "2024-09-30",
+     "filing": {
+      "xbrl_url": "https://nsearchives.nseindia.com/corporate/xbrl/INDAS_113268_1287806_25102024101923.xml",
+      "filed_at": "2024-10-25T10:19:24+05:30",
+      "audited": "Un-Audited"
+     },
+     "profit_and_loss": {
+      "RevenueFromOperations": "1120.80",
+      "OtherIncome": "10.60",
+      "FinanceCosts": "4.60",
+      "DepreciationDepletionAndAmortisationExpense": "29.10",
+      "Expenses": "1037.40",
+      "ExceptionalItemsBeforeTax": "0.00",
+      "ProfitBeforeTax": "94.00",
+      "TaxExpense": "10.90",
+      "ProfitLossForPeriod": "107.30"
+     },
+     "balance_sheet": {
+      "NonControllingInterest": "34.20",
+      "Goodwill": "0.00",
+      "OtherIntangibleAssets": "108.70",
+      "Inventories": "11.10",
+      "CurrentInvestments": "273.40",
+      "TradeReceivablesCurrent": "669.80",
+      "CashAndCashEquivalents": "43.10",
+      "CurrentAssets": "1302.30",
+      "Assets": "2614.50",
+      "EquityAttributableToOwnersOfParent": "1997.00",
+      "Equity": "2031.20",
+      "BorrowingsNoncurrent": "107.70",
+      "BorrowingsCurrent": "61.80",
+      "TradePayablesCurrent": "87.60",
+      "CurrentLiabilities": "392.10",
+      "Liabilities": "583.30"
+     }
+    },
+    {
+     "period_end": "2024-12-31",
+     "filing": {
+      "xbrl_url": "https://nsearchives.nseindia.com/corporate/xbrl/INDAS_117737_1361374_25012025050247.xml",
+      "filed_at": "2025-01-25T17:02:47+05:30",
+      "audited": "Un-Audited"
+     },
+     "profit_and_loss": {
+      "RevenueFromOperations": "1147.10",
+      "OtherIncome": "6.80",
+      "FinanceCosts": "5.90",
+      "DepreciationDepletionAndAmortisationExpense": "30.50",
+      "Expenses": "1065.00",
+      "ExceptionalItemsBeforeTax": "0.00",
+      "ProfitBeforeTax": "88.90",
+      "TaxExpense": "9.30",
+      "ProfitLossForPeriod": "102.10"
+     },
+     "balance_sheet": null
+    },
+    {
+     "period_end": "2025-03-31",
+     "filing": {
+      "xbrl_url": "https://nsearchives.nseindia.com/corporate/xbrl/INTEGRATED_FILING_INDAS_1439074_14052025084609_WEB.xml",
+      "filed_at": "2025-05-14T20:46:09+05:30",
+      "audited": "Audited"
+     },
+     "profit_and_loss": {
+      "RevenueFromOperations": "1178.80",
+      "OtherIncome": "18.40",
+      "FinanceCosts": "5.50",
+      "DepreciationDepletionAndAmortisationExpense": "29.20",
+      "Expenses": "1091.80",
+      "ExceptionalItemsBeforeTax": "0.00",
+      "ProfitBeforeTax": "105.40",
+      "TaxExpense": "12.10",
+      "ProfitLossForPeriod": "115.10"
+     },
+     "balance_sheet": {
+      "Goodwill": "0.00",
+      "OtherIntangibleAssets": "141.00",
+      "Inventories": "6.60",
+      "CurrentInvestments": "171.10",
+      "TradeReceivablesCurrent": "721.90",
+      "CashAndCashEquivalents": "51.00",
+      "CurrentAssets": "1258.40",
+      "Assets": "2779.60",
+      "EquityAttributableToOwnersOfParent": "2154.70",
+      "NonControllingInterest": "36.30",
+      "Equity": "2191.00",
+      "BorrowingsNoncurrent": "102.10",
+      "BorrowingsCurrent": "53.10",
+      "TradePayablesCurrent": "106.50",
+      "CurrentLiabilities": "364.80",
+      "Liabilities": "588.60"
+     }
+    },
+    {
+     "period_end": "2025-06-30",
+     "filing": {
+      "xbrl_url": "https://nsearchives.nseindia.com/corporate/xbrl/INTEGRATED_FILING_INDAS_1494966_28072025024206_WEB.xml",
+      "filed_at": "2025-07-28T14:42:07+05:30",
+      "audited": "Un-Audited"
+     },
+     "profit_and_loss": {
+      "RevenueFromOperations": "1139.30",
+      "OtherIncome": "11.30",
+      "FinanceCosts": "5.40",
+      "DepreciationDepletionAndAmortisationExpense": "28.80",
+      "Expenses": "1052.50",
+      "ExceptionalItemsBeforeTax": "0.00",
+      "ProfitBeforeTax": "98.10",
+      "TaxExpense": "10.60",
+      "ProfitLossForPeriod": "107.20"
+     },
+     "balance_sheet": null
+    },
+    {
+     "period_end": "2025-09-30",
+     "filing": {
+      "xbrl_url": "https://nsearchives.nseindia.com/corporate/xbrl/INTEGRATED_FILING_INDAS_1560158_29102025053620_WEB.xml",
+      "filed_at": "2025-10-29T17:36:21+05:30",
+      "audited": "Un-Audited"
+     },
+     "profit_and_loss": {
+      "RevenueFromOperations": "1204.90",
+      "OtherIncome": "12.50",
+      "FinanceCosts": "5.90",
+      "DepreciationDepletionAndAmortisationExpense": "30.50",
+      "Expenses": "1114.60",
+      "ExceptionalItemsBeforeTax": "0.00",
+      "ProfitBeforeTax": "102.80",
+      "TaxExpense": "12.50",
+      "ProfitLossForPeriod": "113.50"
+     },
+     "balance_sheet": {
+      "Goodwill": "0.00",
+      "OtherIntangibleAssets": "145.60",
+      "Inventories": "4.60",
+      "CurrentInvestments": "223.60",
+      "TradeReceivablesCurrent": "711.00",
+      "CashAndCashEquivalents": "64.40",
+      "CurrentAssets": "1373.40",
+      "Assets": "3078.00",
+      "EquityAttributableToOwnersOfParent": "2390.60",
+      "NonControllingInterest": "37.30",
+      "Equity": "2427.90",
+      "BorrowingsNoncurrent": "108.60",
+      "BorrowingsCurrent": "63.20",
+      "TradePayablesCurrent": "110.40",
+      "CurrentLiabilities": "423.70",
+      "Liabilities": "650.10"
+     }
+    },
+    {
+     "period_end": "2025-12-31",
+     "filing": {
+      "xbrl_url": "https://nsearchives.nseindia.com/corporate/xbrl/INTEGRATED_FILING_INDAS_1618596_04022026083321_WEB.xml",
+      "filed_at": "2026-02-04T20:33:21+05:30",
+      "audited": "Un-Audited"
+     },
+     "profit_and_loss": {
+      "RevenueFromOperations": "1248.80",
+      "OtherIncome": "12.10",
+      "FinanceCosts": "5.70",
+      "DepreciationDepletionAndAmortisationExpense": "32.20",
+      "Expenses": "1159.70",
+      "ExceptionalItemsBeforeTax": "0.00",
+      "ProfitBeforeTax": "101.20",
+      "TaxExpense": "7.90",
+      "ProfitLossForPeriod": "115.80"
+     },
+     "balance_sheet": null
+    },
+    {
+     "period_end": "2026-03-31",
+     "filing": {
+      "xbrl_url": "https://nsearchives.nseindia.com/corporate/xbrl/INTEGRATED_FILING_INDAS_1673425_26052026072906_WEB.xml",
+      "filed_at": "2026-05-26T19:29:07+05:30",
+      "audited": "Audited"
+     },
+     "profit_and_loss": {
+      "RevenueFromOperations": "1323.80",
+      "OtherIncome": "12.30",
+      "FinanceCosts": "5.80",
+      "DepreciationDepletionAndAmortisationExpense": "35.80",
+      "Expenses": "1223.00",
+      "ExceptionalItemsBeforeTax": "0.00",
+      "ProfitBeforeTax": "113.10",
+      "TaxExpense": "7.90",
+      "ProfitLossForPeriod": "124.50"
+     },
+     "balance_sheet": {
+      "Goodwill": "0.00",
+      "OtherIntangibleAssets": "145.50",
+      "Inventories": "14.80",
+      "CurrentInvestments": "201.50",
+      "TradeReceivablesCurrent": "816.40",
+      "CashAndCashEquivalents": "93.20",
+      "CurrentAssets": "1600.30",
+      "Assets": "3481.80",
+      "EquityAttributableToOwnersOfParent": "2565.90",
+      "NonControllingInterest": "39.30",
+      "Equity": "2605.20",
+      "BorrowingsNoncurrent": "142.80",
+      "BorrowingsCurrent": "75.90",
+      "TradePayablesCurrent": "266.90",
+      "CurrentLiabilities": "597.60",
+      "Liabilities": "876.60"
+     }
+    },
+    {
+     "period_end": "2026-06-30",
+     "filing": {
+      "xbrl_url": "https://nsearchives.nseindia.com/corporate/xbrl/INTEGRATED_FILING_INDAS_1705233_30072026045432_WEB.xml",
+      "filed_at": "2026-07-30T16:54:32+05:30",
+      "audited": "Un-Audited"
+     },
+     "profit_and_loss": {
+      "RevenueFromOperations": "1248.50",
+      "OtherIncome": "6.30",
+      "FinanceCosts": "7.00",
+      "DepreciationDepletionAndAmortisationExpense": "36.10",
+      "Expenses": "1156.40",
+      "ExceptionalItemsBeforeTax": "0.00",
+      "ProfitBeforeTax": "98.40",
+      "TaxExpense": "10.20",
+      "ProfitLossForPeriod": "106.60"
+     },
+     "balance_sheet": null
+    }
+   ]
+  },
+  {
+   "symbol": "SEAMECLTD",
+   "legal_name": "SEAMEC Limited",
+   "filed_name": "SEAMEC LIMITED",
+   "business_group": null,
+   "isin": "INE497B01018",
+   "industry_code": "H50",
+   "basis": "consolidated",
+   "source_url": "https://www.nseindia.com/get-quotes/equity?symbol=SEAMECLTD",
+   "quarters": [
+    {
+     "period_end": "2024-09-30",
+     "filing": {
+      "xbrl_url": "https://nsearchives.nseindia.com/corporate/xbrl/INDAS_115216_1306309_12112024053519.xml",
+      "filed_at": "2024-11-12T17:35:20+05:30",
+      "audited": "Un-Audited"
+     },
+     "profit_and_loss": {
+      "RevenueFromOperations": "87.87",
+      "OtherIncome": "22.42",
+      "FinanceCosts": "4.03",
+      "DepreciationDepletionAndAmortisationExpense": "31.61",
+      "Expenses": "108.03",
+      "ExceptionalItemsBeforeTax": "0.02",
+      "ProfitBeforeTax": "2.28",
+      "TaxExpense": "2.12",
+      "ProfitLossForPeriod": "0.16"
+     },
+     "balance_sheet": {
+      "NonControllingInterest": "1.15",
+      "Goodwill": "15.61",
+      "OtherIntangibleAssets": "0.12",
+      "Inventories": "43.51",
+      "CurrentInvestments": "0.00",
+      "TradeReceivablesCurrent": "109.19",
+      "CashAndCashEquivalents": "32.83",
+      "CurrentAssets": "321.81",
+      "Assets": "1316.91",
+      "EquityAttributableToOwnersOfParent": "964.70",
+      "Equity": "965.85",
+      "BorrowingsNoncurrent": "151.42",
+      "BorrowingsCurrent": "77.22",
+      "TradePayablesCurrent": "42.47",
+      "CurrentLiabilities": "166.79",
+      "Liabilities": "351.06"
+     }
+    },
+    {
+     "period_end": "2024-12-31",
+     "filing": {
+      "xbrl_url": "https://nsearchives.nseindia.com/corporate/xbrl/INDAS_119638_1378310_11022025052928.xml",
+      "filed_at": "2025-02-11T17:29:28+05:30",
+      "audited": "Un-Audited"
+     },
+     "profit_and_loss": {
+      "RevenueFromOperations": "149.34",
+      "OtherIncome": "-9.96",
+      "FinanceCosts": "3.42",
+      "DepreciationDepletionAndAmortisationExpense": "33.51",
+      "Expenses": "142.00",
+      "ExceptionalItemsBeforeTax": "0.03",
+      "ProfitBeforeTax": "-2.59",
+      "TaxExpense": "0.64",
+      "ProfitLossForPeriod": "-3.23"
+     },
+     "balance_sheet": null
+    },
+    {
+     "period_end": "2025-03-31",
+     "filing": {
+      "xbrl_url": "https://nsearchives.nseindia.com/corporate/xbrl/INTEGRATED_FILING_INDAS_1453562_27052025081801_WEB.xml",
+      "filed_at": "2025-05-27T20:18:02+05:30",
+      "audited": "Audited"
+     },
+     "profit_and_loss": {
+      "RevenueFromOperations": "199.62",
+      "OtherIncome": "10.09",
+      "FinanceCosts": "4.12",
+      "DepreciationDepletionAndAmortisationExpense": "33.45",
+      "Expenses": "156.04",
+      "ExceptionalItemsBeforeTax": "0.07",
+      "ProfitBeforeTax": "53.74",
+      "TaxExpense": "12.72",
+      "ProfitLossForPeriod": "41.02"
+     },
+     "balance_sheet": {
+      "Goodwill": "15.61",
+      "OtherIntangibleAssets": "0.21",
+      "Inventories": "43.14",
+      "CurrentInvestments": "0.00",
+      "TradeReceivablesCurrent": "159.26",
+      "CashAndCashEquivalents": "35.61",
+      "CurrentAssets": "367.97",
+      "Assets": "1379.18",
+      "EquityAttributableToOwnersOfParent": "1007.87",
+      "NonControllingInterest": "-1.12",
+      "Equity": "1006.75",
+      "BorrowingsNoncurrent": "120.59",
+      "BorrowingsCurrent": "91.16",
+      "TradePayablesCurrent": "53.65",
+      "CurrentLiabilities": "218.58",
+      "Liabilities": "372.43"
+     }
+    },
+    {
+     "period_end": "2025-06-30",
+     "filing": {
+      "xbrl_url": "https://nsearchives.nseindia.com/corporate/xbrl/INTEGRATED_FILING_INDAS_1512129_13082025080055_WEB.xml",
+      "filed_at": "2025-08-13T20:00:56+05:30",
+      "audited": "Un-Audited"
+     },
+     "profit_and_loss": {
+      "RevenueFromOperations": "210.92",
+      "OtherIncome": "19.82",
+      "FinanceCosts": "3.52",
+      "DepreciationDepletionAndAmortisationExpense": "34.13",
+      "Expenses": "151.69",
+      "ExceptionalItemsBeforeTax": "0.00",
+      "ProfitBeforeTax": "79.05",
+      "TaxExpense": "3.26",
+      "ProfitLossForPeriod": "75.79"
+     },
+     "balance_sheet": null
+    },
+    {
+     "period_end": "2025-09-30",
+     "filing": {
+      "xbrl_url": "https://nsearchives.nseindia.com/corporate/xbrl/INTEGRATED_FILING_INDAS_1569779_10112025040345_WEB.xml",
+      "filed_at": "2025-11-10T16:03:45+05:30",
+      "audited": "Un-Audited"
+     },
+     "profit_and_loss": {
+      "RevenueFromOperations": "97.42",
+      "OtherIncome": "10.06",
+      "FinanceCosts": "4.96",
+      "DepreciationDepletionAndAmortisationExpense": "38.06",
+      "Expenses": "132.60",
+      "ExceptionalItemsBeforeTax": "0.00",
+      "ProfitBeforeTax": "-25.12",
+      "TaxExpense": "0.61",
+      "ProfitLossForPeriod": "-25.73"
+     },
+     "balance_sheet": {
+      "Goodwill": "15.61",
+      "OtherIntangibleAssets": "0.16",
+      "Inventories": "52.55",
+      "CurrentInvestments": "0.00",
+      "TradeReceivablesCurrent": "133.26",
+      "CashAndCashEquivalents": "41.51",
+      "CurrentAssets": "365.14",
+      "Assets": "1623.54",
+      "EquityAttributableToOwnersOfParent": "1077.13",
+      "Equity": "1077.13",
+      "BorrowingsNoncurrent": "236.59",
+      "BorrowingsCurrent": "150.07",
+      "TradePayablesCurrent": "54.22",
+      "CurrentLiabilities": "247.88",
+      "Liabilities": "546.41"
+     }
+    },
+    {
+     "period_end": "2025-12-31",
+     "filing": {
+      "xbrl_url": "https://nsearchives.nseindia.com/corporate/xbrl/INTEGRATED_FILING_INDAS_1614691_30012026050819_WEB.xml",
+      "filed_at": "2026-01-30T17:08:20+05:30",
+      "audited": "Un-Audited"
+     },
+     "profit_and_loss": {
+      "RevenueFromOperations": "317.05",
+      "OtherIncome": "14.39",
+      "FinanceCosts": "6.48",
+      "DepreciationDepletionAndAmortisationExpense": "35.82",
+      "Expenses": "223.54",
+      "ExceptionalItemsBeforeTax": "0.00",
+      "ProfitBeforeTax": "107.90",
+      "TaxExpense": "8.14",
+      "ProfitLossForPeriod": "99.76"
+     },
+     "balance_sheet": null
+    },
+    {
+     "period_end": "2026-03-31",
+     "filing": {
+      "xbrl_url": "https://nsearchives.nseindia.com/corporate/xbrl/INTEGRATED_FILING_INDAS_1668874_18052026065814_WEB.xml",
+      "filed_at": "2026-05-18T18:58:15+05:30",
+      "audited": "Audited"
+     },
+     "profit_and_loss": {
+      "RevenueFromOperations": "327.07",
+      "OtherIncome": "3.28",
+      "FinanceCosts": "5.83",
+      "DepreciationDepletionAndAmortisationExpense": "49.16",
+      "Expenses": "222.92",
+      "ExceptionalItemsBeforeTax": "0.00",
+      "ProfitBeforeTax": "107.43",
+      "TaxExpense": "3.73",
+      "ProfitLossForPeriod": "103.70"
+     },
+     "balance_sheet": {
+      "Goodwill": "15.61",
+      "OtherIntangibleAssets": "0.20",
+      "Inventories": "55.82",
+      "CurrentInvestments": "0.00",
+      "TradeReceivablesCurrent": "312.21",
+      "CashAndCashEquivalents": "77.16",
+      "CurrentAssets": "584.25",
+      "Assets": "1860.76",
+      "EquityAttributableToOwnersOfParent": "1301.52",
+      "NonControllingInterest": "2.25",
+      "Equity": "1303.77",
+      "BorrowingsNoncurrent": "197.66",
+      "BorrowingsCurrent": "130.83",
+      "TradePayablesCurrent": "58.17",
+      "CurrentLiabilities": "308.72",
+      "Liabilities": "556.99"
+     }
+    },
+    {
+     "period_end": "2026-06-30",
+     "filing": {
+      "xbrl_url": "https://nsearchives.nseindia.com/corporate/xbrl/INTEGRATED_FILING_INDAS_1714033_13082026075718_WEB.xml",
+      "filed_at": "2026-08-13T19:57:19+05:30",
+      "audited": "Un-Audited"
+     },
+     "profit_and_loss": {
+      "RevenueFromOperations": "296.92",
+      "OtherIncome": "19.97",
+      "FinanceCosts": "4.52",
+      "DepreciationDepletionAndAmortisationExpense": "49.89",
+      "Expenses": "227.40",
+      "ExceptionalItemsBeforeTax": "0.00",
+      "ProfitBeforeTax": "89.49",
+      "TaxExpense": "8.15",
+      "ProfitLossForPeriod": "81.34"
+     },
+     "balance_sheet": null
+    }
+   ]
+  },
+  {
+   "symbol": "INDHOTEL",
+   "legal_name": "The Indian Hotels Company Limited",
+   "filed_name": "The Indian Hotels Company Limited",
+   "business_group": "Tata Group",
+   "isin": "INE053A01029",
+   "industry_code": "I55",
+   "basis": "consolidated",
+   "source_url": "https://www.nseindia.com/get-quotes/equity?symbol=INDHOTEL",
+   "quarters": [
+    {
+     "period_end": "2024-09-30",
+     "filing": {
+      "xbrl_url": "https://nsearchives.nseindia.com/corporate/xbrl/INDAS_114381_1300100_07112024050702.xml",
+      "filed_at": "2024-11-07T17:07:02+05:30",
+      "audited": "Un-Audited"
+     },
+     "profit_and_loss": {
+      "RevenueFromOperations": "1826.12",
+      "OtherIncome": "64.10",
+      "FinanceCosts": "52.23",
+      "DepreciationDepletionAndAmortisationExpense": "124.93",
+      "Expenses": "1502.01",
+      "ExceptionalItemsBeforeTax": "307.36",
+      "ProfitBeforeTax": "695.57",
+      "TaxExpense": "122.36",
+      "ProfitLossForPeriod": "582.71"
+     },
+     "balance_sheet": {
+      "NonControllingInterest": "1165.45",
+      "Goodwill": "674.60",
+      "OtherIntangibleAssets": "567.18",
+      "Inventories": "130.94",
+      "CurrentInvestments": "734.77",
+      "TradeReceivablesCurrent": "606.75",
+      "CashAndCashEquivalents": "352.66",
+      "CurrentAssets": "3516.30",
+      "Assets": "16491.22",
+      "EquityAttributableToOwnersOfParent": "10156.38",
+      "Equity": "11321.83",
+      "BorrowingsNoncurrent": "223.91",
+      "BorrowingsCurrent": "58.37",
+      "TradePayablesCurrent": "580.37",
+      "CurrentLiabilities": "2027.17",
+      "Liabilities": "5169.39"
+     }
+    },
+    {
+     "period_end": "2024-12-31",
+     "filing": {
+      "xbrl_url": "https://nsearchives.nseindia.com/corporate/xbrl/INDAS_117322_1349463_17012025044802.xml",
+      "filed_at": "2025-01-17T16:48:03+05:30",
+      "audited": "Un-Audited"
+     },
+     "profit_and_loss": {
+      "RevenueFromOperations": "2533.05",
+      "OtherIncome": "58.68",
+      "FinanceCosts": "52.39",
+      "DepreciationDepletionAndAmortisationExpense": "133.94",
+      "Expenses": "1757.70",
+      "ExceptionalItemsBeforeTax": "0.00",
+      "ProfitBeforeTax": "834.03",
+      "TaxExpense": "220.21",
+      "ProfitLossForPeriod": "632.53"
+     },
+     "balance_sheet": null
+    },
+    {
+     "period_end": "2025-03-31",
+     "filing": {
+      "xbrl_url": "https://nsearchives.nseindia.com/corporate/xbrl/INTEGRATED_FILING_INDAS_1431860_05052025080519_WEB.xml",
+      "filed_at": "2025-05-05T20:05:20+05:30",
+      "audited": "Audited"
+     },
+     "profit_and_loss": {
+      "RevenueFromOperations": "2425.14",
+      "OtherIncome": "61.64",
+      "FinanceCosts": "53.90",
+      "DepreciationDepletionAndAmortisationExpense": "142.00",
+      "Expenses": "1764.26",
+      "ExceptionalItemsBeforeTax": "-2.56",
+      "ProfitBeforeTax": "719.96",
+      "TaxExpense": "179.95",
+      "ProfitLossForPeriod": "562.66"
+     },
+     "balance_sheet": {
+      "Goodwill": "710.75",
+      "OtherIntangibleAssets": "574.97",
+      "Inventories": "135.47",
+      "CurrentInvestments": "898.87",
+      "TradeReceivablesCurrent": "650.88",
+      "CashAndCashEquivalents": "256.91",
+      "CurrentAssets": "4169.94",
+      "Assets": "17703.93",
+      "EquityAttributableToOwnersOfParent": "11160.71",
+      "NonControllingInterest": "1254.90",
+      "Equity": "12415.61",
+      "BorrowingsNoncurrent": "203.15",
+      "BorrowingsCurrent": "21.55",
+      "TradePayablesCurrent": "578.39",
+      "CurrentLiabilities": "1996.15",
+      "Liabilities": "5288.32"
+     }
+    },
+    {
+     "period_end": "2025-06-30",
+     "filing": {
+      "xbrl_url": "https://nsearchives.nseindia.com/corporate/xbrl/INTEGRATED_FILING_INDAS_1485565_17072025051734_WEB.xml",
+      "filed_at": "2025-07-17T17:17:36+05:30",
+      "audited": "Un-Audited"
+     },
+     "profit_and_loss": {
+      "RevenueFromOperations": "2041.08",
+      "OtherIncome": "61.09",
+      "FinanceCosts": "54.55",
+      "DepreciationDepletionAndAmortisationExpense": "142.75",
+      "Expenses": "1662.35",
+      "ExceptionalItemsBeforeTax": "0.00",
+      "ProfitBeforeTax": "439.82",
+      "TaxExpense": "120.40",
+      "ProfitLossForPeriod": "329.32"
+     },
+     "balance_sheet": null
+    },
+    {
+     "period_end": "2025-09-30",
+     "filing": {
+      "xbrl_url": "https://nsearchives.nseindia.com/corporate/xbrl/INTEGRATED_FILING_INDAS_1564954_04112025060617_WEB.xml",
+      "filed_at": "2025-11-04T18:06:18+05:30",
+      "audited": "Un-Audited"
+     },
+     "profit_and_loss": {
+      "RevenueFromOperations": "2040.89",
+      "OtherIncome": "83.36",
+      "FinanceCosts": "56.05",
+      "DepreciationDepletionAndAmortisationExpense": "144.72",
+      "Expenses": "1671.54",
+      "ExceptionalItemsBeforeTax": "0.00",
+      "ProfitBeforeTax": "452.71",
+      "TaxExpense": "136.53",
+      "ProfitLossForPeriod": "318.26"
+     },
+     "balance_sheet": {
+      "Goodwill": "733.52",
+      "OtherIntangibleAssets": "616.42",
+      "Inventories": "136.04",
+      "CurrentInvestments": "1951.28",
+      "TradeReceivablesCurrent": "833.02",
+      "CashAndCashEquivalents": "234.98",
+      "CurrentAssets": "4282.71",
+      "Assets": "18418.64",
+      "EquityAttributableToOwnersOfParent": "11569.43",
+      "NonControllingInterest": "1328.04",
+      "Equity": "12897.47",
+      "BorrowingsNoncurrent": "196.27",
+      "BorrowingsCurrent": "82.28",
+      "TradePayablesCurrent": "666.16",
+      "CurrentLiabilities": "2130.63",
+      "Liabilities": "5521.17"
+     }
+    },
+    {
+     "period_end": "2025-12-31",
+     "filing": {
+      "xbrl_url": "https://nsearchives.nseindia.com/corporate/xbrl/INTEGRATED_FILING_INDAS_1624312_12022026055452_WEB.xml",
+      "filed_at": "2026-02-12T17:54:52+05:30",
+      "audited": "Un-Audited"
+     },
+     "profit_and_loss": {
+      "RevenueFromOperations": "2841.96",
+      "OtherIncome": "58.27",
+      "FinanceCosts": "55.82",
+      "DepreciationDepletionAndAmortisationExpense": "150.32",
+      "Expenses": "1972.28",
+      "ExceptionalItemsBeforeTax": "275.51",
+      "ProfitBeforeTax": "1203.46",
+      "TaxExpense": "269.14",
+      "ProfitLossForPeriod": "954.24"
+     },
+     "balance_sheet": null
+    },
+    {
+     "period_end": "2026-03-31",
+     "filing": {
+      "xbrl_url": "https://nsearchives.nseindia.com/corporate/xbrl/INTEGRATED_FILING_INDAS_1665706_11052026080331_WEB.xml",
+      "filed_at": "2026-05-11T20:03:32+05:30",
+      "audited": "Audited"
+     },
+     "profit_and_loss": {
+      "RevenueFromOperations": "2765.29",
+      "OtherIncome": "79.49",
+      "FinanceCosts": "54.93",
+      "DepreciationDepletionAndAmortisationExpense": "167.37",
+      "Expenses": "2014.91",
+      "ExceptionalItemsBeforeTax": "0.00",
+      "ProfitBeforeTax": "829.87",
+      "TaxExpense": "204.65",
+      "ProfitLossForPeriod": "645.43"
+     },
+     "balance_sheet": {
+      "Goodwill": "1121.95",
+      "OtherIntangibleAssets": "707.59",
+      "Inventories": "149.73",
+      "CurrentInvestments": "2499.86",
+      "TradeReceivablesCurrent": "726.82",
+      "CashAndCashEquivalents": "406.33",
+      "CurrentAssets": "5576.54",
+      "Assets": "20296.98",
+      "EquityAttributableToOwnersOfParent": "13052.29",
+      "NonControllingInterest": "1887.03",
+      "Equity": "14939.32",
+      "BorrowingsNoncurrent": "46.60",
+      "BorrowingsCurrent": "4.68",
+      "TradePayablesCurrent": "719.78",
+      "CurrentLiabilities": "2235.19",
+      "Liabilities": "5357.66"
+     }
+    },
+    {
+     "period_end": "2026-06-30",
+     "filing": {
+      "xbrl_url": "https://nsearchives.nseindia.com/corporate/xbrl/INTEGRATED_FILING_INDAS_1698677_21072026063812_WEB.xml",
+      "filed_at": "2026-07-21T18:38:13+05:30",
+      "audited": "Un-Audited"
+     },
+     "profit_and_loss": {
+      "RevenueFromOperations": "2339.19",
+      "OtherIncome": "80.18",
+      "FinanceCosts": "56.98",
+      "DepreciationDepletionAndAmortisationExpense": "162.58",
+      "Expenses": "1886.04",
+      "ExceptionalItemsBeforeTax": "0.00",
+      "ProfitBeforeTax": "533.33",
+      "TaxExpense": "142.40",
+      "ProfitLossForPeriod": "390.81"
+     },
+     "balance_sheet": null
+    }
+   ]
+  },
+  {
+   "symbol": "HFCL",
+   "legal_name": "HFCL Limited",
+   "filed_name": "HFCL LIMITED",
+   "business_group": null,
+   "isin": "INE548A01028",
+   "industry_code": "J61",
+   "basis": "consolidated",
+   "source_url": "https://www.nseindia.com/get-quotes/equity?symbol=HFCL",
+   "quarters": [
+    {
+     "period_end": "2024-09-30",
+     "filing": {
+      "xbrl_url": "https://nsearchives.nseindia.com/corporate/xbrl/INDAS_113013_1284843_22102024042313.xml",
+      "filed_at": "2024-10-22T16:23:13+05:30",
+      "audited": "Un-Audited"
+     },
+     "profit_and_loss": {
+      "RevenueFromOperations": "1093.61",
+      "OtherIncome": "13.58",
+      "FinanceCosts": "44.88",
+      "DepreciationDepletionAndAmortisationExpense": "25.48",
+      "Expenses": "1005.73",
+      "ExceptionalItemsBeforeTax": "0.00",
+      "ProfitBeforeTax": "101.46",
+      "TaxExpense": "29.14",
+      "ProfitLossForPeriod": "73.33"
+     },
+     "balance_sheet": {
+      "NonControllingInterest": "43.10",
+      "Goodwill": "26.17",
+      "OtherIntangibleAssets": "117.66",
+      "Inventories": "781.19",
+      "CurrentInvestments": "6.59",
+      "TradeReceivablesCurrent": "2329.91",
+      "CashAndCashEquivalents": "168.08",
+      "CurrentAssets": "5102.18",
+      "Assets": "7522.03",
+      "EquityAttributableToOwnersOfParent": "4191.24",
+      "Equity": "4234.34",
+      "BorrowingsNoncurrent": "298.24",
+      "BorrowingsCurrent": "900.08",
+      "TradePayablesCurrent": "1318.38",
+      "CurrentLiabilities": "2838.62",
+      "Liabilities": "3287.69"
+     }
+    },
+    {
+     "period_end": "2024-12-31",
+     "filing": {
+      "xbrl_url": "https://nsearchives.nseindia.com/corporate/xbrl/INDAS_118544_1369950_04022025012501.xml",
+      "filed_at": "2025-02-04T13:25:02+05:30",
+      "audited": "Un-Audited"
+     },
+     "profit_and_loss": {
+      "RevenueFromOperations": "1011.95",
+      "OtherIncome": "20.04",
+      "FinanceCosts": "46.76",
+      "DepreciationDepletionAndAmortisationExpense": "25.52",
+      "Expenses": "932.38",
+      "ExceptionalItemsBeforeTax": "0.00",
+      "ProfitBeforeTax": "99.61",
+      "TaxExpense": "27.68",
+      "ProfitLossForPeriod": "72.58"
+     },
+     "balance_sheet": null
+    },
+    {
+     "period_end": "2025-03-31",
+     "filing": {
+      "xbrl_url": "https://nsearchives.nseindia.com/corporate/xbrl/INTEGRATED_FILING_INDAS_1447870_22052025085700_WEB.xml",
+      "filed_at": "2025-05-22T20:57:00+05:30",
+      "audited": "Audited"
+     },
+     "profit_and_loss": {
+      "RevenueFromOperations": "800.72",
+      "OtherIncome": "13.64",
+      "FinanceCosts": "51.06",
+      "DepreciationDepletionAndAmortisationExpense": "30.44",
+      "Expenses": "918.19",
+      "ExceptionalItemsBeforeTax": "0.00",
+      "ProfitBeforeTax": "-103.83",
+      "TaxExpense": "-21.63",
+      "ProfitLossForPeriod": "-83.30"
+     },
+     "balance_sheet": {
+      "Goodwill": "26.17",
+      "OtherIntangibleAssets": "178.55",
+      "Inventories": "898.84",
+      "CurrentInvestments": "1.30",
+      "TradeReceivablesCurrent": "1891.73",
+      "CashAndCashEquivalents": "70.52",
+      "CurrentAssets": "5370.68",
+      "Assets": "7546.29",
+      "EquityAttributableToOwnersOfParent": "4119.32",
+      "Equity": "4119.32",
+      "BorrowingsNoncurrent": "389.90",
+      "BorrowingsCurrent": "951.16",
+      "TradePayablesCurrent": "1078.66",
+      "CurrentLiabilities": "2887.87",
+      "Liabilities": "3426.97"
+     }
+    },
+    {
+     "period_end": "2025-06-30",
+     "filing": {
+      "xbrl_url": "https://nsearchives.nseindia.com/corporate/xbrl/INTEGRATED_FILING_INDAS_1493723_25072025055716_WEB.xml",
+      "filed_at": "2025-07-25T17:57:16+05:30",
+      "audited": "Un-Audited"
+     },
+     "profit_and_loss": {
+      "RevenueFromOperations": "871.02",
+      "OtherIncome": "14.53",
+      "FinanceCosts": "55.62",
+      "DepreciationDepletionAndAmortisationExpense": "32.20",
+      "Expenses": "930.44",
+      "ExceptionalItemsBeforeTax": "0.19",
+      "ProfitBeforeTax": "-44.70",
+      "TaxExpense": "-15.40",
+      "ProfitLossForPeriod": "-29.30"
+     },
+     "balance_sheet": null
+    },
+    {
+     "period_end": "2025-09-30",
+     "filing": {
+      "xbrl_url": "https://nsearchives.nseindia.com/corporate/xbrl/INTEGRATED_FILING_INDAS_1552760_17102025072224_WEB.xml",
+      "filed_at": "2025-10-17T19:22:25+05:30",
+      "audited": "Un-Audited"
+     },
+     "profit_and_loss": {
+      "RevenueFromOperations": "1043.34",
+      "OtherIncome": "13.04",
+      "FinanceCosts": "60.90",
+      "DepreciationDepletionAndAmortisationExpense": "35.93",
+      "Expenses": "949.84",
+      "ExceptionalItemsBeforeTax": "0.00",
+      "ProfitBeforeTax": "106.54",
+      "TaxExpense": "34.42",
+      "ProfitLossForPeriod": "71.92"
+     },
+     "balance_sheet": {
+      "Goodwill": "26.17",
+      "OtherIntangibleAssets": "163.64",
+      "Inventories": "1151.40",
+      "CurrentInvestments": "41.36",
+      "TradeReceivablesCurrent": "1898.40",
+      "CashAndCashEquivalents": "29.43",
+      "CurrentAssets": "5669.93",
+      "Assets": "7959.47",
+      "EquityAttributableToOwnersOfParent": "4131.57",
+      "NonControllingInterest": "47.14",
+      "Equity": "4178.71",
+      "BorrowingsNoncurrent": "445.25",
+      "BorrowingsCurrent": "1106.42",
+      "TradePayablesCurrent": "1107.77",
+      "CurrentLiabilities": "3163.56",
+      "Liabilities": "3780.76"
+     }
+    },
+    {
+     "period_end": "2025-12-31",
+     "filing": {
+      "xbrl_url": "https://nsearchives.nseindia.com/corporate/xbrl/INTEGRATED_FILING_INDAS_1617368_03022026061816_WEB.xml",
+      "filed_at": "2026-02-03T18:18:16+05:30",
+      "audited": "Un-Audited"
+     },
+     "profit_and_loss": {
+      "RevenueFromOperations": "1210.79",
+      "OtherIncome": "15.42",
+      "FinanceCosts": "62.76",
+      "DepreciationDepletionAndAmortisationExpense": "43.77",
+      "Expenses": "1089.22",
+      "ExceptionalItemsBeforeTax": "0.00",
+      "ProfitBeforeTax": "136.99",
+      "TaxExpense": "35.74",
+      "ProfitLossForPeriod": "102.37"
+     },
+     "balance_sheet": null
+    },
+    {
+     "period_end": "2026-03-31",
+     "filing": {
+      "xbrl_url": "https://nsearchives.nseindia.com/corporate/xbrl/INTEGRATED_FILING_INDAS_1662563_30042026075430_WEB.xml",
+      "filed_at": "2026-04-30T19:54:30+05:30",
+      "audited": "Audited"
+     },
+     "profit_and_loss": {
+      "RevenueFromOperations": "1824.12",
+      "OtherIncome": "22.26",
+      "FinanceCosts": "62.78",
+      "DepreciationDepletionAndAmortisationExpense": "45.48",
+      "Expenses": "1618.45",
+      "ExceptionalItemsBeforeTax": "0.00",
+      "ProfitBeforeTax": "227.93",
+      "TaxExpense": "43.48",
+      "ProfitLossForPeriod": "184.45"
+     },
+     "balance_sheet": {
+      "Goodwill": "26.17",
+      "OtherIntangibleAssets": "247.74",
+      "Inventories": "1415.99",
+      "CurrentInvestments": "41.29",
+      "TradeReceivablesCurrent": "2212.18",
+      "CashAndCashEquivalents": "37.67",
+      "CurrentAssets": "6703.19",
+      "Assets": "8867.58",
+      "EquityAttributableToOwnersOfParent": "4890.75",
+      "NonControllingInterest": "57.84",
+      "Equity": "4948.59",
+      "BorrowingsNoncurrent": "389.88",
+      "BorrowingsCurrent": "1323.49",
+      "TradePayablesCurrent": "1007.44",
+      "CurrentLiabilities": "3366.79",
+      "Liabilities": "3918.99"
+     }
+    },
+    {
+     "period_end": "2026-06-30",
+     "filing": {
+      "xbrl_url": "https://nsearchives.nseindia.com/corporate/xbrl/INTEGRATED_FILING_INDAS_1699607_22072026075408_WEB.xml",
+      "filed_at": "2026-07-22T19:54:08+05:30",
+      "audited": "Un-Audited"
+     },
+     "profit_and_loss": {
+      "RevenueFromOperations": "1914.98",
+      "OtherIncome": "31.15",
+      "FinanceCosts": "62.48",
+      "DepreciationDepletionAndAmortisationExpense": "51.25",
+      "Expenses": "1614.59",
+      "ExceptionalItemsBeforeTax": "0.00",
+      "ProfitBeforeTax": "331.54",
+      "TaxExpense": "85.88",
+      "ProfitLossForPeriod": "245.64"
+     },
+     "balance_sheet": null
+    }
+   ]
+  },
+  {
+   "symbol": "COFORGE",
+   "legal_name": "Coforge Limited",
+   "filed_name": "Coforge Limited",
+   "business_group": null,
+   "isin": "INE591G01025",
+   "industry_code": "J62",
+   "basis": "consolidated",
+   "source_url": "https://www.nseindia.com/get-quotes/equity?symbol=COFORGE",
+   "quarters": [
+    {
+     "period_end": "2024-09-30",
+     "filing": {
+      "xbrl_url": "https://nsearchives.nseindia.com/corporate/xbrl/INDAS_113078_1285763_23102024023646.xml",
+      "filed_at": "2024-10-23T14:36:47+05:30",
+      "audited": "Un-Audited"
+     },
+     "profit_and_loss": {
+      "RevenueFromOperations": "3062.30",
+      "OtherIncome": "56.30",
+      "FinanceCosts": "30.40",
+      "DepreciationDepletionAndAmortisationExpense": "124.30",
+      "Expenses": "2805.10",
+      "ExceptionalItemsBeforeTax": "0.00",
+      "ProfitBeforeTax": "313.50",
+      "TaxExpense": "79.90",
+      "ProfitLossForPeriod": "233.60"
+     },
+     "balance_sheet": {
+      "NonControllingInterest": "2005.70",
+      "Goodwill": "3783.90",
+      "OtherIntangibleAssets": "1579.70",
+      "Inventories": "0.00",
+      "CurrentInvestments": "0.00",
+      "TradeReceivablesCurrent": "232.30",
+      "CashAndCashEquivalents": "2397.20",
+      "CurrentAssets": "4872.60",
+      "Assets": "12126.60",
+      "EquityAttributableToOwnersOfParent": "5978.50",
+      "Equity": "7984.20",
+      "BorrowingsNoncurrent": "0.00",
+      "BorrowingsCurrent": "718.40",
+      "TradePayablesCurrent": "887.60",
+      "CurrentLiabilities": "3405.60",
+      "Liabilities": "4142.40"
+     }
+    },
+    {
+     "period_end": "2024-12-31",
+     "filing": {
+      "xbrl_url": "https://nsearchives.nseindia.com/corporate/xbrl/INDAS_117559_1359616_23012025064350.xml",
+      "filed_at": "2025-01-23T18:43:50+05:30",
+      "audited": "Un-Audited"
+     },
+     "profit_and_loss": {
+      "RevenueFromOperations": "3318.20",
+      "OtherIncome": "59.60",
+      "FinanceCosts": "32.50",
+      "DepreciationDepletionAndAmortisationExpense": "126.80",
+      "Expenses": "3034.50",
+      "ExceptionalItemsBeforeTax": "0.00",
+      "ProfitBeforeTax": "343.30",
+      "TaxExpense": "87.40",
+      "ProfitLossForPeriod": "255.90"
+     },
+     "balance_sheet": null
+    },
+    {
+     "period_end": "2025-03-31",
+     "filing": {
+      "xbrl_url": "https://nsearchives.nseindia.com/corporate/xbrl/INTEGRATED_FILING_INDAS_1431832_05052025073742_WEB.xml",
+      "filed_at": "2025-05-05T19:37:42+05:30",
+      "audited": "Audited"
+     },
+     "profit_and_loss": {
+      "RevenueFromOperations": "3409.90",
+      "OtherIncome": "31.40",
+      "FinanceCosts": "39.70",
+      "DepreciationDepletionAndAmortisationExpense": "125.40",
+      "Expenses": "3048.00",
+      "ExceptionalItemsBeforeTax": "0.00",
+      "ProfitBeforeTax": "393.30",
+      "TaxExpense": "87.40",
+      "ProfitLossForPeriod": "307.30"
+     },
+     "balance_sheet": {
+      "Goodwill": "3843.00",
+      "OtherIntangibleAssets": "1485.00",
+      "Inventories": "0.00",
+      "CurrentInvestments": "145.70",
+      "TradeReceivablesCurrent": "2577.10",
+      "CashAndCashEquivalents": "795.60",
+      "CurrentAssets": "4350.80",
+      "Assets": "12490.70",
+      "EquityAttributableToOwnersOfParent": "6379.20",
+      "NonControllingInterest": "1949.80",
+      "Equity": "8329.00",
+      "BorrowingsNoncurrent": "6.70",
+      "BorrowingsCurrent": "693.80",
+      "TradePayablesCurrent": "988.30",
+      "CurrentLiabilities": "2737.50",
+      "Liabilities": "4161.70"
+     }
+    },
+    {
+     "period_end": "2025-06-30",
+     "filing": {
+      "xbrl_url": "https://nsearchives.nseindia.com/corporate/xbrl/INTEGRATED_FILING_INDAS_1495015_28072025031120_WEB.xml",
+      "filed_at": "2025-07-28T15:11:21+05:30",
+      "audited": "Un-Audited"
+     },
+     "profit_and_loss": {
+      "RevenueFromOperations": "3688.60",
+      "OtherIncome": "18.60",
+      "FinanceCosts": "46.20",
+      "DepreciationDepletionAndAmortisationExpense": "159.20",
+      "Expenses": "3317.00",
+      "ExceptionalItemsBeforeTax": "-24.80",
+      "ProfitBeforeTax": "365.40",
+      "TaxExpense": "79.20",
+      "ProfitLossForPeriod": "356.40"
+     },
+     "balance_sheet": null
+    },
+    {
+     "period_end": "2025-09-30",
+     "filing": {
+      "xbrl_url": "https://nsearchives.nseindia.com/corporate/xbrl/INTEGRATED_FILING_INDAS_1556407_24102025052227_WEB.xml",
+      "filed_at": "2025-10-24T17:22:27+05:30",
+      "audited": "Un-Audited"
+     },
+     "profit_and_loss": {
+      "RevenueFromOperations": "3985.70",
+      "OtherIncome": "38.50",
+      "FinanceCosts": "40.90",
+      "DepreciationDepletionAndAmortisationExpense": "171.90",
+      "Expenses": "3466.00",
+      "ExceptionalItemsBeforeTax": "0.00",
+      "ProfitBeforeTax": "558.20",
+      "TaxExpense": "132.80",
+      "ProfitLossForPeriod": "425.40"
+     },
+     "balance_sheet": {
+      "Goodwill": "4113.40",
+      "OtherIntangibleAssets": "1736.00",
+      "Inventories": "0.00",
+      "CurrentInvestments": "40.80",
+      "TradeReceivablesCurrent": "3152.10",
+      "CashAndCashEquivalents": "517.80",
+      "CurrentAssets": "4515.60",
+      "Assets": "13590.40",
+      "EquityAttributableToOwnersOfParent": "6894.70",
+      "NonControllingInterest": "2027.80",
+      "Equity": "8922.50",
+      "BorrowingsNoncurrent": "138.80",
+      "BorrowingsCurrent": "469.40",
+      "TradePayablesCurrent": "1226.50",
+      "CurrentLiabilities": "2877.40",
+      "Liabilities": "4667.90"
+     }
+    },
+    {
+     "period_end": "2025-12-31",
+     "filing": {
+      "xbrl_url": "https://nsearchives.nseindia.com/corporate/xbrl/INTEGRATED_FILING_INDAS_1608772_22012026114610_WEB.xml",
+      "filed_at": "2026-01-22T23:46:10+05:30",
+      "audited": "Un-Audited"
+     },
+     "profit_and_loss": {
+      "RevenueFromOperations": "4188.10",
+      "OtherIncome": "13.90",
+      "FinanceCosts": "41.50",
+      "DepreciationDepletionAndAmortisationExpense": "170.80",
+      "Expenses": "3670.20",
+      "ExceptionalItemsBeforeTax": "-147.60",
+      "ProfitBeforeTax": "384.20",
+      "TaxExpense": "87.50",
+      "ProfitLossForPeriod": "296.70"
+     },
+     "balance_sheet": null
+    },
+    {
+     "period_end": "2026-03-31",
+     "filing": {
+      "xbrl_url": "https://nsearchives.nseindia.com/corporate/xbrl/INTEGRATED_FILING_INDAS_1663900_05052026095708_WEB.xml",
+      "filed_at": "2026-05-05T21:57:08+05:30",
+      "audited": "Audited"
+     },
+     "profit_and_loss": {
+      "RevenueFromOperations": "4450.40",
+      "OtherIncome": "22.10",
+      "FinanceCosts": "40.00",
+      "DepreciationDepletionAndAmortisationExpense": "180.00",
+      "Expenses": "3793.90",
+      "ExceptionalItemsBeforeTax": "-53.60",
+      "ProfitBeforeTax": "625.00",
+      "TaxExpense": "-41.20",
+      "ProfitLossForPeriod": "666.20"
+     },
+     "balance_sheet": {
+      "Goodwill": "4167.10",
+      "OtherIntangibleAssets": "1344.30",
+      "Inventories": "0.00",
+      "CurrentInvestments": "0.00",
+      "TradeReceivablesCurrent": "3970.00",
+      "CashAndCashEquivalents": "1093.60",
+      "CurrentAssets": "5905.80",
+      "Assets": "14881.40",
+      "EquityAttributableToOwnersOfParent": "9537.60",
+      "NonControllingInterest": "143.00",
+      "Equity": "9680.60",
+      "BorrowingsNoncurrent": "116.70",
+      "BorrowingsCurrent": "283.00",
+      "TradePayablesCurrent": "0.00",
+      "CurrentLiabilities": "3669.40",
+      "Liabilities": "5200.80"
+     }
+    },
+    {
+     "period_end": "2026-06-30",
+     "filing": {
+      "xbrl_url": "https://nsearchives.nseindia.com/corporate/xbrl/INTEGRATED_FILING_INDAS_1702582_28072026013714_WEB.xml",
+      "filed_at": "2026-07-28T01:37:14+05:30",
+      "audited": "Un-Audited"
+     },
+     "profit_and_loss": {
+      "RevenueFromOperations": "5527.70",
+      "OtherIncome": "26.80",
+      "FinanceCosts": "86.60",
+      "DepreciationDepletionAndAmortisationExpense": "241.10",
+      "Expenses": "4797.40",
+      "ExceptionalItemsBeforeTax": "-55.00",
+      "ProfitBeforeTax": "702.10",
+      "TaxExpense": "170.40",
+      "ProfitLossForPeriod": "531.70"
+     },
+     "balance_sheet": null
+    }
+   ]
+  },
+  {
+   "symbol": "PRESTIGE",
+   "legal_name": "Prestige Estates Projects Limited",
+   "filed_name": "PRESTIGE ESTATES PROJECTS LIMITED",
+   "business_group": null,
+   "isin": "INE811K01011",
+   "industry_code": "L68",
+   "basis": "consolidated",
+   "source_url": "https://www.nseindia.com/get-quotes/equity?symbol=PRESTIGE",
+   "quarters": [
+    {
+     "period_end": "2024-09-30",
+     "filing": {
+      "xbrl_url": "https://nsearchives.nseindia.com/corporate/xbrl/INDAS_114015_1294534_30102024054449.xml",
+      "filed_at": "2024-10-30T17:44:49+05:30",
+      "audited": "Un-Audited"
+     },
+     "profit_and_loss": {
+      "RevenueFromOperations": "2304.40",
+      "OtherIncome": "119.40",
+      "FinanceCosts": "356.50",
+      "DepreciationDepletionAndAmortisationExpense": "200.40",
+      "Expenses": "2230.00",
+      "ExceptionalItemsBeforeTax": "0.00",
+      "ProfitBeforeTax": "193.80",
+      "TaxExpense": "-51.90",
+      "ProfitLossForPeriod": "234.60"
+     },
+     "balance_sheet": {
+      "NonControllingInterest": "629.10",
+      "Goodwill": "53.40",
+      "OtherIntangibleAssets": "7.50",
+      "Inventories": "26327.30",
+      "CurrentInvestments": "957.30",
+      "TradeReceivablesCurrent": "1133.10",
+      "CashAndCashEquivalents": "4489.10",
+      "CurrentAssets": "40546.00",
+      "Assets": "54555.70",
+      "EquityAttributableToOwnersOfParent": "16552.00",
+      "Equity": "17181.10",
+      "BorrowingsNoncurrent": "4316.10",
+      "BorrowingsCurrent": "5853.20",
+      "TradePayablesCurrent": "1771.70",
+      "CurrentLiabilities": "30414.80",
+      "Liabilities": "37374.60"
+     }
+    },
+    {
+     "period_end": "2024-12-31",
+     "filing": {
+      "xbrl_url": "https://nsearchives.nseindia.com/corporate/xbrl/INDAS_118315_1367484_31012025053142.xml",
+      "filed_at": "2025-01-31T17:31:42+05:30",
+      "audited": "Un-Audited"
+     },
+     "profit_and_loss": {
+      "RevenueFromOperations": "1654.50",
+      "OtherIncome": "43.40",
+      "FinanceCosts": "345.10",
+      "DepreciationDepletionAndAmortisationExpense": "204.70",
+      "Expenses": "1614.20",
+      "ExceptionalItemsBeforeTax": "0.00",
+      "ProfitBeforeTax": "83.70",
+      "TaxExpense": "44.50",
+      "ProfitLossForPeriod": "32.20"
+     },
+     "balance_sheet": null
+    },
+    {
+     "period_end": "2025-03-31",
+     "filing": {
+      "xbrl_url": "https://nsearchives.nseindia.com/corporate/xbrl/INTEGRATED_FILING_INDAS_1458516_30052025120547_WEB.xml",
+      "filed_at": "2025-05-30T00:05:48+05:30",
+      "audited": "Audited"
+     },
+     "profit_and_loss": {
+      "RevenueFromOperations": "1528.40",
+      "OtherIncome": "60.90",
+      "FinanceCosts": "286.10",
+      "DepreciationDepletionAndAmortisationExpense": "216.70",
+      "Expenses": "1490.10",
+      "ExceptionalItemsBeforeTax": "0.00",
+      "ProfitBeforeTax": "99.20",
+      "TaxExpense": "44.00",
+      "ProfitLossForPeriod": "43.10"
+     },
+     "balance_sheet": {
+      "Goodwill": "53.40",
+      "OtherIntangibleAssets": "12.70",
+      "Inventories": "31883.10",
+      "CurrentInvestments": "857.00",
+      "TradeReceivablesCurrent": "1358.20",
+      "CashAndCashEquivalents": "2009.40",
+      "CurrentAssets": "44230.00",
+      "Assets": "58795.20",
+      "EquityAttributableToOwnersOfParent": "15423.00",
+      "NonControllingInterest": "481.50",
+      "Equity": "15904.50",
+      "BorrowingsNoncurrent": "4313.00",
+      "BorrowingsCurrent": "6287.20",
+      "TradePayablesCurrent": "1871.00",
+      "CurrentLiabilities": "35470.40",
+      "Liabilities": "42890.70"
+     }
+    },
+    {
+     "period_end": "2025-06-30",
+     "filing": {
+      "xbrl_url": "https://nsearchives.nseindia.com/corporate/xbrl/INTEGRATED_FILING_INDAS_1503408_05082025082842_WEB.xml",
+      "filed_at": "2025-08-05T20:28:42+05:30",
+      "audited": "Un-Audited"
+     },
+     "profit_and_loss": {
+      "RevenueFromOperations": "2307.30",
+      "OtherIncome": "161.40",
+      "FinanceCosts": "383.90",
+      "DepreciationDepletionAndAmortisationExpense": "216.20",
+      "Expenses": "2013.60",
+      "ExceptionalItemsBeforeTax": "0.00",
+      "ProfitBeforeTax": "455.10",
+      "TaxExpense": "127.10",
+      "ProfitLossForPeriod": "311.50"
+     },
+     "balance_sheet": null
+    },
+    {
+     "period_end": "2025-09-30",
+     "filing": {
+      "xbrl_url": "https://nsearchives.nseindia.com/corporate/xbrl/INTEGRATED_FILING_INDAS_1573061_12112025100559_WEB.xml",
+      "filed_at": "2025-11-12T22:05:59+05:30",
+      "audited": "Un-Audited"
+     },
+     "profit_and_loss": {
+      "RevenueFromOperations": "2431.70",
+      "OtherIncome": "266.10",
+      "FinanceCosts": "385.10",
+      "DepreciationDepletionAndAmortisationExpense": "218.60",
+      "Expenses": "2125.60",
+      "ExceptionalItemsBeforeTax": "0.00",
+      "ProfitBeforeTax": "572.20",
+      "TaxExpense": "126.60",
+      "ProfitLossForPeriod": "457.40"
+     },
+     "balance_sheet": {
+      "Goodwill": "53.40",
+      "OtherIntangibleAssets": "12.90",
+      "Inventories": "35687.00",
+      "CurrentInvestments": "1089.30",
+      "TradeReceivablesCurrent": "1853.00",
+      "CashAndCashEquivalents": "2229.10",
+      "CurrentAssets": "51004.20",
+      "Assets": "66581.30",
+      "EquityAttributableToOwnersOfParent": "15827.30",
+      "NonControllingInterest": "422.80",
+      "Equity": "16250.10",
+      "BorrowingsNoncurrent": "4955.60",
+      "BorrowingsCurrent": "6975.70",
+      "TradePayablesCurrent": "1495.20",
+      "CurrentLiabilities": "42274.40",
+      "Liabilities": "50331.20"
+     }
+    },
+    {
+     "period_end": "2025-12-31",
+     "filing": {
+      "xbrl_url": "https://nsearchives.nseindia.com/corporate/xbrl/INTEGRATED_FILING_INDAS_1613892_29012026093829_WEB.xml",
+      "filed_at": "2026-01-29T21:38:29+05:30",
+      "audited": "Un-Audited"
+     },
+     "profit_and_loss": {
+      "RevenueFromOperations": "3872.60",
+      "OtherIncome": "12.90",
+      "FinanceCosts": "383.80",
+      "DepreciationDepletionAndAmortisationExpense": "233.50",
+      "Expenses": "3629.90",
+      "ExceptionalItemsBeforeTax": "0.00",
+      "ProfitBeforeTax": "255.60",
+      "TaxExpense": "33.60",
+      "ProfitLossForPeriod": "244.70"
+     },
+     "balance_sheet": null
+    },
+    {
+     "period_end": "2026-03-31",
+     "filing": {
+      "xbrl_url": "https://nsearchives.nseindia.com/corporate/xbrl/INTEGRATED_FILING_INDAS_1671077_21052026110332_WEB.xml",
+      "filed_at": "2026-05-21T23:03:32+05:30",
+      "audited": "Audited"
+     },
+     "profit_and_loss": {
+      "RevenueFromOperations": "4073.80",
+      "OtherIncome": "69.70",
+      "FinanceCosts": "429.60",
+      "DepreciationDepletionAndAmortisationExpense": "237.80",
+      "Expenses": "3695.70",
+      "ExceptionalItemsBeforeTax": "0.00",
+      "ProfitBeforeTax": "447.80",
+      "TaxExpense": "120.90",
+      "ProfitLossForPeriod": "291.80"
+     },
+     "balance_sheet": {
+      "Goodwill": "53.40",
+      "OtherIntangibleAssets": "12.80",
+      "Inventories": "40251.90",
+      "CurrentInvestments": "991.60",
+      "TradeReceivablesCurrent": "2042.20",
+      "CashAndCashEquivalents": "1556.00",
+      "CurrentAssets": "54938.70",
+      "Assets": "73368.00",
+      "EquityAttributableToOwnersOfParent": "16272.90",
+      "NonControllingInterest": "466.90",
+      "Equity": "16739.80",
+      "BorrowingsNoncurrent": "5631.10",
+      "BorrowingsCurrent": "9355.00",
+      "TradePayablesCurrent": "2505.00",
+      "CurrentLiabilities": "47840.70",
+      "Liabilities": "56628.20"
+     }
+    },
+    {
+     "period_end": "2026-06-30",
+     "filing": {
+      "xbrl_url": "https://nsearchives.nseindia.com/corporate/xbrl/INTEGRATED_FILING_INDAS_1704528_29072026081214_WEB.xml",
+      "filed_at": "2026-07-29T20:12:14+05:30",
+      "audited": "Un-Audited"
+     },
+     "profit_and_loss": {
+      "RevenueFromOperations": "2675.10",
+      "OtherIncome": "160.50",
+      "FinanceCosts": "418.40",
+      "DepreciationDepletionAndAmortisationExpense": "225.70",
+      "Expenses": "2459.60",
+      "ExceptionalItemsBeforeTax": "0.00",
+      "ProfitBeforeTax": "376.00",
+      "TaxExpense": "94.30",
+      "ProfitLossForPeriod": "271.40"
+     },
+     "balance_sheet": null
+    }
+   ]
+  },
+  {
+   "symbol": "BRIGADE",
+   "legal_name": "Brigade Enterprises Limited",
+   "filed_name": "Brigade Enterprises Limited",
+   "business_group": null,
+   "isin": "INE791I01019",
+   "industry_code": "L68",
+   "basis": "consolidated",
+   "source_url": "https://www.nseindia.com/get-quotes/equity?symbol=BRIGADE",
+   "quarters": [
+    {
+     "period_end": "2024-09-30",
+     "filing": {
+      "xbrl_url": "https://nsearchives.nseindia.com/corporate/xbrl/INDAS_115904_1310436_14112024121754.xml",
+      "filed_at": "2024-11-14T12:17:54+05:30",
+      "audited": "Un-Audited"
+     },
+     "profit_and_loss": {
+      "RevenueFromOperations": "1072.16",
+      "OtherIncome": "65.97",
+      "FinanceCosts": "122.63",
+      "DepreciationDepletionAndAmortisationExpense": "68.93",
+      "Expenses": "971.78",
+      "ExceptionalItemsBeforeTax": "0.00",
+      "ProfitBeforeTax": "166.35",
+      "TaxExpense": "51.27",
+      "ProfitLossForPeriod": "115.08"
+     },
+     "balance_sheet": {
+      "NonControllingInterest": "33.98",
+      "Goodwill": "20.34",
+      "OtherIntangibleAssets": "14.44",
+      "Inventories": "7733.28",
+      "CurrentInvestments": "0.00",
+      "TradeReceivablesCurrent": "582.01",
+      "CashAndCashEquivalents": "700.66",
+      "CurrentAssets": "12559.06",
+      "Assets": "20640.15",
+      "EquityAttributableToOwnersOfParent": "5152.14",
+      "Equity": "5186.12",
+      "BorrowingsNoncurrent": "4820.43",
+      "BorrowingsCurrent": "395.14",
+      "TradePayablesCurrent": "819.35",
+      "CurrentLiabilities": "10208.35",
+      "Liabilities": "15454.03"
+     }
+    },
+    {
+     "period_end": "2024-12-31",
+     "filing": {
+      "xbrl_url": "https://nsearchives.nseindia.com/corporate/xbrl/INDAS_118062_1365067_29012025070253.xml",
+      "filed_at": "2025-01-29T19:02:53+05:30",
+      "audited": "Un-Audited"
+     },
+     "profit_and_loss": {
+      "RevenueFromOperations": "1463.94",
+      "OtherIncome": "65.74",
+      "FinanceCosts": "114.32",
+      "DepreciationDepletionAndAmortisationExpense": "76.30",
+      "Expenses": "1240.84",
+      "ExceptionalItemsBeforeTax": "0.00",
+      "ProfitBeforeTax": "288.84",
+      "TaxExpense": "53.32",
+      "ProfitLossForPeriod": "235.52"
+     },
+     "balance_sheet": null
+    },
+    {
+     "period_end": "2025-03-31",
+     "filing": {
+      "xbrl_url": "https://nsearchives.nseindia.com/corporate/xbrl/INTEGRATED_FILING_INDAS_1439352_14052025112935_WEB.xml",
+      "filed_at": "2025-05-14T23:29:35+05:30",
+      "audited": "Audited"
+     },
+     "profit_and_loss": {
+      "RevenueFromOperations": "1460.39",
+      "OtherIncome": "71.90",
+      "FinanceCosts": "106.60",
+      "DepreciationDepletionAndAmortisationExpense": "75.63",
+      "Expenses": "1226.64",
+      "ExceptionalItemsBeforeTax": "0.00",
+      "ProfitBeforeTax": "305.65",
+      "TaxExpense": "56.30",
+      "ProfitLossForPeriod": "249.35"
+     },
+     "balance_sheet": {
+      "Goodwill": "20.34",
+      "OtherIntangibleAssets": "15.05",
+      "Inventories": "8868.81",
+      "CurrentInvestments": "36.61",
+      "TradeReceivablesCurrent": "629.12",
+      "CashAndCashEquivalents": "1869.96",
+      "CurrentAssets": "13782.41",
+      "Assets": "22090.04",
+      "EquityAttributableToOwnersOfParent": "5638.45",
+      "NonControllingInterest": "276.89",
+      "Equity": "5915.34",
+      "BorrowingsNoncurrent": "4361.35",
+      "BorrowingsCurrent": "913.11",
+      "TradePayablesCurrent": "785.77",
+      "CurrentLiabilities": "11408.48",
+      "Liabilities": "16174.70"
+     }
+    },
+    {
+     "period_end": "2025-06-30",
+     "filing": {
+      "xbrl_url": "https://nsearchives.nseindia.com/corporate/xbrl/INTEGRATED_FILING_INDAS_1512253_13082025085245_WEB.xml",
+      "filed_at": "2025-08-13T20:52:45+05:30",
+      "audited": "Un-Audited"
+     },
+     "profit_and_loss": {
+      "RevenueFromOperations": "1281.14",
+      "OtherIncome": "51.72",
+      "FinanceCosts": "105.63",
+      "DepreciationDepletionAndAmortisationExpense": "75.61",
+      "Expenses": "1138.73",
+      "ExceptionalItemsBeforeTax": "0.00",
+      "ProfitBeforeTax": "194.13",
+      "TaxExpense": "35.86",
+      "ProfitLossForPeriod": "157.95"
+     },
+     "balance_sheet": null
+    },
+    {
+     "period_end": "2025-09-30",
+     "filing": {
+      "xbrl_url": "https://nsearchives.nseindia.com/corporate/xbrl/INTEGRATED_FILING_INDAS_1560790_29102025105448_WEB.xml",
+      "filed_at": "2025-10-29T22:54:48+05:30",
+      "audited": "Un-Audited"
+     },
+     "profit_and_loss": {
+      "RevenueFromOperations": "1383.37",
+      "OtherIncome": "46.49",
+      "FinanceCosts": "102.26",
+      "DepreciationDepletionAndAmortisationExpense": "76.48",
+      "Expenses": "1234.06",
+      "ExceptionalItemsBeforeTax": "0.00",
+      "ProfitBeforeTax": "195.80",
+      "TaxExpense": "25.27",
+      "ProfitLossForPeriod": "170.28"
+     },
+     "balance_sheet": {
+      "Goodwill": "20.34",
+      "OtherIntangibleAssets": "14.36",
+      "Inventories": "10443.57",
+      "CurrentInvestments": "0.00",
+      "TradeReceivablesCurrent": "625.85",
+      "CashAndCashEquivalents": "1196.85",
+      "CurrentAssets": "14725.65",
+      "Assets": "24265.51",
+      "EquityAttributableToOwnersOfParent": "6481.86",
+      "NonControllingInterest": "631.84",
+      "Equity": "7113.70",
+      "BorrowingsNoncurrent": "4601.62",
+      "BorrowingsCurrent": "545.09",
+      "TradePayablesCurrent": "1003.99",
+      "CurrentLiabilities": "12062.78",
+      "Liabilities": "17151.81"
+     }
+    },
+    {
+     "period_end": "2025-12-31",
+     "filing": {
+      "xbrl_url": "https://nsearchives.nseindia.com/corporate/xbrl/INTEGRATED_FILING_INDAS_1614345_30012026031412_WEB.xml",
+      "filed_at": "2026-01-30T15:14:12+05:30",
+      "audited": "Un-Audited"
+     },
+     "profit_and_loss": {
+      "RevenueFromOperations": "1575.11",
+      "OtherIncome": "48.07",
+      "FinanceCosts": "89.86",
+      "DepreciationDepletionAndAmortisationExpense": "80.10",
+      "Expenses": "1334.16",
+      "ExceptionalItemsBeforeTax": "-19.10",
+      "ProfitBeforeTax": "269.92",
+      "TaxExpense": "63.80",
+      "ProfitLossForPeriod": "205.83"
+     },
+     "balance_sheet": null
+    },
+    {
+     "period_end": "2026-03-31",
+     "filing": {
+      "xbrl_url": "https://nsearchives.nseindia.com/corporate/xbrl/INTEGRATED_FILING_INDAS_1664224_06052026082330_WEB.xml",
+      "filed_at": "2026-05-06T20:23:30+05:30",
+      "audited": "Audited"
+     },
+     "profit_and_loss": {
+      "RevenueFromOperations": "1457.60",
+      "OtherIncome": "65.51",
+      "FinanceCosts": "111.69",
+      "DepreciationDepletionAndAmortisationExpense": "80.18",
+      "Expenses": "1284.75",
+      "ExceptionalItemsBeforeTax": "5.30",
+      "ProfitBeforeTax": "243.66",
+      "TaxExpense": "54.19",
+      "ProfitLossForPeriod": "190.70"
+     },
+     "balance_sheet": {
+      "Goodwill": "20.34",
+      "OtherIntangibleAssets": "16.65",
+      "Inventories": "11400.89",
+      "CurrentInvestments": "50.39",
+      "TradeReceivablesCurrent": "600.69",
+      "CashAndCashEquivalents": "1486.29",
+      "CurrentAssets": "16113.65",
+      "Assets": "26253.46",
+      "EquityAttributableToOwnersOfParent": "6820.22",
+      "NonControllingInterest": "703.80",
+      "Equity": "7524.02",
+      "BorrowingsNoncurrent": "5267.97",
+      "BorrowingsCurrent": "841.66",
+      "TradePayablesCurrent": "881.70",
+      "CurrentLiabilities": "12980.08",
+      "Liabilities": "18729.44"
+     }
+    },
+    {
+     "period_end": "2026-06-30",
+     "filing": {
+      "xbrl_url": "https://nsearchives.nseindia.com/corporate/xbrl/INTEGRATED_FILING_INDAS_1714055_13082026081012_WEB.xml",
+      "filed_at": "2026-08-13T20:10:12+05:30",
+      "audited": "Un-Audited"
+     },
+     "profit_and_loss": {
+      "RevenueFromOperations": "1115.55",
+      "OtherIncome": "63.67",
+      "FinanceCosts": "109.15",
+      "DepreciationDepletionAndAmortisationExpense": "73.23",
+      "Expenses": "936.51",
+      "ExceptionalItemsBeforeTax": "42.88",
+      "ProfitBeforeTax": "285.59",
+      "TaxExpense": "67.93",
+      "ProfitLossForPeriod": "216.94"
+     },
+     "balance_sheet": null
+    }
+   ]
+  },
+  {
+   "symbol": "QUESS",
+   "legal_name": "Quess Corp Limited",
+   "filed_name": "QUESS CORP LIMITED",
+   "business_group": null,
+   "isin": "INE615P01015",
+   "industry_code": "M70",
+   "basis": "consolidated",
+   "source_url": "https://www.nseindia.com/get-quotes/equity?symbol=QUESS",
+   "quarters": [
+    {
+     "period_end": "2024-09-30",
+     "filing": {
+      "xbrl_url": "https://nsearchives.nseindia.com/corporate/xbrl/INDAS_113756_1291920_29102024120312.xml",
+      "filed_at": "2024-10-29T12:03:12+05:30",
+      "audited": "Un-Audited"
+     },
+     "profit_and_loss": {
+      "RevenueFromOperations": "5179.36",
+      "OtherIncome": "4.38",
+      "FinanceCosts": "28.42",
+      "DepreciationDepletionAndAmortisationExpense": "69.72",
+      "Expenses": "5081.93",
+      "ExceptionalItemsBeforeTax": "0.31",
+      "ProfitBeforeTax": "102.13",
+      "TaxExpense": "8.50",
+      "ProfitLossForPeriod": "93.62"
+     },
+     "balance_sheet": {
+      "NonControllingInterest": "167.88",
+      "Goodwill": "1014.62",
+      "OtherIntangibleAssets": "82.45",
+      "Inventories": "6.79",
+      "CurrentInvestments": "100.16",
+      "TradeReceivablesCurrent": "1676.28",
+      "CashAndCashEquivalents": "445.03",
+      "CurrentAssets": "4334.82",
+      "Assets": "6413.89",
+      "EquityAttributableToOwnersOfParent": "2918.40",
+      "Equity": "3086.28",
+      "BorrowingsNoncurrent": "1.41",
+      "BorrowingsCurrent": "251.24",
+      "TradePayablesCurrent": "118.24",
+      "CurrentLiabilities": "2652.18",
+      "Liabilities": "3327.62"
+     }
+    },
+    {
+     "period_end": "2024-12-31",
+     "filing": {
+      "xbrl_url": "https://nsearchives.nseindia.com/corporate/xbrl/INDAS_118118_1365672_30012025022153.xml",
+      "filed_at": "2025-01-30T14:21:53+05:30",
+      "audited": "Un-Audited"
+     },
+     "profit_and_loss": {
+      "RevenueFromOperations": "5519.07",
+      "OtherIncome": "8.89",
+      "FinanceCosts": "26.60",
+      "DepreciationDepletionAndAmortisationExpense": "68.88",
+      "Expenses": "5417.27",
+      "ExceptionalItemsBeforeTax": "-22.11",
+      "ProfitBeforeTax": "88.58",
+      "TaxExpense": "3.44",
+      "ProfitLossForPeriod": "85.14"
+     },
+     "balance_sheet": null
+    },
+    {
+     "period_end": "2025-03-31",
+     "filing": {
+      "xbrl_url": "https://nsearchives.nseindia.com/corporate/xbrl/INTEGRATED_FILING_INDAS_1443720_19052025112418_WEB.xml",
+      "filed_at": "2025-05-19T23:24:19+05:30",
+      "audited": "Audited"
+     },
+     "profit_and_loss": {
+      "RevenueFromOperations": "3656.42",
+      "OtherIncome": "10.94",
+      "FinanceCosts": "9.05",
+      "DepreciationDepletionAndAmortisationExpense": "10.17",
+      "Expenses": "3608.29",
+      "ExceptionalItemsBeforeTax": "-157.99",
+      "ProfitBeforeTax": "-98.91",
+      "TaxExpense": "-3.46",
+      "ProfitLossForPeriod": "-95.45"
+     },
+     "balance_sheet": {
+      "Goodwill": "236.21",
+      "OtherIntangibleAssets": "3.63",
+      "Inventories": "0.00",
+      "CurrentInvestments": "0.00",
+      "TradeReceivablesCurrent": "1529.45",
+      "CashAndCashEquivalents": "249.12",
+      "CurrentAssets": "2224.74",
+      "Assets": "2811.83",
+      "EquityAttributableToOwnersOfParent": "1084.85",
+      "NonControllingInterest": "1.14",
+      "Equity": "1085.99",
+      "BorrowingsNoncurrent": "0.00",
+      "BorrowingsCurrent": "12.06",
+      "TradePayablesCurrent": "58.63",
+      "CurrentLiabilities": "1410.58",
+      "Liabilities": "1725.84"
+     }
+    },
+    {
+     "period_end": "2025-06-30",
+     "filing": {
+      "xbrl_url": "https://nsearchives.nseindia.com/corporate/xbrl/INTEGRATED_FILING_INDAS_1495838_28072025091642_WEB.xml",
+      "filed_at": "2025-07-28T21:16:42+05:30",
+      "audited": "Un-Audited"
+     },
+     "profit_and_loss": {
+      "RevenueFromOperations": "3651.42",
+      "OtherIncome": "4.72",
+      "FinanceCosts": "9.89",
+      "DepreciationDepletionAndAmortisationExpense": "10.49",
+      "Expenses": "3602.06",
+      "ExceptionalItemsBeforeTax": "-1.85",
+      "ProfitBeforeTax": "52.23",
+      "TaxExpense": "1.25",
+      "ProfitLossForPeriod": "50.99"
+     },
+     "balance_sheet": null
+    },
+    {
+     "period_end": "2025-09-30",
+     "filing": {
+      "xbrl_url": "https://nsearchives.nseindia.com/corporate/xbrl/INTEGRATED_FILING_INDAS_1560746_29102025094425_WEB.xml",
+      "filed_at": "2025-10-29T21:44:26+05:30",
+      "audited": "Un-Audited"
+     },
+     "profit_and_loss": {
+      "RevenueFromOperations": "3831.61",
+      "OtherIncome": "4.04",
+      "FinanceCosts": "13.05",
+      "DepreciationDepletionAndAmortisationExpense": "10.22",
+      "Expenses": "3778.18",
+      "ExceptionalItemsBeforeTax": "0.00",
+      "ProfitBeforeTax": "57.46",
+      "TaxExpense": "5.69",
+      "ProfitLossForPeriod": "51.77"
+     },
+     "balance_sheet": {
+      "Goodwill": "249.98",
+      "OtherIntangibleAssets": "2.22",
+      "Inventories": "0.00",
+      "CurrentInvestments": "0.00",
+      "TradeReceivablesCurrent": "1599.91",
+      "CashAndCashEquivalents": "245.66",
+      "CurrentAssets": "2054.61",
+      "Assets": "3052.77",
+      "EquityAttributableToOwnersOfParent": "1115.03",
+      "NonControllingInterest": "1.41",
+      "Equity": "1116.44",
+      "BorrowingsNoncurrent": "0.00",
+      "BorrowingsCurrent": "0.00",
+      "TradePayablesCurrent": "29.23",
+      "CurrentLiabilities": "1591.76",
+      "Liabilities": "1936.32"
+     }
+    },
+    {
+     "period_end": "2025-12-31",
+     "filing": {
+      "xbrl_url": "https://nsearchives.nseindia.com/corporate/xbrl/INTEGRATED_FILING_INDAS_1612384_28012026094918_WEB.xml",
+      "filed_at": "2026-01-28T21:49:19+05:30",
+      "audited": "Un-Audited"
+     },
+     "profit_and_loss": {
+      "RevenueFromOperations": "3929.71",
+      "OtherIncome": "1.55",
+      "FinanceCosts": "12.76",
+      "DepreciationDepletionAndAmortisationExpense": "10.52",
+      "Expenses": "3873.36",
+      "ExceptionalItemsBeforeTax": "-6.81",
+      "ProfitBeforeTax": "51.09",
+      "TaxExpense": "-4.01",
+      "ProfitLossForPeriod": "55.09"
+     },
+     "balance_sheet": null
+    },
+    {
+     "period_end": "2026-03-31",
+     "filing": {
+      "xbrl_url": "https://nsearchives.nseindia.com/corporate/xbrl/INTEGRATED_FILING_INDAS_1663493_04052026114118_WEB.xml",
+      "filed_at": "2026-05-04T23:41:19+05:30",
+      "audited": "Audited"
+     },
+     "profit_and_loss": {
+      "RevenueFromOperations": "3892.45",
+      "OtherIncome": "6.19",
+      "FinanceCosts": "13.52",
+      "DepreciationDepletionAndAmortisationExpense": "10.61",
+      "Expenses": "3830.21",
+      "ExceptionalItemsBeforeTax": "0.59",
+      "ProfitBeforeTax": "69.02",
+      "TaxExpense": "4.67",
+      "ProfitLossForPeriod": "64.35"
+     },
+     "balance_sheet": {
+      "Goodwill": "262.48",
+      "OtherIntangibleAssets": "0.68",
+      "Inventories": "0.00",
+      "CurrentInvestments": "51.21",
+      "TradeReceivablesCurrent": "807.98",
+      "CashAndCashEquivalents": "178.13",
+      "CurrentAssets": "2000.24",
+      "Assets": "3039.11",
+      "EquityAttributableToOwnersOfParent": "1166.46",
+      "NonControllingInterest": "1.76",
+      "Equity": "1168.23",
+      "BorrowingsNoncurrent": "0.00",
+      "BorrowingsCurrent": "0.00",
+      "TradePayablesCurrent": "27.26",
+      "CurrentLiabilities": "1447.68",
+      "Liabilities": "1870.89"
+     }
+    },
+    {
+     "period_end": "2026-06-30",
+     "filing": {
+      "xbrl_url": "https://nsearchives.nseindia.com/corporate/xbrl/INTEGRATED_FILING_INDAS_1704573_29072026085608_WEB.xml",
+      "filed_at": "2026-07-29T20:56:08+05:30",
+      "audited": "Un-Audited"
+     },
+     "profit_and_loss": {
+      "RevenueFromOperations": "4181.68",
+      "OtherIncome": "25.55",
+      "FinanceCosts": "14.40",
+      "DepreciationDepletionAndAmortisationExpense": "9.81",
+      "Expenses": "4121.35",
+      "ExceptionalItemsBeforeTax": "0.00",
+      "ProfitBeforeTax": "85.88",
+      "TaxExpense": "3.76",
+      "ProfitLossForPeriod": "82.12"
+     },
+     "balance_sheet": null
+    }
+   ]
+  },
+  {
+   "symbol": "SANGHVIMOV",
+   "legal_name": "Sanghvi Movers Limited",
+   "filed_name": "SANGHVI MOVERS LIMITED",
+   "business_group": null,
+   "isin": "INE989A01032",
+   "industry_code": "N77",
+   "basis": "consolidated",
+   "source_url": "https://www.nseindia.com/get-quotes/equity?symbol=SANGHVIMOV",
+   "quarters": [
+    {
+     "period_end": "2024-09-30",
+     "filing": {
+      "xbrl_url": "https://nsearchives.nseindia.com/corporate/xbrl/INDAS_116211_1312106_14112024054749.xml",
+      "filed_at": "2024-11-14T17:47:49+05:30",
+      "audited": "Un-Audited"
+     },
+     "profit_and_loss": {
+      "RevenueFromOperations": "156.13",
+      "OtherIncome": "8.13",
+      "FinanceCosts": "6.17",
+      "DepreciationDepletionAndAmortisationExpense": "33.47",
+      "Expenses": "122.62",
+      "ExceptionalItemsBeforeTax": "0.00",
+      "ProfitBeforeTax": "41.64",
+      "TaxExpense": "12.52",
+      "ProfitLossForPeriod": "29.12"
+     },
+     "balance_sheet": {
+      "Goodwill": "0.00",
+      "OtherIntangibleAssets": "0.00",
+      "Inventories": "4.58",
+      "CurrentInvestments": "157.33",
+      "TradeReceivablesCurrent": "216.79",
+      "CashAndCashEquivalents": "0.34",
+      "CurrentAssets": "448.70",
+      "Assets": "1513.09",
+      "EquityAttributableToOwnersOfParent": "1055.69",
+      "Equity": "1055.69",
+      "BorrowingsNoncurrent": "170.21",
+      "BorrowingsCurrent": "171.23",
+      "TradePayablesCurrent": "31.90",
+      "CurrentLiabilities": "235.83",
+      "Liabilities": "457.40"
+     }
+    },
+    {
+     "period_end": "2024-12-31",
+     "filing": {
+      "xbrl_url": "https://nsearchives.nseindia.com/corporate/xbrl/INDAS_120237_1381849_13022025040440.xml",
+      "filed_at": "2025-02-13T16:04:40+05:30",
+      "audited": "Un-Audited"
+     },
+     "profit_and_loss": {
+      "RevenueFromOperations": "207.96",
+      "OtherIncome": "6.26",
+      "FinanceCosts": "6.19",
+      "DepreciationDepletionAndAmortisationExpense": "31.19",
+      "Expenses": "169.38",
+      "ExceptionalItemsBeforeTax": "0.00",
+      "ProfitBeforeTax": "44.83",
+      "TaxExpense": "11.76",
+      "ProfitLossForPeriod": "33.08"
+     },
+     "balance_sheet": null
+    },
+    {
+     "period_end": "2025-03-31",
+     "filing": {
+      "xbrl_url": "https://nsearchives.nseindia.com/corporate/xbrl/INTEGRATED_FILING_INDAS_1444953_20052025091250_WEB.xml",
+      "filed_at": "2025-05-20T21:12:51+05:30",
+      "audited": "Audited"
+     },
+     "profit_and_loss": {
+      "RevenueFromOperations": "267.42",
+      "OtherIncome": "6.51",
+      "FinanceCosts": "7.45",
+      "DepreciationDepletionAndAmortisationExpense": "31.30",
+      "Expenses": "199.27",
+      "ExceptionalItemsBeforeTax": "0.00",
+      "ProfitBeforeTax": "74.66",
+      "TaxExpense": "20.84",
+      "ProfitLossForPeriod": "53.83"
+     },
+     "balance_sheet": {
+      "Goodwill": "0.00",
+      "OtherIntangibleAssets": "5.14",
+      "Inventories": "5.69",
+      "CurrentInvestments": "149.60",
+      "TradeReceivablesCurrent": "307.54",
+      "CashAndCashEquivalents": "6.70",
+      "CurrentAssets": "582.89",
+      "Assets": "1765.28",
+      "EquityAttributableToOwnersOfParent": "1142.53",
+      "Equity": "1142.53",
+      "BorrowingsNoncurrent": "231.59",
+      "BorrowingsCurrent": "206.43",
+      "TradePayablesCurrent": "81.87",
+      "CurrentLiabilities": "334.16",
+      "Liabilities": "622.76"
+     }
+    },
+    {
+     "period_end": "2025-06-30",
+     "filing": {
+      "xbrl_url": "https://nsearchives.nseindia.com/corporate/xbrl/INTEGRATED_FILING_INDAS_1504810_07082025122626_WEB.xml",
+      "filed_at": "2025-08-07T12:26:28+05:30",
+      "audited": "Un-Audited"
+     },
+     "profit_and_loss": {
+      "RevenueFromOperations": "273.36",
+      "OtherIncome": "7.40",
+      "FinanceCosts": "7.32",
+      "DepreciationDepletionAndAmortisationExpense": "31.38",
+      "Expenses": "212.51",
+      "ExceptionalItemsBeforeTax": "0.00",
+      "ProfitBeforeTax": "68.25",
+      "TaxExpense": "17.99",
+      "ProfitLossForPeriod": "50.26"
+     },
+     "balance_sheet": null
+    },
+    {
+     "period_end": "2025-09-30",
+     "filing": {
+      "xbrl_url": "https://nsearchives.nseindia.com/corporate/xbrl/INTEGRATED_FILING_INDAS_1568615_07112025083947_WEB.xml",
+      "filed_at": "2025-11-07T20:39:48+05:30",
+      "audited": "Un-Audited"
+     },
+     "profit_and_loss": {
+      "RevenueFromOperations": "209.90",
+      "OtherIncome": "7.68",
+      "FinanceCosts": "7.38",
+      "DepreciationDepletionAndAmortisationExpense": "31.30",
+      "Expenses": "167.79",
+      "ExceptionalItemsBeforeTax": "0.00",
+      "ProfitBeforeTax": "49.80",
+      "TaxExpense": "13.53",
+      "ProfitLossForPeriod": "36.27"
+     },
+     "balance_sheet": {
+      "Goodwill": "0.00",
+      "OtherIntangibleAssets": "4.62",
+      "Inventories": "5.94",
+      "CurrentInvestments": "192.15",
+      "TradeReceivablesCurrent": "356.43",
+      "CashAndCashEquivalents": "7.69",
+      "CurrentAssets": "700.55",
+      "Assets": "1942.42",
+      "EquityAttributableToOwnersOfParent": "1211.52",
+      "Equity": "1211.52",
+      "BorrowingsNoncurrent": "266.66",
+      "BorrowingsCurrent": "225.89",
+      "TradePayablesCurrent": "82.93",
+      "CurrentLiabilities": "409.04",
+      "Liabilities": "730.90"
+     }
+    },
+    {
+     "period_end": "2025-12-31",
+     "filing": {
+      "xbrl_url": "https://nsearchives.nseindia.com/corporate/xbrl/INTEGRATED_FILING_INDAS_1620192_06022026050732_WEB.xml",
+      "filed_at": "2026-02-06T17:07:33+05:30",
+      "audited": "Un-Audited"
+     },
+     "profit_and_loss": {
+      "RevenueFromOperations": "235.78",
+      "OtherIncome": "5.72",
+      "FinanceCosts": "9.27",
+      "DepreciationDepletionAndAmortisationExpense": "33.35",
+      "Expenses": "193.05",
+      "ExceptionalItemsBeforeTax": "-8.39",
+      "ProfitBeforeTax": "40.07",
+      "TaxExpense": "11.10",
+      "ProfitLossForPeriod": "28.97"
+     },
+     "balance_sheet": null
+    },
+    {
+     "period_end": "2026-03-31",
+     "filing": {
+      "xbrl_url": "https://nsearchives.nseindia.com/corporate/xbrl/INTEGRATED_FILING_INDAS_1670198_20052026074812_WEB.xml",
+      "filed_at": "2026-05-20T19:48:12+05:30",
+      "audited": "Audited"
+     },
+     "profit_and_loss": {
+      "RevenueFromOperations": "351.41",
+      "OtherIncome": "8.37",
+      "FinanceCosts": "12.63",
+      "DepreciationDepletionAndAmortisationExpense": "35.65",
+      "Expenses": "265.52",
+      "ExceptionalItemsBeforeTax": "0.50",
+      "ProfitBeforeTax": "94.77",
+      "TaxExpense": "25.98",
+      "ProfitLossForPeriod": "68.79"
+     },
+     "balance_sheet": {
+      "Goodwill": "0.00",
+      "OtherIntangibleAssets": "4.39",
+      "Inventories": "6.33",
+      "CurrentInvestments": "86.62",
+      "TradeReceivablesCurrent": "424.18",
+      "CashAndCashEquivalents": "36.52",
+      "CurrentAssets": "840.49",
+      "Assets": "2343.29",
+      "EquityAttributableToOwnersOfParent": "1310.35",
+      "NonControllingInterest": "0.00",
+      "Equity": "1310.35",
+      "BorrowingsNoncurrent": "494.59",
+      "BorrowingsCurrent": "178.96",
+      "TradePayablesCurrent": "130.43",
+      "CurrentLiabilities": "474.84",
+      "Liabilities": "1032.93"
+     }
+    },
+    {
+     "period_end": "2026-06-30",
+     "filing": {
+      "xbrl_url": "https://nsearchives.nseindia.com/corporate/xbrl/INTEGRATED_FILING_INDAS_1705867_31072026014714_WEB.xml",
+      "filed_at": "2026-07-31T13:47:15+05:30",
+      "audited": "Un-Audited"
+     },
+     "profit_and_loss": {
+      "RevenueFromOperations": "379.67",
+      "OtherIncome": "13.44",
+      "FinanceCosts": "12.68",
+      "DepreciationDepletionAndAmortisationExpense": "38.59",
+      "Expenses": "305.47",
+      "ExceptionalItemsBeforeTax": "0.00",
+      "ProfitBeforeTax": "87.64",
+      "TaxExpense": "22.39",
+      "ProfitLossForPeriod": "65.25"
+     },
+     "balance_sheet": null
+    }
+   ]
+  }
+ ]
+}

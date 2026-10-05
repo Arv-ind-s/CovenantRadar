@@ -1,0 +1,803 @@
+/* Remediation planner: borrower-specific levers, package and simulation. */
+
+.remedy {
+  display: grid;
+  gap: var(--space-6);
+  min-width: 0;
+}
+
+.remedy-intro {
+  max-width: 72ch;
+  margin: var(--space-2) 0 0;
+  color: var(--ink-muted);
+  font-size: var(--size-body);
+}
+
+.remedy-section-head {
+  display: grid;
+  gap: var(--space-1);
+  margin-block-end: var(--space-4);
+}
+
+.remedy-section-head h2 {
+  margin: 0;
+  font-size: var(--size-section);
+}
+
+.remedy-section-head p {
+  max-width: 80ch;
+  margin: 0;
+  color: var(--ink-muted);
+}
+
+.remedy-eyebrow,
+.remedy-summary__eyebrow {
+  margin: 0;
+  color: var(--ink-muted);
+  font-family: var(--font-data);
+  font-size: var(--size-caption);
+  letter-spacing: var(--tracking-label);
+  text-transform: uppercase;
+}
+
+.remedy-owner {
+  display: block;
+  color: var(--ink-muted);
+  font-size: var(--size-data);
+}
+
+.remedy-num {
+  font-family: var(--font-data);
+  font-variant-numeric: tabular-nums;
+  text-align: right;
+  white-space: nowrap;
+}
+
+.remedy-subhead {
+  margin: var(--space-3) 0 var(--space-1);
+  font-weight: var(--weight-semi);
+}
+
+/* Probability chips carry a status tone and always print the figure. */
+.remedy-chip {
+  display: inline-block;
+  min-width: 3.25rem;
+  padding: calc(var(--space-1) / 2) var(--space-2);
+  border-radius: var(--radius-pill);
+  font-family: var(--font-data);
+  font-size: var(--size-data);
+  font-variant-numeric: tabular-nums;
+  text-align: center;
+}
+
+.remedy-chip[data-tone="ok"] { background: var(--headroom-bg); color: var(--headroom); }
+.remedy-chip[data-tone="watch"] { background: var(--watch-bg); color: var(--watch); }
+.remedy-chip[data-tone="breach"] { background: var(--breach-bg); color: var(--breach); }
+
+/* Verdict */
+.remedy-verdict {
+  display: grid;
+  gap: var(--space-3);
+  border-inline-start: var(--space-1) solid var(--headroom);
+}
+
+.remedy-verdict[data-status="cured_with_reset"],
+.remedy-verdict[data-status="clears"] { border-inline-start-color: var(--watch); }
+.remedy-verdict[data-status="partial"] { border-inline-start-color: var(--breach); }
+.remedy-verdict[data-status="no_action"] { border-inline-start-color: var(--hairline); }
+
+.remedy-verdict h2 {
+  margin: 0;
+  font-size: var(--size-case-title);
+}
+
+.remedy-verdict__message {
+  max-width: 90ch;
+  margin: 0;
+}
+
+.remedy-verdict__covenants {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(15rem, 1fr));
+  gap: var(--space-3);
+  margin: var(--space-2) 0 0;
+  padding: 0;
+  list-style: none;
+}
+
+.remedy-verdict__covenants li {
+  display: grid;
+  gap: var(--space-1);
+  padding: var(--space-3) var(--space-4);
+  border: var(--border);
+  border-radius: var(--radius);
+  background: var(--surface-subtle);
+}
+
+.remedy-verdict__name { font-weight: var(--weight-semi); }
+
+.remedy-verdict__filed {
+  font-family: var(--font-data);
+  font-size: var(--size-data);
+}
+
+.remedy-verdict__filed[data-tone="breach"] { color: var(--breach); }
+.remedy-verdict__filed small { color: var(--ink-muted); }
+
+.remedy-verdict__risk {
+  display: flex;
+  align-items: center;
+  gap: var(--space-2);
+}
+
+/* Package table */
+.remedy-table-wrap {
+  overflow-x: auto;
+}
+
+.remedy-plan__table,
+.remedy-stress__table {
+  width: 100%;
+  border-collapse: collapse;
+}
+
+.remedy-plan__table th,
+.remedy-plan__table td,
+.remedy-stress__table th,
+.remedy-stress__table td {
+  padding: var(--space-3);
+  border-block-end: var(--border);
+  text-align: left;
+  vertical-align: top;
+}
+
+.remedy-plan__table thead th,
+.remedy-stress__table thead th {
+  color: var(--ink-muted);
+  font-size: var(--size-data);
+  font-weight: var(--weight-medium);
+}
+
+.remedy-plan__table th.remedy-num,
+.remedy-plan__table td.remedy-num,
+.remedy-stress__table th.remedy-num,
+.remedy-stress__table td.remedy-num {
+  text-align: right;
+}
+
+.remedy-plan__table .remedy-plan__baseline th,
+.remedy-plan__table .remedy-plan__baseline td {
+  background: var(--surface-subtle);
+}
+
+.remedy-plan__table tbody th {
+  max-width: 60ch;
+  font-weight: var(--weight-regular);
+}
+
+.remedy-step__number {
+  display: inline-grid;
+  width: 1.5rem;
+  height: 1.5rem;
+  margin-inline-end: var(--space-2);
+  border-radius: 50%;
+  background: var(--accent-soft);
+  color: var(--accent-strong);
+  font-family: var(--font-data);
+  font-size: var(--size-caption);
+  place-items: center;
+}
+
+.remedy-step__title {
+  font-weight: var(--weight-semi);
+}
+
+.remedy-step__why {
+  margin: var(--space-2) 0 0;
+  color: var(--ink-muted);
+  font-size: var(--size-data);
+  line-height: 1.5;
+}
+
+.remedy-size {
+  font-weight: var(--weight-semi);
+}
+
+/* Lab */
+.remedy-lab__grid {
+  display: grid;
+  grid-template-columns: minmax(18rem, 24rem) minmax(0, 1fr);
+  gap: var(--space-6);
+  align-items: start;
+}
+
+.remedy-lab__grid--single {
+  grid-template-columns: minmax(0, 1fr);
+}
+
+.remedy-levers {
+  display: grid;
+  gap: var(--space-3);
+  position: sticky;
+  top: calc(var(--topbar-height) + var(--space-4));
+}
+
+.remedy-lever {
+  display: grid;
+  gap: var(--space-2);
+  margin: 0;
+  padding: var(--space-3) var(--space-4);
+  border: var(--border);
+  border-radius: var(--radius);
+  background: var(--surface-raised);
+}
+
+.remedy-lever[data-in-plan="true"] {
+  border-color: var(--accent);
+  box-shadow: inset calc(var(--space-1) - var(--border-width)) 0 0 var(--accent);
+}
+
+.remedy-lever legend {
+  padding: 0;
+  font-weight: var(--weight-semi);
+}
+
+.remedy-lever__control {
+  display: flex;
+  justify-content: space-between;
+  align-items: baseline;
+  gap: var(--space-2);
+}
+
+.remedy-lever__control label {
+  color: var(--ink-muted);
+  font-size: var(--size-data);
+}
+
+.remedy-lever output {
+  font-family: var(--font-data);
+  font-size: var(--size-body);
+  font-weight: var(--weight-semi);
+}
+
+.remedy-lever input[type="range"] {
+  width: 100%;
+  min-height: var(--hit-min);
+  margin: 0;
+  accent-color: var(--accent);
+}
+
+.remedy-lever__scale {
+  display: flex;
+  justify-content: space-between;
+  margin: calc(var(--space-2) * -1) 0 0;
+  color: var(--ink-muted);
+  font-family: var(--font-data);
+  font-size: var(--size-caption);
+}
+
+.remedy-lever__marks {
+  display: flex;
+  flex-wrap: wrap;
+  gap: var(--space-1);
+  margin: 0;
+}
+
+.remedy-tag {
+  padding: var(--border-width) var(--space-2);
+  border: var(--border);
+  border-radius: var(--radius-pill);
+  color: var(--ink-muted);
+  font-size: var(--size-caption);
+}
+
+.remedy-tag--plan {
+  border-color: var(--accent);
+  background: var(--accent-soft);
+  color: var(--accent-strong);
+}
+
+.remedy-tag--hurts {
+  border-color: var(--watch);
+  background: var(--watch-bg);
+  color: var(--watch);
+}
+
+.remedy-lever__why summary {
+  color: var(--accent);
+  font-size: var(--size-data);
+  cursor: pointer;
+}
+
+.remedy-lever__why ul {
+  margin: var(--space-2) 0 0;
+  padding-inline-start: var(--space-4);
+  color: var(--ink-muted);
+  font-size: var(--size-data);
+  line-height: 1.5;
+}
+
+.remedy-levers__actions {
+  display: flex;
+  flex-wrap: wrap;
+  gap: var(--space-2);
+}
+
+/* With script, the sliders re-run the simulation themselves. */
+.js .remedy-levers__actions .button[type="submit"] {
+  display: none;
+}
+
+.remedy-results {
+  display: grid;
+  gap: var(--space-4);
+  min-width: 0;
+  transition: opacity var(--dur-state) var(--ease);
+}
+
+.remedy-results.htmx-request {
+  opacity: 0.55;
+}
+
+.remedy-results__head {
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: space-between;
+  align-items: center;
+  gap: var(--space-3);
+}
+
+.remedy-results__label {
+  margin: 0;
+  color: var(--ink-muted);
+}
+
+.remedy-results__label strong { color: var(--ink); }
+
+.remedy-legend {
+  display: flex;
+  flex-wrap: wrap;
+  gap: var(--space-4);
+  margin: 0;
+  padding: 0;
+  color: var(--ink-muted);
+  font-size: var(--size-data);
+  list-style: none;
+}
+
+.remedy-legend li {
+  display: inline-flex;
+  align-items: center;
+  gap: var(--space-2);
+}
+
+.remedy-legend__swatch {
+  display: inline-block;
+  width: 1.25rem;
+  height: 0;
+  border-block-start: calc(var(--space-1) / 2) solid var(--ink-muted);
+}
+
+.remedy-legend__swatch--baseline { border-block-start-style: dashed; }
+.remedy-legend__swatch--package { border-block-start-color: var(--accent); }
+.remedy-legend__swatch--threshold { border-block-start: calc(var(--space-1) / 2) solid var(--breach); }
+.remedy-legend__swatch--reset { border-block-start: calc(var(--space-1) / 2) dotted var(--watch); }
+
+.remedy-legend__swatch--band {
+  height: 0.6rem;
+  border: 0;
+  border-radius: calc(var(--space-1) / 2);
+  background: color-mix(in srgb, var(--accent) 22%, transparent);
+}
+
+.remedy-charts {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(19rem, 1fr));
+  gap: var(--space-4);
+}
+
+.remedy-chart {
+  display: grid;
+  gap: var(--space-2);
+  min-width: 0;
+  padding: var(--space-3) var(--space-4) var(--space-4);
+  border: var(--border);
+  border-radius: var(--radius);
+  background: var(--surface-raised);
+}
+
+.remedy-chart[data-at-risk="true"] {
+  border-color: color-mix(in srgb, var(--breach) 35%, var(--hairline));
+}
+
+.remedy-chart header {
+  display: grid;
+  gap: calc(var(--space-1) / 2);
+}
+
+.remedy-chart h3 {
+  margin: 0;
+  font-size: var(--size-body);
+}
+
+.remedy-chart__formula {
+  color: var(--ink-muted);
+  font-size: var(--size-caption);
+}
+
+.remedy-chart__facts {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: var(--space-2) var(--space-4);
+  margin: 0;
+}
+
+.remedy-chart__facts dt {
+  color: var(--ink-muted);
+  font-size: var(--size-caption);
+}
+
+.remedy-chart__facts dd {
+  margin: 0;
+  font-family: var(--font-data);
+}
+
+.remedy-chart__facts dd[data-tone="breach"] { color: var(--breach); }
+
+.remedy-chart__table summary {
+  color: var(--accent);
+  font-size: var(--size-data);
+  cursor: pointer;
+}
+
+.remedy-chart__table table {
+  width: 100%;
+  margin-block-start: var(--space-2);
+  border-collapse: collapse;
+  font-size: var(--size-data);
+}
+
+.remedy-chart__table th,
+.remedy-chart__table td {
+  padding: var(--space-1) var(--space-2);
+  border-block-end: var(--border);
+  text-align: left;
+}
+
+.remedy-chart__table .remedy-num { text-align: right; }
+
+/* Fan chart */
+.fan {
+  display: block;
+  width: 100%;
+  height: auto;
+  overflow: visible;
+}
+
+.fan__grid { stroke: var(--hairline); stroke-width: 1; }
+
+.fan__axis {
+  fill: var(--ink-muted);
+  font-family: var(--font-data);
+  font-size: calc(var(--size-caption) * 0.78);
+}
+
+.fan__breach-zone {
+  fill: var(--breach-bg);
+  opacity: 0.55;
+}
+
+.fan__threshold {
+  stroke: var(--breach);
+  stroke-width: 1.5;
+}
+
+.fan__threshold-label,
+.fan__reset-label {
+  fill: var(--breach);
+  font-family: var(--font-data);
+  font-size: calc(var(--size-caption) * 0.78);
+}
+
+.fan__reset {
+  stroke: var(--watch);
+  stroke-width: 1.25;
+  stroke-dasharray: 2 3;
+}
+
+.fan__reset-label { fill: var(--watch); }
+
+.fan__band--baseline { fill: var(--ink-muted); opacity: 0.14; }
+.fan__band--package { fill: var(--accent); opacity: 0.2; }
+
+.fan__median {
+  fill: none;
+  stroke-width: 2;
+  stroke-linecap: round;
+  stroke-linejoin: round;
+}
+
+.fan__median--baseline {
+  stroke: var(--ink-muted);
+  stroke-dasharray: 5 4;
+}
+
+.fan__median--package { stroke: var(--accent); }
+
+.fan__end {
+  stroke: var(--surface-raised);
+  stroke-width: 2;
+}
+
+.fan__end--baseline { fill: var(--ink-muted); }
+.fan__end--package { fill: var(--accent); }
+
+.fan__hit {
+  fill: transparent;
+}
+
+.fan__hit:hover {
+  fill: var(--ink);
+  fill-opacity: 0.04;
+}
+
+.fan-state {
+  color: var(--ink-muted);
+}
+
+/* Stress */
+.remedy-stress__sub {
+  display: block;
+  color: var(--ink-muted);
+  font-size: var(--size-caption);
+  font-weight: var(--weight-regular);
+}
+
+/* Set aside */
+.remedy-considered__list {
+  display: grid;
+  gap: var(--space-3);
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+
+.remedy-considered__list li {
+  display: grid;
+  gap: calc(var(--space-1) / 2);
+  padding-block-end: var(--space-3);
+  border-block-end: var(--border);
+}
+
+.remedy-considered__reason { color: var(--ink); }
+
+.remedy-considered__detail {
+  color: var(--ink-muted);
+  font-size: var(--size-data);
+}
+
+/* Method */
+.remedy-drivers {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(20rem, 1fr));
+  gap: var(--space-3) var(--space-6);
+  margin: 0;
+}
+
+.remedy-drivers dt {
+  color: var(--ink-muted);
+  font-size: var(--size-data);
+}
+
+.remedy-drivers dd {
+  display: grid;
+  gap: calc(var(--space-1) / 2);
+  margin: 0;
+}
+
+.remedy-drivers dd strong {
+  font-family: var(--font-data);
+}
+
+.remedy-drivers dd span {
+  color: var(--ink-muted);
+  font-size: var(--size-data);
+  line-height: 1.45;
+}
+
+.remedy-method__note {
+  max-width: 100ch;
+  margin: var(--space-4) 0 0;
+  color: var(--ink-muted);
+  font-size: var(--size-data);
+}
+
+/* Forecast-drawer summary */
+.remedy-summary {
+  display: grid;
+  gap: var(--space-2);
+  padding: var(--space-3) var(--space-4);
+  border: var(--border);
+  border-inline-start: calc(var(--space-1) - var(--border-width)) solid var(--accent);
+  border-radius: var(--radius);
+  background: var(--surface-subtle);
+}
+
+.remedy-summary__title {
+  margin: 0;
+  font-weight: var(--weight-semi);
+}
+
+.remedy-summary__covenant,
+.remedy-summary__message {
+  margin: 0;
+  font-size: var(--size-data);
+}
+
+.remedy-summary__message { color: var(--ink-muted); }
+
+.remedy-summary__steps {
+  display: grid;
+  gap: var(--space-1);
+  margin: 0;
+  padding-inline-start: var(--space-5);
+  font-size: var(--size-data);
+}
+
+.remedy-summary__steps .remedy-owner { display: inline; }
+
+.remedy-summary .button { justify-self: start; }
+
+/* Memo hand-off: what the next memo cites, and the one write on the page. */
+.remedy-memo {
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: space-between;
+  align-items: flex-start;
+  gap: var(--space-4);
+  margin-block-start: var(--space-5);
+  padding: var(--space-4);
+  border: var(--border);
+  border-inline-start: var(--space-1) solid var(--accent);
+  border-radius: var(--radius);
+  background: var(--surface-subtle);
+  /* Landed on by #remedy-memo after recording; clear the sticky top bar. */
+  scroll-margin-block-start: calc(var(--topbar-height) + var(--space-4));
+}
+
+.remedy-memo[data-state="current"] { border-inline-start-color: var(--headroom); }
+.remedy-memo[data-state="different"] { border-inline-start-color: var(--watch); }
+.remedy-memo[data-state="no_forecast"] { border-inline-start-color: var(--hairline); }
+
+.remedy-memo__text {
+  flex: 1 1 24rem;
+  min-width: 0;
+}
+
+.remedy-memo__text h3 { margin: 0 0 var(--space-1); }
+.remedy-memo__text p { margin: 0; }
+
+.remedy-memo__text .remedy-memo__when {
+  margin-block-start: var(--space-2);
+  color: var(--ink-muted);
+  font-size: var(--size-data);
+}
+
+.remedy-memo__steps {
+  margin: var(--space-2) 0 0;
+  padding-inline-start: var(--space-5);
+  font-size: var(--size-data);
+}
+
+.remedy-memo__text .remedy-memo__error {
+  margin-block-start: var(--space-2);
+  color: var(--breach);
+  font-weight: var(--weight-semi);
+}
+
+.remedy-memo__actions {
+  display: flex;
+  flex-wrap: wrap;
+  gap: var(--space-2);
+}
+
+@media (max-width: 68.75rem) {
+  .remedy-lab__grid {
+    grid-template-columns: minmax(0, 1fr);
+  }
+
+  .remedy-levers {
+    position: static;
+  }
+}
+
+@media (max-width: 40rem) {
+  .remedy-chart__facts {
+    grid-template-columns: minmax(0, 1fr);
+  }
+
+  /* Each step becomes a card: the row header, then one labelled line per figure. */
+  .remedy-plan__table,
+  .remedy-plan__table tbody,
+  .remedy-plan__table tr,
+  .remedy-plan__table th,
+  .remedy-stress__table,
+  .remedy-stress__table tbody,
+  .remedy-stress__table tr,
+  .remedy-stress__table th {
+    display: block;
+  }
+
+  .remedy-plan__table thead,
+  .remedy-stress__table thead {
+    position: absolute;
+    width: var(--border-width);
+    height: var(--border-width);
+    overflow: hidden;
+    clip-path: inset(50%);
+  }
+
+  .remedy-plan__table tr,
+  .remedy-stress__table tr {
+    padding-block: var(--space-2);
+    border-block-end: var(--border);
+  }
+
+  .remedy-plan__table th,
+  .remedy-plan__table td,
+  .remedy-stress__table th,
+  .remedy-stress__table td {
+    border: 0;
+    padding: var(--space-1) 0;
+  }
+
+  .remedy-plan__table td,
+  .remedy-stress__table td {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    gap: var(--space-3);
+  }
+
+  .remedy-plan__table td::before,
+  .remedy-stress__table td::before {
+    content: attr(data-label);
+    color: var(--ink-muted);
+    font-family: var(--font-ui);
+    font-size: var(--size-data);
+  }
+}
+
+.forecast-tailored {
+  margin-block-end: var(--space-4);
+}
+
+.forecast-insights__catalogue-note {
+  margin: 0 0 var(--space-3);
+  color: var(--ink-muted);
+  font-size: var(--size-data);
+}
+
+/* Row headers here hold sentences, not column labels: undo the ledger's
+   uppercase data styling for them. */
+.remedy-plan__table tbody th,
+.remedy-stress__table tbody th,
+.remedy-chart__table tbody th {
+  overflow: visible;
+  text-overflow: clip;
+  white-space: normal;
+  background: transparent;
+  font-family: var(--font-ui);
+  font-size: var(--size-body);
+  letter-spacing: normal;
+  text-transform: none;
+}
+
+.remedy-chart__table tbody th { font-size: var(--size-data); }
+
+.remedy-verdict__unsimulated ul {
+  margin: 0;
+  padding-inline-start: var(--space-4);
+  color: var(--ink-muted);
+  font-size: var(--size-data);
+}

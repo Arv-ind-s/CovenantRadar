@@ -12,6 +12,7 @@ from typing import Any
 from urllib.parse import urlsplit, urlunsplit
 
 import httpx
+import truststore
 
 from covenant_radar.ai.errors import (
     VALID_PROVIDER_NAMES,
@@ -140,11 +141,13 @@ class BaseHttpProvider(ABC):
         """Complete one request exactly once."""
 
 
-def trust_context(ca_bundle: Path | str | None, *, provider: str) -> ssl.SSLContext | bool:
+def trust_context(ca_bundle: Path | str | None, *, provider: str) -> ssl.SSLContext:
     """Return the TLS trust configuration for an adapter-created client.
 
-    Without a bundle this is plain ``True``, so httpx applies its own default
-    exactly as before.  With one, the default context is built first and the
+    Without a bundle the operating system's trust store is used, so a
+    corporate TLS-inspection root installed on the machine is honoured with
+    no extra configuration (certifi alone rejects it).  With one, httpx's
+    default context is built first and the
     named PEM file is loaded *in addition* to it: an organisation's internal
     CA becomes trusted without the public roots being dropped, and hostname
     checking and certificate verification both stay on.  There is
@@ -152,7 +155,7 @@ def trust_context(ca_bundle: Path | str | None, *, provider: str) -> ssl.SSLCont
     """
 
     if ca_bundle is None:
-        return True
+        return truststore.SSLContext(ssl.PROTOCOL_TLS_CLIENT)
     path = Path(ca_bundle)
     context = httpx.create_ssl_context()
     try:

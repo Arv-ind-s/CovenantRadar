@@ -219,8 +219,15 @@ class ApprovalService:
         checker_id = actor_id(checker, field_name="checker")
         now = utc_now(self.clock)
         requests: list[MakerCheckerRequest] = []
+        handled = set(self.registry.registered_operations())
         for pending in self.repository.list_pending():
             if pending.state is not MakerCheckerState.PENDING:
+                continue
+            # The pending table is shared: a model registration waits in the
+            # same table but is decided on the governance screen. An operation
+            # this registry has no callback for is someone else's queue, not
+            # a reason to fail the whole inbox.
+            if pending.operation not in handled:
                 continue
             definition = self.registry.get(pending.operation)
             if not self.settings.is_enabled(definition.name):

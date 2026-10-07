@@ -77,7 +77,7 @@ def test_preflight_proves_gemini_extraction_and_grounded_memo(monkeypatch):
         assert request.headers["authorization"] == "Bearer judge-test-credential"
         assert body["model"] == "gemini-3.8-flash"
         assert body["response_format"] == {"type": "json_object"}
-        assert body["reasoning_effort"] == "low"
+        assert body["reasoning_effort"] == "minimal"
         assert "temperature" not in body
         assert "judge-test-credential" not in request.content.decode()
 

@@ -886,7 +886,11 @@ html[data-sidebar="collapsed"] .shell-sidebar__collapse .icon {
   display: grid;
   gap: var(--space-6);
   min-width: 0;
-  animation: content-enter var(--dur-page) var(--ease-spring) both;
+  /* `backwards`, not `both`: an opacity animation that keeps filling after
+     it ends keeps a stacking context, which traps every fixed drawer inside
+     the page under the drawer backdrop and the sticky top bar (dimmed, its
+     header covered, and clicks landing on the backdrop instead). */
+  animation: content-enter var(--dur-page) var(--ease-spring) backwards;
   animation-delay: calc(var(--dur-state) / 2);
 }
 

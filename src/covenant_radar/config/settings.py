@@ -102,6 +102,12 @@ class AiSettings(BaseModel):
     # httpx ships with. Naming that bundle here is the supported way to trust
     # it; certificate verification itself stays on and cannot be turned off.
     ca_bundle: Path | None = None
+    # Live fail-safe: when Gemini is unavailable, out of quota or refuses the
+    # key, the same masked prompt goes once to an OpenAI model behind this
+    # LiteLLM gateway. Off until COVENANT_RADAR_AI_FALLBACK_API_KEY is set.
+    fallback_base_url: str = "https://genailab.tcs.in"
+    fallback_model: str = "genailab-maas-gpt-4o"
+    fallback_api_key: SecretStr | None = None
 
 
 class NotificationsSettings(BaseModel):
@@ -256,6 +262,7 @@ _SECRET_ENVIRONMENT_VARIABLES: dict[tuple[str, ...], str] = {
     ("documents", "s3_access_key_id"): "COVENANT_RADAR_DOCUMENTS_S3_ACCESS_KEY_ID",
     ("documents", "s3_secret_access_key"): "COVENANT_RADAR_DOCUMENTS_S3_SECRET_ACCESS_KEY",
     ("ai", "api_key"): "GEMINI_API_KEY",
+    ("ai", "fallback_api_key"): "COVENANT_RADAR_AI_FALLBACK_API_KEY",
     ("notifications", "smtp_password"): "COVENANT_RADAR_NOTIFICATIONS_SMTP_PASSWORD",
     (
         "notifications",
@@ -711,10 +718,13 @@ def _validate_dependent_settings(settings: Settings) -> None:
     if settings.ai.provider not in {"none", "recorded"}:
         _require_value(settings.ai.endpoint, "ai.endpoint")
         _require_value(settings.ai.model, "ai.model")
-        _require_secret(
-            settings.ai.api_key,
-            "GEMINI_API_KEY",
-        )
+        # With the LiteLLM fail-safe configured, a missing Gemini key degrades
+        # to the fallback model instead of refusing to start.
+        if settings.ai.fallback_api_key is None:
+            _require_secret(
+                settings.ai.api_key,
+                "GEMINI_API_KEY",
+            )
     if settings.ai.provider == "gemini":
         if (settings.ai.endpoint or "").rstrip(
             "/"

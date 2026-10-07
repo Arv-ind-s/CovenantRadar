@@ -22,4 +22,5 @@ var/
 .playwright-mcp/
 .ug-jpg/
 .test-tmp/
+.demo-tmp/
 /*.png

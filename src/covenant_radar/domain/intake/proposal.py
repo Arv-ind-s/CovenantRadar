@@ -30,6 +30,7 @@ from typing import Final
 
 from covenant_radar.core.errors import ValidationError
 from covenant_radar.domain.intake.candidates import ClauseCandidate
+from covenant_radar.domain.ratios.library import LIBRARY
 from covenant_radar.i18n.formatting import format_fy_label
 
 __all__ = [
@@ -447,7 +448,14 @@ def _definition_field(value: object) -> str | None:
     if cleaned is None:
         return None
     if cleaned.startswith(_RULE_ID_DEFINITION_PREFIX):
-        return cleaned[len(_RULE_ID_DEFINITION_PREFIX) :].strip() or None
+        cleaned = cleaned[len(_RULE_ID_DEFINITION_PREFIX) :].strip()
+        if not cleaned:
+            return None
+    # Library keys are lowercase codes; models echo the clause's own casing
+    # ("DSCR"). Only an exact library key is folded, so an unknown name still
+    # fails DEFINITION_KNOWN exactly as before.
+    if cleaned not in LIBRARY and cleaned.casefold() in LIBRARY:
+        return cleaned.casefold()
     return cleaned
 
 

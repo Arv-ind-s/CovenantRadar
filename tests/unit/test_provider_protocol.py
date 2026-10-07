@@ -7,6 +7,7 @@ from datetime import UTC, datetime, timedelta
 
 import httpx
 import pytest
+import truststore
 from cryptography import x509
 from cryptography.hazmat.primitives import hashes, serialization
 from cryptography.hazmat.primitives.asymmetric import ec
@@ -181,8 +182,12 @@ def test_ca_bundle_adds_anchors_without_weakening_verification(tmp_path) -> None
     )
 
 
-def test_no_ca_bundle_leaves_the_httpx_default_untouched() -> None:
-    assert trust_context(None, provider="gemini") is True
+def test_no_ca_bundle_verifies_against_the_os_trust_store() -> None:
+    context = trust_context(None, provider="gemini")
+
+    assert isinstance(context, truststore.SSLContext)
+    assert context.verify_mode is ssl.CERT_REQUIRED
+    assert context.check_hostname is True
 
 
 def test_unreadable_ca_bundle_is_refused_as_configuration(tmp_path) -> None:

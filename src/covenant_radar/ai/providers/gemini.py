@@ -75,7 +75,10 @@ def _gemini_body(request: CompletionRequest) -> dict[str, object]:
     if request.model.startswith(("gemini-3.", "gemini-3-")):
         # Gemini 3 migration guidance removes legacy sampling parameters.
         body.pop("temperature", None)
-        body["reasoning_effort"] = "low"
+        # Thinking tokens count against max_tokens on this endpoint. "low"
+        # spent enough of the memo's 1,200-token budget to cut its JSON short;
+        # both stages copy supplied facts into a fixed shape and need none.
+        body["reasoning_effort"] = "minimal"
     if request.prompt_version is not None:
         # Both application stages require a strict JSON object, checked again locally.
         body["response_format"] = {"type": "json_object"}

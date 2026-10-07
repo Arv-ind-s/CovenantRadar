@@ -24,8 +24,16 @@ ROOT = Path(__file__).resolve().parents[1]
 
 
 def gemini_environment() -> dict[str, str]:
-    """Read only Gemini settings; process values take precedence over local .env."""
-    names = {"GEMINI_API_KEY", "COVENANT_RADAR_AI__MODEL", "COVENANT_RADAR_AI__CA_BUNDLE"}
+    """Read only model settings; process values take precedence over local .env."""
+    names = {
+        "GEMINI_API_KEY",
+        "COVENANT_RADAR_AI__MODEL",
+        "COVENANT_RADAR_AI__CA_BUNDLE",
+        # The LiteLLM fail-safe used when Gemini is unavailable or refuses the key.
+        "COVENANT_RADAR_AI__FALLBACK_BASE_URL",
+        "COVENANT_RADAR_AI__FALLBACK_MODEL",
+        "COVENANT_RADAR_AI_FALLBACK_API_KEY",
+    }
     values: dict[str, str] = {}
     path = ROOT / ".env"
     if path.is_file():

@@ -132,5 +132,5 @@ def test_gemini_maps_model_tokens_and_supported_generation_parameters() -> None:
     assert bodies[0]["model"] == "gemini-3.8-flash"
     assert bodies[0]["max_tokens"] == 256
     assert "temperature" not in bodies[0]
-    assert bodies[0]["reasoning_effort"] == "low"
+    assert bodies[0]["reasoning_effort"] == "minimal"
     assert "temperature" not in bodies[1]

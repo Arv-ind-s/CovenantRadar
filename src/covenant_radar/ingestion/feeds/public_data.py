@@ -17,6 +17,7 @@ import hashlib
 import io
 import math
 import re
+import ssl
 import time
 from dataclasses import dataclass
 from datetime import UTC, date, datetime, timedelta
@@ -27,6 +28,7 @@ from xml.etree import ElementTree
 from zoneinfo import ZoneInfo
 
 import httpx
+import truststore
 
 MAX_BYTES = 2_000_000
 NEWS_WINDOW = timedelta(days=14)
@@ -217,6 +219,16 @@ def fetch_source(source: PublicSource, now: datetime) -> list[object]:
     return list(parse_news(payload, source, now))
 
 
+def _tls_context() -> ssl.SSLContext:
+    # Verify against the operating system's trust store, not certifi's bundle:
+    # corporate networks re-sign TLS for some hosts (news.google.com) with a
+    # root CA that only the OS knows, and certifi alone rejects every request.
+    return truststore.SSLContext(ssl.PROTOCOL_TLS_CLIENT)
+
+
+_TLS = _tls_context()
+
+
 def _download(url: str, timeout: float) -> bytes:
     # URLs are fixed application constants, never user-supplied. A small
     # redirect budget permits canonical/language redirects on the same host.
@@ -224,7 +236,7 @@ def _download(url: str, timeout: float) -> bytes:
     deadline = time.monotonic() + timeout * 2
     host = urlsplit(url).hostname or ""
     allowed_hosts = {host, "www." + host.removeprefix("www.")}
-    with httpx.Client(timeout=timeout, follow_redirects=False) as client:
+    with httpx.Client(timeout=timeout, follow_redirects=False, verify=_TLS) as client:
         for _ in range(3):
             # The client's default User-Agent: FRED's edge silently stalls custom agents.
             with client.stream("GET", url) as response:

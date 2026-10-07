@@ -157,3 +157,17 @@ def test_out_of_library_definition_carried_for_verification() -> None:
 
     assert proposal.parseable is True
     assert proposal.definition_ref == "not_a_real_ratio_code"
+
+
+@pytest.mark.parametrize("echoed", ["DSCR", "Dscr", "ratio:DSCR"])
+def test_library_definition_matched_regardless_of_case(echoed: str) -> None:
+    # Models echo the clause's casing ("DSCR"); the library is keyed "dscr".
+    proposal = parse_stage1_reply(_candidate(), _reply(definition=echoed))
+
+    assert proposal.definition_ref == "dscr"
+
+
+def test_unknown_definition_keeps_its_casing_for_verification() -> None:
+    proposal = parse_stage1_reply(_candidate(), _reply(definition="EBITDA Cover"))
+
+    assert proposal.definition_ref == "EBITDA Cover"

@@ -80,6 +80,28 @@ def create_provider(
     raise ProviderConfigurationError("Only Gemini is supported for live calls.", provider=provider)
 
 
+def create_fallback_provider(
+    settings: Any,
+    *,
+    transport: httpx.BaseTransport | None = None,
+) -> tuple[LLMProvider, str] | None:
+    """Return the LiteLLM fail-safe and its model, or ``None`` when no key is set."""
+
+    getter = getattr(getattr(settings, "fallback_api_key", None), "get_secret_value", None)
+    key = getter() if callable(getter) else None
+    if not isinstance(key, str) or not key.strip():
+        return None
+    model = getattr(settings, "fallback_model", None)
+    if not isinstance(model, str) or not model:
+        raise ProviderConfigurationError("ai.fallback_model is required.", provider="litellm")
+    from covenant_radar.ai.providers.litellm_proxy import LiteLLMProvider
+
+    provider = LiteLLMProvider(
+        base_url=getattr(settings, "fallback_base_url", ""), api_key=key, transport=transport
+    )
+    return provider, model
+
+
 def provider_from_settings(
     settings: Any,
     *,
@@ -109,6 +131,10 @@ def __getattr__(name: str) -> Any:
         from covenant_radar.ai.providers.gemini import GeminiProvider
 
         return GeminiProvider
+    if name == "LiteLLMProvider":
+        from covenant_radar.ai.providers.litellm_proxy import LiteLLMProvider
+
+        return LiteLLMProvider
     if name == "RecordedProvider":
         from covenant_radar.ai.providers.recorded import RecordedProvider
 
@@ -124,7 +150,9 @@ __all__ = [
     "ProviderConfigurationError",
     "RecordedProvider",
     "GeminiProvider",
+    "LiteLLMProvider",
     "VALID_PROVIDER_NAMES",
+    "create_fallback_provider",
     "create_provider",
     "provider_from_settings",
 ]

@@ -30,6 +30,7 @@ from covenant_radar.ai.budget import BudgetLedger, BudgetLimits, BudgetReservati
 from covenant_radar.ai.errors import (
     ProviderAuthError,
     ProviderError,
+    ProviderRequestRejected,
     ProviderUnavailable,
 )
 from covenant_radar.ai.masking import MASKING_MARKER, MaskedPrompt
@@ -265,6 +266,8 @@ class ModelClient:
         temperature: float | None = 0.0,
         cassette_provider: LLMProvider | None = None,
         cassette: LLMProvider | None = None,
+        fallback_provider: LLMProvider | None = None,
+        fallback_model: str | None = None,
         input_price_per_1k: Decimal | int | str | None = None,
         output_price_per_1k: Decimal | int | str | None = None,
         currency: str = DEFAULT_CURRENCY,
@@ -293,6 +296,12 @@ class ModelClient:
         self.max_tokens = _max_tokens(max_tokens)
         self.temperature = _temperature(temperature)
         self.cassette_provider = cassette_provider if cassette_provider is not None else cassette
+        if fallback_provider is not None and not isinstance(fallback_provider, LLMProvider):
+            raise TypeError("fallback_provider must implement the LLMProvider protocol.")
+        if (fallback_provider is None) != (fallback_model is None):
+            raise TypeError("Pass fallback_provider and fallback_model together.")
+        self.fallback_provider = fallback_provider
+        self.fallback_model = _optional_text(fallback_model, "fallback_model")
         self.input_price_per_1k = _optional_decimal(input_price_per_1k, "input_price_per_1k")
         self.output_price_per_1k = _optional_decimal(output_price_per_1k, "output_price_per_1k")
         self.currency = _currency(currency)
@@ -401,6 +410,16 @@ class ModelClient:
                 if retries < 1 and _retryable(error):
                     retries += 1
                     continue
+                fallback_result = self._live_fallback(
+                    call_context,
+                    request,
+                    request_id=request_id,
+                    stage=stage_value,
+                    prompt_version=expected_version,
+                    retry_count=retries,
+                )
+                if fallback_result is not None:
+                    return fallback_result
                 fallback = call_context.cassette_provider or self.cassette_provider
                 if fallback is not None:
                     result = self._cassette_fallback(
@@ -435,6 +454,16 @@ class ModelClient:
                     from_cassette=False,
                     check_verdict="provider_auth_refused",
                 )
+                fallback_result = self._live_fallback(
+                    call_context,
+                    request,
+                    request_id=request_id,
+                    stage=stage_value,
+                    prompt_version=expected_version,
+                    retry_count=retries,
+                )
+                if fallback_result is not None:
+                    return fallback_result
                 raise
             except ProviderError as error:
                 self._settle_failed(reservation)
@@ -453,6 +482,17 @@ class ModelClient:
                     from_cassette=False,
                     check_verdict="provider_refused",
                 )
+                if isinstance(error, ProviderRequestRejected):
+                    fallback_result = self._live_fallback(
+                        call_context,
+                        request,
+                        request_id=request_id,
+                        stage=stage_value,
+                        prompt_version=expected_version,
+                        retry_count=retries,
+                    )
+                    if fallback_result is not None:
+                        return fallback_result
                 raise
             except Exception as error:
                 self._settle_failed(reservation)
@@ -538,6 +578,105 @@ class ModelClient:
         if not isinstance(response, CompletionResponse):
             raise TypeError("LLMProvider.complete returned an invalid response shape.")
         return response
+
+    def _live_fallback(
+        self,
+        context: CallContext,
+        request: CompletionRequest,
+        *,
+        request_id: str,
+        stage: int | str,
+        prompt_version: str,
+        retry_count: int,
+    ) -> ModelResult | None:
+        """Send the same masked prompt once to the configured fallback model.
+
+        Runs only after the primary provider has failed for good (its retry
+        spent, its key refused or its request rejected). The attempt is
+        governed, budgeted and recorded exactly like a primary call, under the
+        fallback's own provider and model, and is a live call, never a replay.
+        """
+        provider = self.fallback_provider
+        model = self.fallback_model
+        if provider is None or model is None:
+            return None
+        provider_name = self._provider_name(CallContext(), provider)
+        try:
+            if self.registry_guard is not None:
+                self.registry_guard.ensure_permitted(
+                    "stage1_extraction" if str(stage) == "1" else "stage7_memo",
+                    provider=provider_name,
+                    model_id=model,
+                    prompt_version=prompt_version,
+                )
+            fallback_request = CompletionRequest(
+                messages=request.messages,
+                model=model,
+                max_tokens=request.max_tokens,
+                temperature=request.temperature,
+                timeout_seconds=request.timeout_seconds,
+                prompt_version=request.prompt_version,
+            )
+            reservation = self.budget.reserve(
+                estimated_cost=self._estimated_cost(context, fallback_request)
+            )
+        except Exception as error:
+            self._record_refusal(
+                request_id=request_id,
+                stage=str(stage),
+                provider=provider_name,
+                model=model,
+                prompt_version=prompt_version,
+                reason=_validation_reason(error),
+            )
+            return None
+
+        started = time.perf_counter()
+        try:
+            response = self._complete(provider, fallback_request, provider_name)
+        except Exception as error:
+            self._settle_failed(reservation)
+            self._record_attempt(
+                request_id=request_id,
+                stage=stage,
+                provider=provider_name,
+                model=model,
+                prompt_version=prompt_version,
+                response=None,
+                latency_ms=_elapsed_ms(started),
+                cost=reservation.estimated_cost,
+                currency=self.currency,
+                retry_count=retry_count,
+                refusal_reason=_provider_reason(error),
+                from_cassette=False,
+                check_verdict="fallback_unavailable",
+            )
+            return None
+
+        actual_cost = self._actual_cost(context, response, reservation)
+        settled_cost = self.budget.settle(reservation, actual_cost)
+        record = self._record_attempt(
+            request_id=request_id,
+            stage=stage,
+            provider=provider_name,
+            model=response.model or model,
+            prompt_version=prompt_version,
+            response=response,
+            latency_ms=max(response.latency_ms, _elapsed_ms(started)),
+            cost=settled_cost,
+            currency=self.currency if settled_cost is not None else None,
+            retry_count=retry_count,
+            refusal_reason=None,
+            from_cassette=False,
+            check_verdict="not_checked",
+        )
+        return ModelResult(
+            response=response,
+            model_call_id=record.id,
+            retry_count=retry_count,
+            cost=settled_cost,
+            from_cassette=False,
+        )
 
     def _cassette_fallback(
         self,

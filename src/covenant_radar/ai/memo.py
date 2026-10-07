@@ -538,8 +538,13 @@ def _intervention_text(slot: MemoSlot) -> str:
         return value
     if isinstance(value, Sequence) and not isinstance(value, str | bytes | bytearray):
         texts = tuple(item for item in value if isinstance(item, str))
+        if len(texts) == 1:
+            return texts[0]
         if texts:
-            return "\n".join(texts)
+            # Separate options, not one block: joined with newlines, the model
+            # copied every wording as "the" next step and failed the
+            # exactly-one-wording check on every multi-action borrower.
+            return json.dumps(list(texts), ensure_ascii=False)
     return _ABSENT_TEXT
 
 

@@ -22,7 +22,7 @@ from starlette.middleware.base import BaseHTTPMiddleware, RequestResponseEndpoin
 from starlette.requests import Request
 from starlette.responses import Response
 
-from covenant_radar.ai import create_provider
+from covenant_radar.ai import create_fallback_provider, create_provider
 from covenant_radar.ai.client import ModelClient, SqlAlchemyModelCallWriter
 from covenant_radar.ai.intake import propose_candidates
 from covenant_radar.ai.registry import ModelRegistryGuard
@@ -406,15 +406,24 @@ def create_production_app(settings: Settings | None = None) -> FastAPI:
     )
     memo_generator: MemoGenerator | None = None
     if resolved.ai.provider != "none":
-        ai_provider = create_provider(resolved.ai)
+        fallback = create_fallback_provider(resolved.ai)
+        if fallback is not None and resolved.ai.provider == "gemini" and not resolved.ai.api_key:
+            # No Gemini key at all: the fail-safe is the only live model.
+            ai_provider, primary_model = fallback
+            fallback = None
+        else:
+            ai_provider = create_provider(resolved.ai)
+            primary_model = resolved.ai.model or "covenant-radar"
         model_client = ModelClient(
             ai_provider,
-            model=resolved.ai.model or "covenant-radar",
+            model=primary_model,
             model_calls=SqlAlchemyModelCallWriter(sessions),
             registry_guard=ModelRegistryGuard(
                 SqlAlchemyModelRegistryRepository(sessions),
                 environment=_deployment_environment(),
             ),
+            fallback_provider=fallback[0] if fallback else None,
+            fallback_model=fallback[1] if fallback else None,
         )
 
         def proposal_generator(
